@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>每日記帳本｜今晚吃哪家？</title>
+
+  <link rel="icon" type="image/png" href="./favicon.png?v=1">
+  <link rel="apple-touch-icon" href="./favicon.png?v=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+  <meta name="theme-color" content="#1b1b1b">
+</head>
+<body data-theme="light">
+  <noscript>此網站需要啟用 JavaScript。</noscript>
+
+  <div class="wrap">
+    <header class="hero hero--expenses">
+      <div class="hero-header">
+        <div class="hero-title-block">
+          <a class="back-link" href="./index.html">← 返回餐廳列表</a>
+          <h1>每日記帳本</h1>
+        </div>
+        <div class="hero-actions">
+          <button id="expenseThemeToggle" class="btn icon-btn" aria-label="切換色彩模式">🌞</button>
+        </div>
+      </div>
+      <div class="expense-summary-grid" aria-live="polite">
+        <article class="summary-card">
+          <p class="summary-label">今日支出</p>
+          <p class="summary-amount" id="todayTotal">0</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">本週累計</p>
+          <p class="summary-amount" id="weekTotal">0</p>
+        </article>
+        <article class="summary-card">
+          <p class="summary-label">本月累計</p>
+          <p class="summary-amount" id="monthTotal">0</p>
+        </article>
+      </div>
+    </header>
+
+    <main class="expense-main">
+      <section class="panel">
+        <h2>新增紀錄</h2>
+        <form id="expenseForm" class="expense-form">
+          <label>
+            <span>日期</span>
+            <input type="date" name="date" required>
+          </label>
+          <label>
+            <span>金額 (NT$)</span>
+            <input type="number" name="amount" min="0" step="1" required placeholder="例如 150">
+          </label>
+          <label class="wide">
+            <span>備註</span>
+            <textarea name="note" rows="2" placeholder="想記下的細節..."></textarea>
+          </label>
+          <button class="btn primary" type="submit">新增紀錄</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>紀錄列表</h2>
+          <button id="clearAll" class="btn danger btn-sm" type="button">清空全部</button>
+        </div>
+        <div id="emptyState" class="empty-state">目前沒有紀錄，先新增一筆吧！</div>
+        <div id="expenseList" class="expense-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./expenses.js"></script>
+</body>
+</html>

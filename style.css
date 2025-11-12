@@ -36,7 +36,8 @@ body{
 /* Hero */
 .hero{background:var(--paper);border:var(--stroke) solid var(--ink);border-radius:var(--radius);
   padding:var(--sp-3);margin-bottom:var(--sp-4);box-shadow:var(--panel-shadow)}
-.hero-header{display:flex;justify-content:space-between;align-items:flex-start}
+.hero-header{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-2)}
+.hero-actions{display:flex;align-items:flex-start;gap:var(--sp-1);flex-wrap:wrap;justify-content:flex-end}
 h1{margin:0 0 var(--sp-1);font-family:var(--ff-heading);font-size:var(--fs-xl);line-height:1.2;letter-spacing:1px;color:var(--ink)}
 /* Toolbar / Button */
 .toolbar{display:flex;flex-wrap:wrap;gap:var(--sp-2);margin-top:var(--sp-3);align-items:center}
@@ -89,3 +90,28 @@ h1{margin:0 0 var(--sp-1);font-family:var(--ff-heading);font-size:var(--fs-xl);l
   .dist-meta{min-width:68px}
   .dist-km{min-width:56px}
 }
+
+/* Expense Tracker */
+.hero--expenses .hero-header{flex-direction:column;gap:var(--sp-2)}
+.hero-title-block{display:flex;flex-direction:column;gap:var(--sp-1)}
+.back-link{font-size:var(--fs-sm);color:var(--accent-primary);text-decoration:none;font-weight:700}
+.expense-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}
+.summary-card{background:var(--chip-bg);border:var(--stroke) solid var(--ink);border-radius:var(--radius);padding:var(--sp-2);box-shadow:var(--panel-shadow);display:flex;flex-direction:column;gap:6px}
+.summary-label{margin:0;font-size:var(--fs-sm);color:var(--muted);letter-spacing:.5px}
+.summary-amount{margin:0;font-size:var(--fs-lg);font-weight:900;color:var(--ink)}
+.expense-main{display:grid;grid-template-columns:1fr;gap:var(--sp-3)}
+.panel{background:var(--paper);border:var(--stroke) solid var(--ink);border-radius:var(--radius);padding:var(--sp-3);box-shadow:var(--panel-shadow)}
+.panel-header{display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+.expense-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--sp-2)}
+.expense-form label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:var(--fs-sm)}
+.expense-form input,.expense-form textarea{font:inherit;padding:var(--sp-1);border-radius:calc(var(--radius)/1.5);border:var(--stroke) solid var(--ink);background:var(--paper)}
+.expense-form textarea{resize:vertical;min-height:64px}
+.expense-form label.wide{grid-column:1/-1}
+.expense-list{display:grid;gap:var(--sp-2);margin-top:var(--sp-2)}
+.entry-card{border:var(--stroke) solid var(--ink);border-radius:var(--radius);padding:var(--sp-2);background:var(--chip-bg);box-shadow:var(--panel-shadow);display:grid;gap:var(--sp-1)}
+.entry-meta{font-size:var(--fs-sm)}
+.entry-date{margin:0;font-weight:700}
+.entry-amount{margin:0;font-size:var(--fs-lg);font-weight:900;color:var(--accent-primary)}
+.entry-note{margin:0;color:var(--text);background:rgba(0,0,0,.04);padding:var(--sp-1);border-radius:calc(var(--radius)/2);border:1px dashed var(--chip-border)}
+.btn.btn-sm{min-height:36px;padding:4px 10px;font-size:var(--fs-xs)}
+.empty-state{margin-top:var(--sp-2);color:var(--muted);font-style:italic;text-align:center}

@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = 'dinnerPicker.expenses.v1';
+  const TABLE = 'expenses';
   const DOM = {
     body: document.body,
     form: document.getElementById('entryForm'),
@@ -12,7 +13,12 @@
     return `${d.getFullYear()}-${m}-${day}`;
   }
 
-  function loadEntries() {
+  function initForm() {
+    const todayISO = toISODate(new Date());
+    DOM.form.elements.date.value = todayISO;
+  }
+
+  function loadLocalEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -23,13 +29,20 @@
     }
   }
 
-  function saveEntries(entries) {
+  function saveLocalEntries(entries) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   }
 
-  function initForm() {
-    const todayISO = toISODate(new Date());
-    DOM.form.elements.date.value = todayISO;
+  async function saveToSupabase(entry) {
+    const payload = {
+      id: entry.id,
+      date: entry.date,
+      amount: entry.amount,
+      note: entry.note ?? '',
+      created_at: new Date(entry.createdAt).toISOString(),
+    };
+    const { error } = await supa.from(TABLE).insert(payload);
+    if (error) throw error;
   }
 
   DOM.form.addEventListener('submit', (event) => {
@@ -41,7 +54,6 @@
       return;
     }
 
-    const entries = loadEntries();
     const entry = {
       id: crypto.randomUUID?.() ?? `${Date.now()}`,
       date: formData.get('date') || toISODate(new Date()),
@@ -50,14 +62,18 @@
       createdAt: Date.now(),
     };
 
-    entries.unshift(entry);
-    entries.sort((a, b) => {
-      if (a.date === b.date) return (b.createdAt ?? 0) - (a.createdAt ?? 0);
-      return a.date > b.date ? -1 : 1;
-    });
-    saveEntries(entries);
-
-    window.location.href = './expenses.html';
+    (async () => {
+      try {
+        await saveToSupabase(entry);
+        // 雲端成功後，保留一份本機備份
+        const entries = loadLocalEntries();
+        entries.unshift(entry);
+        saveLocalEntries(entries);
+        window.location.href = './expenses.html';
+      } catch (err) {
+        alert(`上傳到雲端失敗，請稍後再試。\n${err.message}`);
+      }
+    })();
   });
 
   function init() {

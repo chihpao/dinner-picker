@@ -1,5 +1,6 @@
 (() => {
   const STORAGE_KEY = 'dinnerPicker.expenses.v1';
+  const TABLE = 'expenses';
   const DOM = {
     body: document.body,
     emptyState: document.getElementById('emptyState'),
@@ -12,6 +13,7 @@
 
   const state = {
     entries: [],
+    loading: false,
   };
 
   const todayISO = toISODate(new Date());
@@ -51,7 +53,7 @@
     })[c]);
   }
 
-  function loadEntries() {
+  function loadLocalEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -77,6 +79,25 @@
 
   function persistEntries() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+  }
+
+  async function fetchEntriesFromSupabase() {
+    state.loading = true;
+    const { data, error } = await supa
+      .from(TABLE)
+      .select('*')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
+    state.loading = false;
+    if (error) throw error;
+    state.entries = (data ?? []).map(entry => ({
+      id: entry.id,
+      date: entry.date,
+      amount: entry.amount,
+      note: entry.note ?? '',
+      createdAt: entry.created_at ? new Date(entry.created_at).getTime() : Date.now(),
+    }));
+    persistEntries(); // 同步一份本機備份
   }
 
   function renderEntries() {
@@ -138,30 +159,48 @@
     return clone;
   }
 
-  DOM.list.addEventListener('click', (event) => {
+  DOM.list.addEventListener('click', async (event) => {
     const btn = event.target;
     if (btn.dataset.action !== 'delete') return;
     const article = btn.closest('.entry-card');
     const id = article?.dataset?.id;
     if (!id) return;
-    state.entries = state.entries.filter(entry => entry.id !== id);
-    persistEntries();
-    renderEntries();
-    renderSummaries();
+    try {
+      const { error } = await supa.from(TABLE).delete().eq('id', id);
+      if (error) throw error;
+      state.entries = state.entries.filter(entry => entry.id !== id);
+      persistEntries();
+      renderEntries();
+      renderSummaries();
+    } catch (err) {
+      alert(`刪除失敗：${err.message}`);
+    }
   });
 
-  DOM.clearBtn.addEventListener('click', () => {
+  DOM.clearBtn.addEventListener('click', async () => {
     if (!state.entries.length) return;
     const confirmClear = confirm('確定要刪除所有紀錄嗎？此操作無法復原。');
     if (!confirmClear) return;
-    state.entries = [];
-    persistEntries();
-    renderEntries();
-    renderSummaries();
+    try {
+      const { error } = await supa.from(TABLE).delete().gt('created_at', '1970-01-01');
+      if (error) throw error;
+      state.entries = [];
+      persistEntries();
+      renderEntries();
+      renderSummaries();
+    } catch (err) {
+      alert(`清空失敗：${err.message}`);
+    }
   });
 
-  function init() {
-    loadEntries();
+  async function init() {
+    try {
+      await fetchEntriesFromSupabase();
+    } catch (err) {
+      console.error('Supabase 讀取失敗，改用本機資料', err);
+      loadLocalEntries();
+      alert('雲端讀取失敗，先顯示本機備份。');
+    }
     renderEntries();
     renderSummaries();
   }

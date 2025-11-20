@@ -1,11 +1,7 @@
 (() => {
   const STORAGE_KEY = 'dinnerPicker.expenses.v1';
-  const THEME_STORAGE_KEY = 'theme';
-
   const DOM = {
     body: document.body,
-    themeToggle: document.getElementById('expenseThemeToggle'),
-    form: document.getElementById('expenseForm'),
     emptyState: document.getElementById('emptyState'),
     list: document.getElementById('expenseList'),
     clearBtn: document.getElementById('clearAll'),
@@ -16,11 +12,9 @@
 
   const state = {
     entries: [],
-    theme: 'light',
   };
 
   const todayISO = toISODate(new Date());
-  DOM.form.elements.date.value = todayISO;
 
   function toISODate(date) {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -85,17 +79,6 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
   }
 
-  function setTheme(mode) {
-    state.theme = mode;
-    DOM.body.setAttribute('data-theme', mode);
-    DOM.themeToggle.textContent = mode === 'dark' ? '🌙' : '🌞';
-    localStorage.setItem(THEME_STORAGE_KEY, mode);
-  }
-
-  DOM.themeToggle.addEventListener('click', () => {
-    setTheme(state.theme === 'light' ? 'dark' : 'light');
-  });
-
   function renderEntries() {
     if (!state.entries.length) {
       DOM.emptyState.hidden = false;
@@ -155,34 +138,6 @@
     return clone;
   }
 
-  DOM.form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(DOM.form);
-    const amount = Number(formData.get('amount'));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      alert('請輸入正確的金額');
-      return;
-    }
-
-    const entry = {
-      id: crypto.randomUUID?.() ?? `${Date.now()}`,
-      date: formData.get('date') || todayISO,
-      amount: Math.round(amount),
-      note: (formData.get('note') || '').trim(),
-      createdAt: Date.now(),
-    };
-
-    state.entries = [entry, ...state.entries].sort((a, b) => {
-      if (a.date === b.date) return (b.createdAt ?? 0) - (a.createdAt ?? 0);
-      return a.date > b.date ? -1 : 1;
-    });
-    persistEntries();
-    renderEntries();
-    renderSummaries();
-    DOM.form.reset();
-    DOM.form.elements.date.value = entry.date;
-  });
-
   DOM.list.addEventListener('click', (event) => {
     const btn = event.target;
     if (btn.dataset.action !== 'delete') return;
@@ -206,8 +161,6 @@
   });
 
   function init() {
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
-    setTheme(savedTheme);
     loadEntries();
     renderEntries();
     renderSummaries();

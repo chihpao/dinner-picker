@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>記帳｜今晚吃哪家？</title>
+
+  <link rel="icon" type="image/png" href="./favicon.png?v=1">
+  <link rel="apple-touch-icon" href="./favicon.png?v=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css">
+  <meta name="theme-color" content="#1b1b1b">
+</head>
+<body data-theme="light">
+  <noscript>此網站需要啟用 JavaScript。</noscript>
+
+  <div class="wrap">
+    <section class="panel entry-panel">
+      <div class="entry-header">
+        <a class="back-link" href="./index.html">← 返回</a>
+        <h1>記帳</h1>
+      </div>
+      <form id="entryForm" class="expense-form compact-form">
+        <label>
+          <span>日期</span>
+          <input type="date" name="date" required>
+        </label>
+        <label>
+          <span>金額 (NT$)</span>
+          <input type="number" name="amount" min="0" step="1" required placeholder="例如 150">
+        </label>
+        <button class="btn primary" type="submit">確認</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="./expense-entry.js"></script>
+</body>
+</html>

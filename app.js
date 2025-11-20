@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     profile: null,
     userLocation: null,
     isLoading: true,
-    theme: 'light',
   };
 
   const DOM = {
@@ -63,19 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toolbar: $('#toolbar'),
     list: $('#restaurant-list'),
     loader: $('#loader'),
-    themeToggle: $('#themeToggle'),
   };
-
-  // Theme
-  function setTheme(mode){
-    appState.theme = mode;
-    DOM.body.setAttribute('data-theme', mode);
-    DOM.themeToggle.textContent = mode === 'dark' ? '🌙' : '🌞';
-    localStorage.setItem('theme', mode);
-  }
-  DOM.themeToggle.addEventListener('click', () => {
-    setTheme(appState.theme === 'light' ? 'dark' : 'light');
-  });
 
   // Toolbar
   function renderToolbar() {
@@ -123,11 +110,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (rows.length === 0) return '<div class="distance-panel is-empty"></div>';
 
     const max = GLOBAL_MAX_DIST_KM;
+    const rankMap = new Map();
+    rows.slice().sort((a,b) => a.dist - b.dist).forEach((row, idx) => {
+      const tier = idx === 0 ? 'near' : idx === 1 ? 'mid' : 'far';
+      rankMap.set(row.key, tier);
+    });
+
     const html = rows.map(r => {
       const ratio = r.dist / max;
       const clamp = Math.min(1, ratio);
       const pct = Math.max(6, clamp * 100);
       const isFar = ratio > 1;
+      const tier = rankMap.get(r.key) || 'far';
       return `
         <div class="dist-row">
           <div class="dist-meta">
@@ -135,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="dist-label">${r.label}</span>
           </div>
           <div class="dist-bar" role="img" aria-label="${r.label} 距離 ${r.dist.toFixed(1)} 公里">
-            <div class="dist-fill ${isFar ? 'far' : ''}" style="width:${pct}%; --ratio:${clamp.toFixed(3)};"></div>
+            <div class="dist-fill tier-${tier} ${isFar ? 'is-out-of-range' : ''}" style="width:${pct}%; --ratio:${clamp.toFixed(3)};"></div>
           </div>
-          <div class="dist-km">${r.dist.toFixed(1)} km</div>
+          <div class="dist-km tier-${tier}">${r.dist.toFixed(1)} km</div>
         </div>
       `;
     }).join('');
@@ -206,9 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 初始化：載入 JSON +（若帶 autorun）做 Deep Link
   (async function init(){
-    const saved = localStorage.getItem('theme') || 'light';
-    setTheme(saved);
-
     // 先並行請求資料與定位
     const params = new URLSearchParams(location.search);
     const deepShop = params.get('shop');

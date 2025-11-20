@@ -1,5 +1,6 @@
 (() => {
-  const STORAGE_KEY = 'dinnerPicker.expenses.v1';
+  const STORAGE_KEY = 'dinnerPicker.expenses.v1'; // 雲端資料的本機備份
+  const PENDING_KEY = 'dinnerPicker.expenses.pending'; // 尚未同步的暫存
   const TABLE = 'expenses';
   const DOM = {
     body: document.body,
@@ -16,69 +17,53 @@
     loading: false,
   };
 
-  const todayISO = toISODate(new Date());
-
-  function toISODate(date) {
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const m = `${d.getMonth() + 1}`.padStart(2, '0');
-    const day = `${d.getDate()}`.padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day}`;
-  }
-
-  function parseISODate(str) {
-    const [y, m, d] = str.split('-').map(Number);
-    return new Date(y, (m ?? 1) - 1, d ?? 1);
-  }
-
-  function formatCurrency(amount) {
-    return `NT$ ${amount.toLocaleString('zh-TW', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })}`;
-  }
-
-  function formatDate(str) {
-    const date = parseISODate(str);
-    const days = ['日', '一', '二', '三', '四', '五', '六'];
-    return `${date.getMonth() + 1}/${date.getDate()}（${days[date.getDay()]}）`;
-  }
-
-  function escapeHTML(text = '') {
-    return text.replace(/[&<>"']/g, c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    })[c]);
-  }
+  let currentUser = null;
+  let todayISO = toISODate(new Date());
 
   function loadLocalEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(parsed)) {
-        state.entries = parsed.map(entry => ({
-          id: entry.id ?? crypto.randomUUID?.() ?? String(Date.now()),
-          date: entry.date ?? todayISO,
-          amount: Number(entry.amount) || 0,
-          note: entry.note ?? '',
-          createdAt: entry.createdAt ?? Date.now(),
-        })).sort((a, b) => {
-          if (a.date === b.date) return (b.createdAt ?? 0) - (a.createdAt ?? 0);
-          return a.date > b.date ? -1 : 1;
-        });
-      } else {
-        state.entries = [];
-      }
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(entry => entry.user_id === currentUser?.id);
     } catch (err) {
       console.error('Failed to parse local entries', err);
-      state.entries = [];
+      return [];
     }
   }
 
-  function persistEntries() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+  function saveLocalEntries(entries) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const others = Array.isArray(existing) ? existing.filter(e => e.user_id !== currentUser?.id) : [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...others, ...entries]));
+    } catch (err) {
+      console.error('Failed to save local entries', err);
+    }
+  }
+
+  function loadPendingEntries() {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(entry => entry.user_id === currentUser?.id);
+    } catch (err) {
+      console.error('Failed to parse pending entries', err);
+      return [];
+    }
+  }
+
+  function savePendingEntries(entries) {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const others = Array.isArray(existing) ? existing.filter(e => e.user_id !== currentUser?.id) : [];
+      localStorage.setItem(PENDING_KEY, JSON.stringify([...others, ...entries]));
+    } catch (err) {
+      console.error('Failed to save pending entries', err);
+    }
   }
 
   async function fetchEntriesFromSupabase() {
@@ -86,18 +71,53 @@
     const { data, error } = await supa
       .from(TABLE)
       .select('*')
+      .eq('user_id', currentUser.id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false });
     state.loading = false;
     if (error) throw error;
-    state.entries = (data ?? []).map(entry => ({
+    const remote = (data ?? []).map(entry => ({
       id: entry.id,
       date: entry.date,
       amount: entry.amount,
       note: entry.note ?? '',
       createdAt: entry.created_at ? new Date(entry.created_at).getTime() : Date.now(),
+      user_id: entry.user_id,
     }));
-    persistEntries(); // 同步一份本機備份
+    return remote;
+  }
+
+  async function syncPending() {
+    if (!currentUser) return;
+    const pending = loadPendingEntries();
+    if (!pending.length) return;
+    const stillPending = [];
+    for (const entry of pending) {
+      try {
+        const payload = {
+          id: entry.id,
+          date: entry.date,
+          amount: entry.amount,
+          note: entry.note ?? '',
+          created_at: new Date(entry.createdAt).toISOString(),
+          user_id: currentUser.id,
+        };
+        const { error } = await supa.from(TABLE).insert(payload);
+        if (error) throw error;
+      } catch (err) {
+        console.error('Retry pending failed', err);
+        stillPending.push(entry);
+      }
+    }
+    savePendingEntries(stillPending);
+  }
+
+  function mergePending(entries) {
+    const pending = loadPendingEntries();
+    if (!pending.length) return entries;
+    const existingIds = new Set(entries.map(e => e.id));
+    const merged = [...pending.filter(e => !existingIds.has(e.id)), ...entries];
+    return merged;
   }
 
   function renderEntries() {
@@ -140,23 +160,14 @@
     DOM.monthTotal.textContent = formatCurrency(totals.month);
   }
 
-  function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-  }
-
-  function isSameMonth(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth();
-  }
-
-  function startOfWeek(date) {
-    const clone = parseISODate(toISODate(date));
-    const weekday = clone.getDay(); // 0(日) - 6(六)
-    const diff = (weekday + 6) % 7; // 以週一為第一天
-    clone.setDate(clone.getDate() - diff);
-    return clone;
+  function escapeHTML(text = '') {
+    return text.replace(/[&<>"']/g, c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[c]);
   }
 
   DOM.list.addEventListener('click', async (event) => {
@@ -166,10 +177,10 @@
     const id = article?.dataset?.id;
     if (!id) return;
     try {
-      const { error } = await supa.from(TABLE).delete().eq('id', id);
+      const { error } = await supa.from(TABLE).delete().eq('id', id).eq('user_id', currentUser.id);
       if (error) throw error;
       state.entries = state.entries.filter(entry => entry.id !== id);
-      persistEntries();
+      saveLocalEntries(state.entries);
       renderEntries();
       renderSummaries();
     } catch (err) {
@@ -182,10 +193,11 @@
     const confirmClear = confirm('確定要刪除所有紀錄嗎？此操作無法復原。');
     if (!confirmClear) return;
     try {
-      const { error } = await supa.from(TABLE).delete().gt('created_at', '1970-01-01');
+      const { error } = await supa.from(TABLE).delete().eq('user_id', currentUser.id);
       if (error) throw error;
       state.entries = [];
-      persistEntries();
+      saveLocalEntries([]);
+      savePendingEntries([]);
       renderEntries();
       renderSummaries();
     } catch (err) {
@@ -194,13 +206,25 @@
   });
 
   async function init() {
+    currentUser = await ensureSignedIn('/expenses.html');
+    todayISO = toISODate(new Date());
+
     try {
-      await fetchEntriesFromSupabase();
+      await syncPending(); // 先把未送出的補送
+    } catch (err) {
+      console.error('sync pending failed', err);
+    }
+
+    try {
+      const remoteEntries = await fetchEntriesFromSupabase();
+      state.entries = mergePending(remoteEntries);
+      saveLocalEntries(state.entries);
     } catch (err) {
       console.error('Supabase 讀取失敗，改用本機資料', err);
-      loadLocalEntries();
-      alert('雲端讀取失敗，先顯示本機備份。');
+      state.entries = mergePending(loadLocalEntries());
+      alert('雲端讀取失敗，先顯示本機備份與待同步資料。');
     }
+
     renderEntries();
     renderSummaries();
   }

@@ -1,28 +1,20 @@
 (() => {
-  const STORAGE_KEY = 'dinnerPicker.expenses.v1';
+  const STORAGE_KEY = 'dinnerPicker.expenses.v1'; // 雲端資料的本機備份
+  const PENDING_KEY = 'dinnerPicker.expenses.pending'; // 雲端尚未送出的暫存
   const TABLE = 'expenses';
   const DOM = {
     body: document.body,
     form: document.getElementById('entryForm'),
   };
 
-  function toISODate(date) {
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day}`;
-  }
-
-  function initForm() {
-    const todayISO = toISODate(new Date());
-    DOM.form.elements.date.value = todayISO;
-  }
+  let currentUser = null;
 
   function loadLocalEntries() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(entry => entry.user_id === currentUser?.id);
     } catch (err) {
       console.error('Failed to load entries', err);
       return [];
@@ -30,7 +22,37 @@
   }
 
   function saveLocalEntries(entries) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const others = Array.isArray(existing) ? existing.filter(e => e.user_id !== currentUser?.id) : [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...others, ...entries]));
+    } catch (err) {
+      console.error('Failed to save local entries', err);
+    }
+  }
+
+  function loadPendingEntries() {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(entry => entry.user_id === currentUser?.id);
+    } catch (err) {
+      console.error('Failed to load pending entries', err);
+      return [];
+    }
+  }
+
+  function savePendingEntries(entries) {
+    try {
+      const raw = localStorage.getItem(PENDING_KEY);
+      const existing = raw ? JSON.parse(raw) : [];
+      const others = Array.isArray(existing) ? existing.filter(e => e.user_id !== currentUser?.id) : [];
+      localStorage.setItem(PENDING_KEY, JSON.stringify([...others, ...entries]));
+    } catch (err) {
+      console.error('Failed to save pending entries', err);
+    }
   }
 
   async function saveToSupabase(entry) {
@@ -40,9 +62,27 @@
       amount: entry.amount,
       note: entry.note ?? '',
       created_at: new Date(entry.createdAt).toISOString(),
+      user_id: currentUser?.id,
     };
     const { error } = await supa.from(TABLE).insert(payload);
     if (error) throw error;
+  }
+
+  // 把舊的 pending 嘗試補送
+  async function syncPending() {
+    if (!currentUser) return;
+    const pending = loadPendingEntries();
+    if (!pending.length) return;
+    const stillPending = [];
+    for (const entry of pending) {
+      try {
+        await saveToSupabase(entry);
+      } catch (err) {
+        console.error('Retry pending failed', err);
+        stillPending.push(entry);
+      }
+    }
+    savePendingEntries(stillPending);
   }
 
   DOM.form.addEventListener('submit', (event) => {
@@ -60,24 +100,44 @@
       amount: Math.round(amount),
       note: '',
       createdAt: Date.now(),
+      user_id: currentUser?.id,
     };
 
     (async () => {
+      // 先存 pending，確保不遺失
+      const pending = loadPendingEntries();
+      pending.unshift(entry);
+      savePendingEntries(pending);
+
       try {
         await saveToSupabase(entry);
-        // 雲端成功後，保留一份本機備份
+
+        // 雲端成功後，移除 pending，並保留一份本機備份
+        const remainingPending = loadPendingEntries().filter(e => e.id !== entry.id);
+        savePendingEntries(remainingPending);
+
         const entries = loadLocalEntries();
         entries.unshift(entry);
         saveLocalEntries(entries);
+
         window.location.href = './expenses.html';
       } catch (err) {
-        alert(`上傳到雲端失敗，請稍後再試。\n${err.message}`);
+        alert(`雲端同步失敗，但已先保存在本機，之後會自動再試。\n${err.message}`);
       }
     })();
   });
 
   function init() {
-    initForm();
+    (async () => {
+      currentUser = await ensureSignedIn('/expense-entry.html');
+      initForm();
+      await syncPending();
+    })();
+  }
+
+  function initForm() {
+    const todayISO = toISODate(new Date());
+    DOM.form.elements.date.value = todayISO;
   }
 
   init();

@@ -32,5 +32,10 @@ async function signInWithGoogle(pathname = window.location.pathname) {
 
 async function signOutAndReload() {
   await supa.auth.signOut();
-  window.location.reload();
+  try {
+    // 清掉可能留下的快取 token，避免重新載入時自動復原
+    const storageKeys = Object.keys(localStorage).filter(k => k.includes('supabase.auth'));
+    storageKeys.forEach(k => localStorage.removeItem(k));
+  } catch(e){ /* noop */ }
+  window.location.href = window.location.pathname;
 }

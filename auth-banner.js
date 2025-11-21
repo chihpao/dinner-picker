@@ -9,12 +9,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (isAuthed) {
       mount.innerHTML = `
         <div class="auth-pill">
-          <span class="auth-status">已登入：${initial}</span>
-          <button type="button" class="btn btn-sm" id="btnLogout">登出</button>
+          <button type="button" class="auth-avatar" id="btnAvatar" aria-haspopup="true" aria-expanded="false">${initial || 'U'}</button>
+          <div class="auth-menu" id="authMenu" role="menu">
+            <button type="button" data-action="switch" role="menuitem">切換帳號</button>
+            <button type="button" data-action="logout" role="menuitem">登出</button>
+          </div>
         </div>
       `;
-      const btnLogout = document.getElementById('btnLogout');
-      if (btnLogout) btnLogout.onclick = () => signOutAndReload();
+      const btnAvatar = document.getElementById('btnAvatar');
+      const menu = document.getElementById('authMenu');
+      const closeMenu = () => {
+        if (menu) menu.classList.remove('open');
+        if (btnAvatar) btnAvatar.setAttribute('aria-expanded', 'false');
+      };
+      if (btnAvatar && menu) {
+        btnAvatar.onclick = (e) => {
+          e.stopPropagation();
+          const open = menu.classList.toggle('open');
+          btnAvatar.setAttribute('aria-expanded', String(open));
+        };
+        menu.onclick = (e) => {
+          const action = e.target?.dataset?.action;
+          if (action === 'logout') {
+            closeMenu();
+            signOutAndReload();
+          }
+          if (action === 'switch') {
+            closeMenu();
+            signInWithGoogle(window.location.pathname);
+          }
+        };
+        document.addEventListener('click', closeMenu, { once: true });
+      }
     } else {
       mount.innerHTML = `
         <button type="button" class="btn btn-google" id="btnLogin">

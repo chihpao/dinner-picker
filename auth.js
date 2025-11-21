@@ -1,10 +1,14 @@
-// Google OAuth 登入，確保只有登入者才能讀寫自己的資料
-async function ensureSignedIn(redirectPath = window.location.pathname) {
+// Google OAuth：提供「查詢現有 session」與「手動觸發登入/登出」
+function authRedirectUrl(pathname = window.location.pathname) {
+  return `${window.location.origin}${pathname}`;
+}
+
+// 檢查是否已有登入；若網址帶 code 則交換成 session，最後回傳 user 或 null
+async function getCurrentUser(pathname = window.location.pathname) {
   const url = new URL(window.location.href);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
 
-  // 如果 Google 登入後帶回 code，換取 session 並清掉網址參數
   if (code) {
     await supa.auth.exchangeCodeForSession(code);
     url.searchParams.delete('code');
@@ -13,16 +17,17 @@ async function ensureSignedIn(redirectPath = window.location.pathname) {
   }
 
   const { data } = await supa.auth.getSession();
-  if (data?.session?.user) return data.session.user;
+  return data?.session?.user ?? null;
+}
 
-  // 未登入就發起 Google OAuth
+// 由使用者點擊後才觸發登入
+async function signInWithGoogle(pathname = window.location.pathname) {
   await supa.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}${redirectPath}`,
+      redirectTo: authRedirectUrl(pathname),
     },
   });
-  return null;
 }
 
 async function signOutAndReload() {

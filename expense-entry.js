@@ -5,6 +5,8 @@
   const DOM = {
     body: document.body,
     form: document.getElementById('entryForm'),
+    authGate: document.getElementById('authGate'),
+    btnLogin: document.getElementById('btnLogin'),
   };
 
   let currentUser = null;
@@ -129,7 +131,18 @@
 
   function init() {
     (async () => {
-      currentUser = await ensureSignedIn('/expense-entry.html');
+      currentUser = await getCurrentUser('/expense-entry.html');
+      if (!currentUser) {
+        DOM.form.style.display = 'none';
+        DOM.authGate.hidden = false;
+        if (DOM.btnLogin) {
+          DOM.btnLogin.onclick = () => signInWithGoogle('/expense-entry.html');
+        }
+        return;
+      }
+
+      DOM.form.style.display = '';
+      DOM.authGate.hidden = true;
       initForm();
       await syncPending();
     })();

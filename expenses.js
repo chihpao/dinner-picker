@@ -10,6 +10,8 @@
     todayTotal: document.getElementById('todayTotal'),
     weekTotal: document.getElementById('weekTotal'),
     monthTotal: document.getElementById('monthTotal'),
+    authGate: document.getElementById('authGate'),
+    btnLogin: document.getElementById('btnLogin'),
   };
 
   const state = {
@@ -206,7 +208,21 @@
   });
 
   async function init() {
-    currentUser = await ensureSignedIn('/expenses.html');
+    currentUser = await getCurrentUser('/expenses.html');
+
+    if (!currentUser) {
+      DOM.emptyState.hidden = true;
+      DOM.list.innerHTML = '';
+      if (DOM.clearBtn) DOM.clearBtn.disabled = true;
+      if (DOM.btnLogin) {
+        DOM.authGate.hidden = false;
+        DOM.btnLogin.onclick = () => signInWithGoogle('/expenses.html');
+      }
+      return;
+    }
+
+    if (DOM.clearBtn) DOM.clearBtn.disabled = false;
+    DOM.authGate.hidden = true;
     todayISO = toISODate(new Date());
 
     try {

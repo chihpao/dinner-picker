@@ -99,59 +99,63 @@ document.addEventListener('DOMContentLoaded', () => {
     return withDistance;
   }
 
-  // 距離條（統一比例 + 遠距離自動變淡）
-  function createDistanceBars(distances) {
+  // 距離摘要（突出最短，其餘精簡顯示）
+  function createDistanceSummary(distances) {
     const rows = [
       { key: 'current', label: '目前', icon: '📍', dist: distances.current },
       { key: 'home',    label: '住家', icon: '🏠', dist: distances.home },
       { key: 'work',    label: '公司', icon: '🏢', dist: distances.work },
     ].filter(r => Number.isFinite(r.dist));
 
-    if (rows.length === 0) return '<div class="distance-panel is-empty"></div>';
+    if (rows.length === 0) return '<div class="distance-summary is-empty"></div>';
 
-    const max = GLOBAL_MAX_DIST_KM;
-    const rankMap = new Map();
-    rows.slice().sort((a,b) => a.dist - b.dist).forEach((row, idx) => {
-      const tier = idx === 0 ? 'near' : idx === 1 ? 'mid' : 'far';
-      rankMap.set(row.key, tier);
-    });
+    const ranked = rows.slice().sort((a,b) => a.dist - b.dist);
+    const tierFor = (idx) => idx === 0 ? 'near' : idx === 1 ? 'mid' : 'far';
 
-    const html = rows.map(r => {
-      const ratio = r.dist / max;
-      const clamp = Math.min(1, ratio);
-      const pct = Math.max(6, clamp * 100);
-      const isFar = ratio > 1;
-      const tier = rankMap.get(r.key) || 'far';
-      return `
-        <div class="dist-row">
-          <div class="dist-meta">
-            <span class="dist-icon" aria-hidden="true">${r.icon}</span>
-            <span class="dist-label">${r.label}</span>
-          </div>
-          <div class="dist-bar" role="img" aria-label="${r.label} 距離 ${r.dist.toFixed(1)} 公里">
-            <div class="dist-fill tier-${tier} ${isFar ? 'is-out-of-range' : ''}" style="width:${pct}%; --ratio:${clamp.toFixed(3)};"></div>
-          </div>
-          <div class="dist-km tier-${tier}">${r.dist.toFixed(1)} km</div>
-        </div>
-      `;
-    }).join('');
+    const primary = ranked[0];
+    const secondaries = ranked.slice(1);
 
-    return `<div class="distance-panel">${html}</div>`;
+    const primaryHtml = `
+      <div class="dist-primary tier-${tierFor(0)}">
+        <span class="dist-icon" aria-hidden="true">${primary.icon}</span>
+        <span class="dist-label">${primary.label}</span>
+        <span class="dist-km">${primary.dist.toFixed(1)} km</span>
+      </div>
+    `;
+
+    const secondaryHtml = secondaries.length ? `
+      <div class="dist-secondary">
+        ${secondaries.map((r, idx) => {
+          const tier = tierFor(idx+1);
+          return `${idx ? ' • ' : ''}${r.icon} <span class="dist-km tier-${tier}">${r.dist.toFixed(1)} km</span>`;
+        }).join('')}
+      </div>
+    ` : '';
+
+    return `<div class="distance-summary">${primaryHtml}${secondaryHtml}</div>`;
   }
 
   function createRestaurantCard(r) {
     const { id, name, orderUrl, distances = {} } = r;
-    const avatarText = name?.trim()?.slice(0, 1) || '?';
+    const avatar = getCategoryIcon(name);
     return `
       <div class="card">
+        <button class="copy-icon-btn copy-link-btn" data-id="${id}" aria-label="複製連結">
+          <span class="copy-icon copy-default" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 9.75A2.25 2.25 0 0 1 11.25 7.5h6A2.25 2.25 0 0 1 19.5 9.75v6a2.25 2.25 0 0 1-2.25 2.25h-6A2.25 2.25 0 0 1 9 15.75v-6Z"/><path d="M5.25 14.25A2.25 2.25 0 0 1 3 12V6.75A2.75 2.75 0 0 1 5.75 4h5.5" stroke-linecap="round"/></svg>
+          </span>
+          <span class="copy-icon copy-check" aria-hidden="true" style="display:none;">
+            <svg viewBox="0 0 24 24"><path d="M5 12.5 10 17l9-10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="copy-tooltip">複製</span>
+        </button>
         <div class="card-title">
-          <div class="avatar">${avatarText}</div>
+          <div class="avatar ${avatar.bg}">${avatar.icon}</div>
           <span>${name}</span>
         </div>
-        ${createDistanceBars(distances)}
+        ${createDistanceSummary(distances)}
         <div class="card-actions">
-          <a href="${orderUrl}" target="_blank" class="btn primary" rel="noopener">前往訂購</a>
-          <button class="btn copy-link-btn" data-id="${id}">複製連結</button>
+          <a href="${orderUrl}" target="_blank" class="btn primary full-width" rel="noopener">前往訂購</a>
         </div>
       </div>
     `;
@@ -166,10 +170,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const processed = processRestaurants();
     DOM.list.innerHTML = processed.map(createRestaurantCard).join('');
     bindCardEvents();
+}
+
+  function getCategoryIcon(name = '') {
+    const n = name.toLowerCase();
+    if (n.includes('能量') || n.includes('力')) return { icon: '⚡' };
+    if (n.includes('蛋') || n.includes('肌')) return { icon: '🥚' };
+    if (n.includes('燃') || n.includes('火')) return { icon: '🔥' };
+    if (n.includes('樂') || n.includes('蔬') || n.includes('輕')) return { icon: '🥗' };
+    return { icon: '🍴' };
   }
 
-  // 複製深連結（最穩組法：取「目錄 URL」再加查詢）
-  function bindCardEvents() {
+// 複製深連結（最穩組法：取「目錄 URL」再加查詢）
+function bindCardEvents() {
     $$('.copy-link-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const shopId = e.currentTarget?.dataset?.id;
@@ -178,10 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const baseDir = new URL('.', window.location.href).toString(); // 取得目錄 URL（處理 /username/repo/）
         const url = `${baseDir}?shop=${encodeURIComponent(shopId)}&autorun=1`;
 
-        const ok = await copyText(url);
-        e.currentTarget.textContent = ok ? '已複製!' : '已顯示連結';
-        await sleep(1500);
-        e.currentTarget.textContent = '複製連結';
+        const ok = await copyText(url).catch(() => false);
+        const iconDefault = e.currentTarget.querySelector('.copy-default');
+        const iconCheck = e.currentTarget.querySelector('.copy-check');
+        if (iconDefault && iconCheck) {
+          iconDefault.style.display = 'none';
+          iconCheck.style.display = '';
+          e.currentTarget.classList.add('is-copied');
+          await sleep(1500);
+          iconDefault.style.display = '';
+          iconCheck.style.display = 'none';
+          e.currentTarget.classList.remove('is-copied');
+        }
       });
     });
   }

@@ -33,9 +33,21 @@ async function signInWithGoogle(pathname = window.location.pathname) {
 async function signOutAndReload() {
   await supa.auth.signOut();
   try {
-    // 清掉可能留下的快取 token，避免重新載入時自動復原
-    const storageKeys = Object.keys(localStorage).filter(k => k.includes('supabase.auth'));
-    storageKeys.forEach(k => localStorage.removeItem(k));
-  } catch(e){ /* noop */ }
+    // Supabase 會把 session 存在 localStorage 的 sb-<ref>-auth-token key，這裡強制清掉
+    const clearStore = (store) => {
+      if (!store) return;
+      const keys = [];
+      for (let i = 0; i < store.length; i += 1) {
+        const key = store.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase.auth'))) {
+          keys.push(key);
+        }
+      }
+      keys.forEach(k => store.removeItem(k));
+    };
+    clearStore(window.localStorage);
+    clearStore(window.sessionStorage);
+  } catch (e) { /* noop */ }
+  // 回到當前頁（去掉可能殘留的查詢字串）
   window.location.href = window.location.pathname;
 }

@@ -1,11 +1,6 @@
 // ---- 可調參數 ----
 const GLOBAL_MAX_DIST_KM = 1.2; // 距離條滿格代表的公里數（相同距離→相同條長）
 
-// ---- 小工具 ----
-const $ = (sel, el=document) => el.querySelector(sel);
-const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
 async function fetchJSON(path){
   const res = await fetch(path, { cache: 'no-store' });
   if (!res.ok) throw new Error(`fetch ${path} failed: ${res.status}`);
@@ -19,33 +14,6 @@ function haversine(lat1, lon1, lat2, lon2) {
   const dLon = toRad(lon2 - lon1);
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   return 2*R*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-// 更強韌的複製（支援舊瀏覽器/iOS）
-async function copyText(text){
-  try {
-    if (window.isSecureContext && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch(e){ /* fallthrough */ }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly','');
-    ta.style.position = 'absolute';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    const sel = document.getSelection();
-    const prev = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
-    ta.select(); ta.setSelectionRange(0, ta.value.length);
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    if (prev){ sel.removeAllRanges(); sel.addRange(prev); }
-    if (ok) return true;
-  } catch(e){ /* fallthrough */ }
-  window.prompt('複製下列連結：', text);
-  return false;
 }
 
 // ---- App ----
@@ -138,9 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function createRestaurantCard(r) {
     const { id, name, orderUrl, distances = {} } = r;
     const avatar = getCategoryIcon(name);
+    // 將 orderUrl 放到 data-url 供複製使用
     return `
       <div class="card">
-        <button class="copy-icon-btn copy-link-btn" data-id="${id}" aria-label="複製連結">
+        <button class="copy-icon-btn copy-link-btn" data-id="${id}" data-url="${orderUrl || ''}" aria-label="複製訂購連結">
           <span class="copy-icon copy-default" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M9 9.75A2.25 2.25 0 0 1 11.25 7.5h6A2.25 2.25 0 0 1 19.5 9.75v6a2.25 2.25 0 0 1-2.25 2.25h-6A2.25 2.25 0 0 1 9 15.75v-6Z"/><path d="M5.25 14.25A2.25 2.25 0 0 1 3 12V6.75A2.75 2.75 0 0 1 5.75 4h5.5" stroke-linecap="round"/></svg>
           </span>
@@ -181,27 +150,38 @@ document.addEventListener('DOMContentLoaded', () => {
     return { icon: '🍴' };
   }
 
-// 複製深連結（最穩組法：取「目錄 URL」再加查詢）
+// 複製功能：優先複製 data-url（訂購連結），若無則產生 Deep Link
 function bindCardEvents() {
     $$('.copy-link-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const shopId = e.currentTarget?.dataset?.id;
-        if (!shopId) return;
+        const targetBtn = e.currentTarget;
+        const orderUrl = targetBtn?.dataset?.url;
+        const shopId = targetBtn?.dataset?.id;
+        
+        let textToCopy = '';
 
-        const baseDir = new URL('.', window.location.href).toString(); // 取得目錄 URL（處理 /username/repo/）
-        const url = `${baseDir}?shop=${encodeURIComponent(shopId)}&autorun=1`;
+        if (orderUrl && orderUrl !== 'undefined') {
+           // 使用者希望複製「前往訂購」的連結
+           textToCopy = orderUrl;
+        } else if (shopId) {
+           // Fallback: 產生 Deep Link
+           const baseDir = new URL('.', window.location.href).toString();
+           textToCopy = `${baseDir}?shop=${encodeURIComponent(shopId)}&autorun=1`;
+        }
 
-        const ok = await copyText(url).catch(() => false);
-        const iconDefault = e.currentTarget.querySelector('.copy-default');
-        const iconCheck = e.currentTarget.querySelector('.copy-check');
+        if (!textToCopy) return;
+
+        const ok = await copyText(textToCopy).catch(() => false);
+        const iconDefault = targetBtn.querySelector('.copy-default');
+        const iconCheck = targetBtn.querySelector('.copy-check');
         if (iconDefault && iconCheck) {
           iconDefault.style.display = 'none';
           iconCheck.style.display = '';
-          e.currentTarget.classList.add('is-copied');
+          targetBtn.classList.add('is-copied');
           await sleep(1500);
           iconDefault.style.display = '';
           iconCheck.style.display = 'none';
-          e.currentTarget.classList.remove('is-copied');
+          targetBtn.classList.remove('is-copied');
         }
       });
     });

@@ -36,7 +36,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
           if (action === 'switch') {
             closeMenu();
-            signInWithGoogle(window.location.pathname);
+            // To ensure a full new login flow, sign out and reload first.
+            // This might not be ideal for a seamless "switch account" UX,
+            // but addresses "no response" by forcing re-authentication.
+            signOutAndReload().then(() => {
+              signInWithGoogle(window.location.pathname);
+            });
           }
         };
         document.addEventListener('click', closeMenu, { once: true });

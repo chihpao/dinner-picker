@@ -23,6 +23,7 @@
 }
 /* 全域 */
 *,*::before,*::after{box-sizing:border-box}
+[hidden] { display: none !important; }
 html,body{height:100%}
 body{
   margin:0;
@@ -240,3 +241,39 @@ h1{margin:0;font-family:var(--ff-heading);font-size:var(--fs-xl);line-height:1.2
 .entry-note{margin:0;color:var(--text);background:rgba(0,0,0,.04);padding:var(--sp-1);border-radius:calc(var(--radius)/2);border:1px dashed var(--chip-border)}
 .btn.btn-sm{min-height:36px;padding:4px 10px;font-size:var(--fs-xs)}
 .empty-state{margin-top:var(--sp-2);color:var(--muted);font-style:italic;text-align:center}
+
+/* Restaurant Link & Tooltip */
+.restaurant-link {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  position: relative;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.restaurant-link:hover {
+  color: var(--accent-primary-dark);
+}
+.restaurant-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: var(--fs-xs);
+  font-weight: 900;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 10;
+  box-shadow: 3px 3px 0 var(--paper);
+}
+.restaurant-link:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

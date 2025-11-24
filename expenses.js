@@ -207,42 +207,47 @@
     }
   });
 
-  async function init() {
-    currentUser = await getCurrentUser('/expenses.html');
+  function init() {
+    // 監聽登入狀態變化，確保 UI 即時反應
+    supa.auth.onAuthStateChange(async (event, session) => {
+      currentUser = session?.user ?? null;
 
-    if (!currentUser) {
-      DOM.emptyState.hidden = true;
-      DOM.list.innerHTML = '';
-      if (DOM.clearBtn) DOM.clearBtn.disabled = true;
-      if (DOM.btnLogin) {
+      if (!currentUser) {
+        DOM.emptyState.hidden = true;
+        DOM.list.innerHTML = '';
+        if (DOM.clearBtn) DOM.clearBtn.disabled = true;
+
         DOM.authGate.hidden = false;
-        DOM.btnLogin.onclick = () => signInWithGoogle('/expenses.html');
+        if (DOM.btnLogin) {
+          DOM.btnLogin.onclick = () => signInWithGoogle('/expenses.html');
+        }
+        return;
       }
-      return;
-    }
 
-    if (DOM.clearBtn) DOM.clearBtn.disabled = false;
-    DOM.authGate.hidden = true;
-    todayISO = toISODate(new Date());
+      // User is logged in
+      if (DOM.clearBtn) DOM.clearBtn.disabled = false;
+      DOM.authGate.hidden = true;
+      todayISO = toISODate(new Date());
 
-    try {
-      await syncPending(); // 先把未送出的補送
-    } catch (err) {
-      console.error('sync pending failed', err);
-    }
+      try {
+        await syncPending(); // 先把未送出的補送
+      } catch (err) {
+        console.error('sync pending failed', err);
+      }
 
-    try {
-      const remoteEntries = await fetchEntriesFromSupabase();
-      state.entries = mergePending(remoteEntries);
-      saveLocalEntries(state.entries);
-    } catch (err) {
-      console.error('Supabase 讀取失敗，改用本機資料', err);
-      state.entries = mergePending(loadLocalEntries());
-      alert('雲端讀取失敗，先顯示本機備份與待同步資料。');
-    }
+      try {
+        const remoteEntries = await fetchEntriesFromSupabase();
+        state.entries = mergePending(remoteEntries);
+        saveLocalEntries(state.entries);
+      } catch (err) {
+        console.error('Supabase 讀取失敗，改用本機資料', err);
+        state.entries = mergePending(loadLocalEntries());
+        alert('雲端讀取失敗，先顯示本機備份與待同步資料。');
+      }
 
-    renderEntries();
-    renderSummaries();
+      renderEntries();
+      renderSummaries();
+    });
   }
 
   init();

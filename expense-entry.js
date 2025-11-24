@@ -130,22 +130,23 @@
   });
 
   function init() {
-    (async () => {
-      currentUser = await getCurrentUser('/expense-entry.html');
+    // 監聽登入狀態變化，確保 UI 即時反應
+    supa.auth.onAuthStateChange(async (event, session) => {
+      currentUser = session?.user ?? null;
+
       if (!currentUser) {
         DOM.form.style.display = 'none';
         DOM.authGate.hidden = false;
         if (DOM.btnLogin) {
           DOM.btnLogin.onclick = () => signInWithGoogle('/expense-entry.html');
         }
-        return;
+      } else {
+        DOM.form.style.display = '';
+        DOM.authGate.hidden = true;
+        initForm();
+        await syncPending();
       }
-
-      DOM.form.style.display = '';
-      DOM.authGate.hidden = true;
-      initForm();
-      await syncPending();
-    })();
+    });
   }
 
   function initForm() {

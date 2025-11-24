@@ -2,11 +2,11 @@
 const GLOBAL_MAX_DIST_KM = 1.2; // 距離條滿格代表的公里數（相同距離→相同條長）
 
 // ---- 小工具 ----
-const $ = (sel, el=document) => el.querySelector(sel);
-const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+const $ = (sel, el = document) => el.querySelector(sel);
+const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function fetchJSON(path){
+async function fetchJSON(path) {
   const res = await fetch(path, { cache: 'no-store' });
   if (!res.ok) throw new Error(`fetch ${path} failed: ${res.status}`);
   return res.json();
@@ -17,22 +17,22 @@ function haversine(lat1, lon1, lat2, lon2) {
   const toRad = x => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-  return 2*R*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // 更強韌的複製（支援舊瀏覽器/iOS）
-async function copyText(text){
+async function copyText(text) {
   try {
     if (window.isSecureContext && navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
       return true;
     }
-  } catch(e){ /* fallthrough */ }
+  } catch (e) { /* fallthrough */ }
   try {
     const ta = document.createElement('textarea');
     ta.value = text;
-    ta.setAttribute('readonly','');
+    ta.setAttribute('readonly', '');
     ta.style.position = 'absolute';
     ta.style.left = '-9999px';
     document.body.appendChild(ta);
@@ -41,9 +41,9 @@ async function copyText(text){
     ta.select(); ta.setSelectionRange(0, ta.value.length);
     const ok = document.execCommand('copy');
     document.body.removeChild(ta);
-    if (prev){ sel.removeAllRanges(); sel.addRange(prev); }
+    if (prev) { sel.removeAllRanges(); sel.addRange(prev); }
     if (ok) return true;
-  } catch(e){ /* fallthrough */ }
+  } catch (e) { /* fallthrough */ }
   window.prompt('複製下列連結：', text);
   return false;
 }
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const sortKey = appState.userLocation ? 'current' : (appState.profile?.home ? 'home' : 'work');
-    withDistance.sort((a,b) => {
+    withDistance.sort((a, b) => {
       const da = a.distances?.[sortKey] ?? Infinity;
       const db = b.distances?.[sortKey] ?? Infinity;
       return da - db;
@@ -103,13 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function createDistanceSummary(distances) {
     const rows = [
       { key: 'current', label: '目前', icon: '📍', dist: distances.current },
-      { key: 'home',    label: '住家', icon: '🏠', dist: distances.home },
-      { key: 'work',    label: '公司', icon: '🏢', dist: distances.work },
+      { key: 'home', label: '住家', icon: '🏠', dist: distances.home },
+      { key: 'work', label: '公司', icon: '🏢', dist: distances.work },
     ].filter(r => Number.isFinite(r.dist));
 
     if (rows.length === 0) return '<div class="distance-summary is-empty"></div>';
 
-    const ranked = rows.slice().sort((a,b) => a.dist - b.dist);
+    const ranked = rows.slice().sort((a, b) => a.dist - b.dist);
     const tierFor = (idx) => idx === 0 ? 'near' : idx === 1 ? 'mid' : 'far';
 
     const primary = ranked[0];
@@ -126,9 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const secondaryHtml = secondaries.length ? `
       <div class="dist-secondary">
         ${secondaries.map((r, idx) => {
-          const tier = tierFor(idx+1);
-          return `${idx ? ' • ' : ''}${r.icon} <span class="dist-km tier-${tier}">${r.dist.toFixed(1)} km</span>`;
-        }).join('')}
+      const tier = tierFor(idx + 1);
+      return `${idx ? ' • ' : ''}${r.icon} <span class="dist-km tier-${tier}">${r.dist.toFixed(1)} km</span>`;
+    }).join('')}
       </div>
     ` : '';
 
@@ -151,12 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
         <div class="card-title">
           <div class="avatar ${avatar.bg}">${avatar.icon}</div>
-          <span>${name}</span>
+          <a href="${orderUrl}" target="_blank" rel="noopener" class="restaurant-link" data-tooltip="前往訂購">
+            ${name}
+          </a>
         </div>
         ${createDistanceSummary(distances)}
-        <div class="card-actions">
-          <a href="${orderUrl}" target="_blank" class="btn primary full-width" rel="noopener">前往訂購</a>
-        </div>
       </div>
     `;
   }
@@ -170,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const processed = processRestaurants();
     DOM.list.innerHTML = processed.map(createRestaurantCard).join('');
     bindCardEvents();
-}
+  }
 
   function getCategoryIcon(name = '') {
     const n = name.toLowerCase();
@@ -181,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
     return { icon: '🍴' };
   }
 
-// 複製深連結（最穩組法：取「目錄 URL」再加查詢）
-function bindCardEvents() {
+  // 複製深連結（最穩組法：取「目錄 URL」再加查詢）
+  function bindCardEvents() {
     $$('.copy-link-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const shopId = e.currentTarget?.dataset?.id;
@@ -220,7 +219,7 @@ function bindCardEvents() {
   }
 
   // 初始化：載入 JSON +（若帶 autorun）做 Deep Link
-  (async function init(){
+  (async function init() {
     // 先並行請求資料與定位
     const params = new URLSearchParams(location.search);
     const deepShop = params.get('shop');
@@ -234,7 +233,7 @@ function bindCardEvents() {
           if (!navigator.geolocation) return resolve(null);
           navigator.geolocation.getCurrentPosition(
             pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-            ()  => resolve(null),
+            () => resolve(null),
             { enableHighAccuracy: true, timeout: 8000 }
           );
         })

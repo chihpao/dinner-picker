@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatar = getCategoryIcon(name);
     return `
       <div class="card">
-        <button class="copy-icon-btn copy-link-btn" data-id="${id}" aria-label="複製連結">
+        <button class="copy-icon-btn copy-link-btn" data-id="${id}" data-url="${orderUrl}" aria-label="複製連結">
           <span class="copy-icon copy-default" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M9 9.75A2.25 2.25 0 0 1 11.25 7.5h6A2.25 2.25 0 0 1 19.5 9.75v6a2.25 2.25 0 0 1-2.25 2.25h-6A2.25 2.25 0 0 1 9 15.75v-6Z"/><path d="M5.25 14.25A2.25 2.25 0 0 1 3 12V6.75A2.75 2.75 0 0 1 5.75 4h5.5" stroke-linecap="round"/></svg>
           </span>
@@ -183,25 +183,42 @@ document.addEventListener('DOMContentLoaded', () => {
   // 複製深連結（最穩組法：取「目錄 URL」再加查詢）
   function bindCardEvents() {
     $$('.copy-link-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const shopId = e.currentTarget?.dataset?.id;
+      btn.addEventListener('click', async () => {
+        const shopId = btn.dataset.id;
+        const explicitUrl = btn.dataset.url;
         if (!shopId) return;
 
-        const baseDir = new URL('.', window.location.href).toString(); // 取得目錄 URL（處理 /username/repo/）
-        const url = `${baseDir}?shop=${encodeURIComponent(shopId)}&autorun=1`;
+        const found = appState.restaurants.find(r => r.id === shopId);
+        const orderUrl = explicitUrl || found?.orderUrl;
+        if (!orderUrl) {
+          alert('找不到訂購連結，請稍後再試');
+          return;
+        }
 
-        const ok = await copyText(url).catch(() => false);
-        const iconDefault = e.currentTarget.querySelector('.copy-default');
-        const iconCheck = e.currentTarget.querySelector('.copy-check');
+        const ok = await copyText(orderUrl).catch(() => false);
+        if (!ok) return;
+
+        const iconDefault = btn.querySelector('.copy-default');
+        const iconCheck = btn.querySelector('.copy-check');
+        const tooltip = btn.querySelector('.copy-tooltip');
+        
+        if (tooltip) tooltip.textContent = '已複製';
+        btn.classList.add('is-copied');
+        
         if (iconDefault && iconCheck) {
           iconDefault.style.display = 'none';
           iconCheck.style.display = '';
-          e.currentTarget.classList.add('is-copied');
-          await sleep(1500);
+        }
+
+        await sleep(1500);
+        
+        if (iconDefault && iconCheck) {
           iconDefault.style.display = '';
           iconCheck.style.display = 'none';
-          e.currentTarget.classList.remove('is-copied');
         }
+        
+        btn.classList.remove('is-copied');
+        if (tooltip) tooltip.textContent = '複製';
       });
     });
   }

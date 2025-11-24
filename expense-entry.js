@@ -10,6 +10,7 @@
   };
 
   let currentUser = null;
+  let hasBootstrappedUser = false;
 
   function loadLocalEntries() {
     try {
@@ -141,23 +142,45 @@
     })();
   });
 
-  function init() {
-    // 監聽登入狀態變化，確保 UI 即時反應
-    supa.auth.onAuthStateChange(async (event, session) => {
-      currentUser = session?.user ?? null;
+  async function applyAuthState(user) {
+    const userChanged = user?.id !== currentUser?.id;
+    currentUser = user ?? null;
 
-      if (!currentUser) {
-        DOM.form.style.display = 'none';
-        DOM.authGate.hidden = false;
-        if (DOM.btnLogin) {
-          DOM.btnLogin.onclick = () => signInWithGoogle('/expense-entry.html');
-        }
-      } else {
-        DOM.form.style.display = '';
-        DOM.authGate.hidden = true;
-        initForm();
-        await syncPending();
+    if (!currentUser) {
+      hasBootstrappedUser = false;
+      DOM.form.style.display = 'none';
+      DOM.authGate.hidden = false;
+      if (DOM.btnLogin) {
+        DOM.btnLogin.onclick = () => signInWithGoogle('/expense-entry.html');
       }
+      return;
+    }
+
+    DOM.form.style.display = '';
+    DOM.authGate.hidden = true;
+
+    if (!hasBootstrappedUser || userChanged) {
+      initForm();
+      try {
+        await syncPending();
+      } catch (err) {
+        console.error('sync pending failed', err);
+      }
+      hasBootstrappedUser = true;
+    }
+  }
+
+  async function init() {
+    try {
+      const initialUser = await getCurrentUser('/expense-entry.html');
+      await applyAuthState(initialUser);
+    } catch (err) {
+      console.error('Failed to read current session', err);
+    }
+
+    // 監聽登入狀態變化，確保 UI 即時反應
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      await applyAuthState(session?.user ?? null);
     });
   }
 

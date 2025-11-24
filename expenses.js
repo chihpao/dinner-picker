@@ -20,6 +20,8 @@
   };
 
   let currentUser = null;
+  let lastUserId = null;
+  let hasLoadedForUser = false;
   let todayISO = toISODate(new Date());
 
   function loadLocalEntries() {
@@ -162,6 +164,29 @@
     DOM.monthTotal.textContent = formatCurrency(totals.month);
   }
 
+  async function loadEntriesForUser() {
+    try {
+      await syncPending(); // 先把未送出的補送
+    } catch (err) {
+      console.error('sync pending failed', err);
+    }
+
+    try {
+      const remoteEntries = await fetchEntriesFromSupabase();
+      // 合併遠端與本地 Pending (Pending 優先)
+      state.entries = mergePending(remoteEntries);
+      // 更新本地快取
+      saveLocalEntries(state.entries);
+    } catch (err) {
+      console.error('Supabase 讀取失敗，改用本機資料', err);
+      // 讀取失敗時，載入本地快取並合併 Pending
+      state.entries = mergePending(loadLocalEntries());
+    }
+
+    renderEntries();
+    renderSummaries();
+  }
+
   function escapeHTML(text = '') {
     return text.replace(/[&<>"']/g, c => ({
       '&': '&amp;',
@@ -207,52 +232,50 @@
     }
   });
 
-  function init() {
-    // 監聽登入狀態變化，確保 UI 即時反應
-    supa.auth.onAuthStateChange(async (event, session) => {
-      currentUser = session?.user ?? null;
+  async function applyAuthState(user) {
+    const userChanged = user?.id !== lastUserId;
+    currentUser = user ?? null;
 
-      if (!currentUser) {
-        DOM.emptyState.hidden = true;
-        DOM.list.innerHTML = '';
-        if (DOM.clearBtn) DOM.clearBtn.disabled = true;
+    if (!currentUser) {
+      lastUserId = null;
+      hasLoadedForUser = false;
+      state.entries = [];
+      DOM.emptyState.hidden = true;
+      DOM.list.innerHTML = '';
+      if (DOM.clearBtn) DOM.clearBtn.disabled = true;
 
-        DOM.authGate.hidden = false;
-        if (DOM.btnLogin) {
-          DOM.btnLogin.onclick = () => signInWithGoogle('/expenses.html');
-        }
-        return;
+      DOM.authGate.hidden = false;
+      if (DOM.btnLogin) {
+        DOM.btnLogin.onclick = () => signInWithGoogle('/expenses.html');
       }
+      return;
+    }
 
-      // User is logged in
-      if (DOM.clearBtn) DOM.clearBtn.disabled = false;
-      DOM.authGate.hidden = true;
-      todayISO = toISODate(new Date());
+    lastUserId = currentUser.id;
+    todayISO = toISODate(new Date());
+    if (DOM.clearBtn) DOM.clearBtn.disabled = false;
+    DOM.authGate.hidden = true;
 
-      try {
-        await syncPending(); // 先把未送出的補送
-      } catch (err) {
-        console.error('sync pending failed', err);
-      }
-
-      try {
-        const remoteEntries = await fetchEntriesFromSupabase();
-        // 合併遠端與本地 Pending (Pending 優先)
-        state.entries = mergePending(remoteEntries);
-        // 更新本地快取
-        saveLocalEntries(state.entries);
-      } catch (err) {
-        console.error('Supabase 讀取失敗，改用本機資料', err);
-        // 讀取失敗時，載入本地快取並合併 Pending
-        state.entries = mergePending(loadLocalEntries());
-        // 只有在完全沒有資料時才提示，避免每次重新整理都跳 alert 干擾
-        if (state.entries.length === 0) {
-          // Optional: show toast or small error
-        }
-      }
-
+    if (!hasLoadedForUser || userChanged) {
+      hasLoadedForUser = true;
+      await loadEntriesForUser();
+    } else {
       renderEntries();
       renderSummaries();
+    }
+  }
+
+  async function init() {
+    try {
+      const initialUser = await getCurrentUser('/expenses.html');
+      await applyAuthState(initialUser);
+    } catch (err) {
+      console.error('Failed to read current session', err);
+    }
+
+    // 監聽登入狀態變化，確保 UI 即時反應
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      await applyAuthState(session?.user ?? null);
     });
   }
 

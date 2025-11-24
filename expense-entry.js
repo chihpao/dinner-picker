@@ -89,43 +89,55 @@
 
   DOM.form.addEventListener('submit', (event) => {
     event.preventDefault();
+
+    // 嚴格檢查登入狀態
+    if (!currentUser || !currentUser.id) {
+      alert('請先登入才能記帳');
+      return;
+    }
+
     const formData = new FormData(DOM.form);
-    const amount = Number(formData.get('amount'));
-    if (!Number.isFinite(amount) || amount <= 0) {
+    const amountVal = formData.get('amount');
+    const amount = Number(amountVal);
+
+    if (!amountVal || !Number.isFinite(amount) || amount <= 0) {
       alert('請輸入正確的金額');
       return;
     }
 
     const entry = {
-      id: crypto.randomUUID?.() ?? `${Date.now()}`,
+      id: generateUUID(),
       date: formData.get('date') || toISODate(new Date()),
       amount: Math.round(amount),
       note: '',
       createdAt: Date.now(),
-      user_id: currentUser?.id,
+      user_id: currentUser.id,
     };
 
     (async () => {
-      // 先存 pending，確保不遺失
+      // 1. Optimistic Save: 先存入 Pending
       const pending = loadPendingEntries();
       pending.unshift(entry);
       savePendingEntries(pending);
 
       try {
+        // 2. 嘗試同步到雲端
         await saveToSupabase(entry);
 
-        // 雲端成功後，移除 pending，並保留一份本機備份
+        // 3. 同步成功：從 Pending 移除，並更新本機快取
         const remainingPending = loadPendingEntries().filter(e => e.id !== entry.id);
         savePendingEntries(remainingPending);
 
         const entries = loadLocalEntries();
         entries.unshift(entry);
         saveLocalEntries(entries);
-
-        window.location.href = './expenses.html';
       } catch (err) {
-        alert(`雲端同步失敗，但已先保存在本機，之後會自動再試。\n${err.message}`);
+        console.warn('雲端同步失敗，保留在 Pending 稍後重試', err);
+        // 這裡不 alert，以免打斷使用者流程，因為已經有本機備份了
       }
+
+      // 4. 轉跳回列表頁
+      window.location.href = './expenses.html';
     })();
   });
 

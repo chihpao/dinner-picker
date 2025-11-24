@@ -237,12 +237,18 @@
 
       try {
         const remoteEntries = await fetchEntriesFromSupabase();
+        // 合併遠端與本地 Pending (Pending 優先)
         state.entries = mergePending(remoteEntries);
+        // 更新本地快取
         saveLocalEntries(state.entries);
       } catch (err) {
         console.error('Supabase 讀取失敗，改用本機資料', err);
+        // 讀取失敗時，載入本地快取並合併 Pending
         state.entries = mergePending(loadLocalEntries());
-        alert('雲端讀取失敗，先顯示本機備份與待同步資料。');
+        // 只有在完全沒有資料時才提示，避免每次重新整理都跳 alert 干擾
+        if (state.entries.length === 0) {
+          // Optional: show toast or small error
+        }
       }
 
       renderEntries();

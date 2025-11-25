@@ -6,9 +6,14 @@ export const useAuth = () => {
     const user = useState<User | null>('user', () => null)
     const loading = useState('auth-loading', () => true)
 
+    const config = useRuntimeConfig()
+
     const authRedirectUrl = (pathname = '/') => {
         if (import.meta.client) {
-            return `${window.location.origin}${pathname}`
+            const baseURL = config.app.baseURL
+            // Remove leading slash from pathname if present to avoid double slash with baseURL
+            const cleanPath = pathname.startsWith('/') ? pathname.substring(1) : pathname
+            return `${window.location.origin}${baseURL}${cleanPath}`
         }
         return ''
     }

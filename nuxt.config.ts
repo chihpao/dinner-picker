@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     head: {
       title: '孜保吃晚餐',
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+        { rel: 'icon', type: 'image/png', href: '/dinner-picker/favicon.png' }
       ]
     }
   },

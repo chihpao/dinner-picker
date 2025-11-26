@@ -5,13 +5,16 @@
 </template>
 
 <script setup lang="ts">
-const { initAuth } = useAuth()
+const { initAuth, user } = useAuth()
 const { fetchRestaurants } = useRestaurants()
 const { loadEntries } = useExpenses()
 
 onMounted(() => {
   initAuth()
   fetchRestaurants()
-  loadEntries()
 })
+
+watch(user, () => {
+  loadEntries()
+}, { immediate: true })
 </script>

@@ -75,12 +75,11 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--ink);
   box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  padding: 16px;
+  padding: 12px;
   position: relative;
   transition: transform 0.1s, box-shadow 0.1s;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 /* Window Title Bar Effect (Optional, can be added via ::before if needed, 
@@ -89,16 +88,15 @@ h1, h2, h3, h4, h5, h6 {
   transform: translate(-2px, -2px);
   box-shadow: calc(var(--shadow-depth) + 2px) calc(var(--shadow-depth) + 2px) 0 var(--ink);
 }
-
 .card-title {
   font-size: 20px;
   color: var(--ink);
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: 15px;
+  margin-bottom: 4px;
   border-bottom: 2px dashed var(--ink-dim);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
 }
 
 /* ========= Component: Pixel Button ========= */
@@ -216,7 +214,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ========= Layout: Grid ========= */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 64px; /* Increased from 32px */
 }
 
@@ -235,8 +233,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ========= Component: Distance Badge ========= */
 .distance-summary {
-  margin-top: 8px; /* Fixed spacing instead of pushing to bottom */
-  padding-top: 8px;
+  margin-top: 4px; /* Fixed spacing instead of pushing to bottom */
+  padding-top: 4px;
 }
 
 .dist-primary {

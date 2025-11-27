@@ -7,7 +7,7 @@
       </template>
       <template #bottom>
         <div id="toolbar" class="toolbar">
-          <button v-if="!userLocation" @click="requestLocation" class="btn danger">📍 允許目前位置</button>
+          <button v-if="!userLocation && !hasAllowedLocation" @click="requestLocation" class="btn danger">📍 允許目前位置</button>
         </div>
       </template>
     </AppHeader>
@@ -34,9 +34,9 @@
 useHead({
   title: '今晚吃哪家？',
   meta: [
-    { name: 'theme-color', content: '#1b1b1b' }
+    { name: 'theme-color', content: '#e3f2fd' }
   ]
 })
 
-const { processedRestaurants, isLoading, userLocation, requestLocation } = useRestaurants()
+const { processedRestaurants, isLoading, userLocation, requestLocation, hasAllowedLocation } = useRestaurants()
 </script>

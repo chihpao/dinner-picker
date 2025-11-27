@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 export interface Restaurant {
     id: string
@@ -23,6 +23,7 @@ export const useRestaurants = () => {
     const profile = useState<Profile | null>('profile', () => null)
     const userLocation = useState<{ lat: number; lng: number } | null>('userLocation', () => null)
     const isLoading = useState('restaurants-loading', () => true)
+    const hasAllowedLocation = useState('has-allowed-location', () => false)
 
     const fetchRestaurants = async () => {
         try {
@@ -47,6 +48,8 @@ export const useRestaurants = () => {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+                localStorage.setItem('locationAllowed', 'true')
+                hasAllowedLocation.value = true
             },
             () => {
                 alert("定位失敗，請檢查您的定位權限設定。")
@@ -54,6 +57,13 @@ export const useRestaurants = () => {
             { enableHighAccuracy: true, timeout: 8000 }
         )
     }
+
+    onMounted(() => {
+        if (localStorage.getItem('locationAllowed') === 'true') {
+            hasAllowedLocation.value = true
+            requestLocation()
+        }
+    })
 
     const processedRestaurants = computed(() => {
         const withDistance = restaurants.value.map(r => {
@@ -88,6 +98,7 @@ export const useRestaurants = () => {
         isLoading,
         processedRestaurants,
         fetchRestaurants,
-        requestLocation
+        requestLocation,
+        hasAllowedLocation
     }
 }

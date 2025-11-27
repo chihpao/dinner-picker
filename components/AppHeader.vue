@@ -21,6 +21,7 @@
               {{ userInitial }}
             </button>
             <div class="auth-menu" :class="{ open: menuOpen }">
+              <button @click="switchAccount">切換帳號</button>
               <button @click="signOut">登出</button>
             </div>
           </div>
@@ -46,6 +47,11 @@ const userInitial = computed(() => {
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
+}
+
+const switchAccount = () => {
+  signInWithGoogle()
+  menuOpen.value = false
 }
 
 // Close menu when clicking outside

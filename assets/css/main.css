@@ -45,7 +45,15 @@
 }
 
 /* Global Reset & Typography */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
+  margin: 0;
+  padding: 0;
   background-color: var(--bg-body);
   color: var(--ink);
   font-family: var(--font-pixel);
@@ -58,10 +66,29 @@ body {
   -webkit-font-smoothing: none;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-pixel);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
 .wrap {
   max-width: 1024px;
   margin: 0 auto;
   padding: 32px 16px 64px;
+  width: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -75,11 +102,12 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--ink);
   box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  padding: 12px;
+  padding: 14px 16px 16px;
   position: relative;
   transition: transform 0.1s, box-shadow 0.1s;
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 /* Window Title Bar Effect (Optional, can be added via ::before if needed, 
@@ -93,10 +121,22 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--ink);
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 4px;
   border-bottom: 2px dashed var(--ink-dim);
   padding-bottom: 8px;
+  padding-right: 52px; /* keep clear of copy button on tight screens */
+  line-height: 1.3;
+  flex-wrap: wrap;
+}
+
+.restaurant-link {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  min-width: 0;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 /* ========= Component: Pixel Button ========= */
@@ -122,6 +162,11 @@ h1, h2, h3, h4, h5, h6 {
 .btn:active {
   transform: translate(var(--shadow-depth), var(--shadow-depth));
   box-shadow: 0 0 0 var(--ink);
+}
+
+.btn.btn-sm {
+  height: 36px;
+  padding: 0 14px;
 }
 
 .btn:hover {
@@ -198,10 +243,38 @@ h1, h2, h3, h4, h5, h6 {
   gap: 20px;
 }
 
+.hero-title-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px 6px;
+  background: var(--bg-paper);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+}
+
 .hero-actions {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.auth-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
 }
 
 /* Toolbar (Location) */
@@ -209,6 +282,8 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 20px;
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 /* ========= Layout: Grid ========= */
@@ -235,6 +310,9 @@ h1, h2, h3, h4, h5, h6 {
 .distance-summary {
   margin-top: 4px; /* Fixed spacing instead of pushing to bottom */
   padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .dist-primary {
@@ -255,6 +333,9 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 4px;
   font-size: 12px;
   color: var(--ink-dim);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 /* ========= Component: Copy Button ========= */
@@ -373,6 +454,34 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--primary);
 }
 
+.panel {
+  background: var(--bg-paper);
+  border: var(--border-width) solid var(--ink);
+  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel-header,
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.expense-main {
+  display: grid;
+  gap: 16px;
+}
+
+.expense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .entry-card {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--ink);
@@ -381,12 +490,52 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 4px 4px 0 var(--ink-dim);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .entry-amount {
   font-size: 20px;
   color: var(--accent);
   font-weight: bold;
+}
+
+.entry-note {
+  color: var(--ink-dim);
+}
+
+.empty-state,
+.auth-gate {
+  background: var(--bg-body);
+  border: 2px dashed var(--ink-dim);
+  padding: 16px;
+  text-align: center;
+}
+
+.expense-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.summary-card {
+  background: var(--bg-paper);
+  border: var(--border-width) solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 12px;
+}
+
+.summary-label {
+  color: var(--ink-dim);
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.summary-amount {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 /* Auth Menu */
@@ -450,10 +599,28 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile */
 @media (max-width: 600px) {
   .wrap { padding: 16px; }
+  .hero { padding: 18px; }
+  .hero h1 { font-size: 26px; text-shadow: 2px 2px 0 var(--ink); }
+  .hero-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .hero-actions { width: 100%; justify-content: flex-start; flex-direction: column; align-items: stretch; }
+  .hero-actions .btn,
+  .hero-actions .btn-google { width: 100%; justify-content: center; }
+  .auth-bar { width: 100%; justify-content: space-between; }
+
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .btn { width: 100%; }
+
   .grid {
     grid-template-columns: 1fr;
-    gap: 48px; /* Explicit large gap for mobile */
+    gap: 32px; /* Explicit large gap for mobile */
   }
-  .hero-header { flex-direction: column; align-items: flex-start; }
-  .hero-actions { width: 100%; justify-content: space-between; }
+  .card { padding: 14px 14px 12px; }
+  .card-title { font-size: 18px; padding-right: 56px; }
+  .avatar { width: 42px; height: 42px; }
+  .dist-primary { width: 100%; justify-content: space-between; }
+  .dist-secondary { font-size: 13px; }
+
+  .panel { padding: 16px; }
+  .entry-card { flex-direction: column; align-items: flex-start; }
+  .expense-summary-grid { grid-template-columns: 1fr; }
 }

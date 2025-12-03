@@ -255,14 +255,17 @@ export const useExpenses = () => {
         weekEnd.setDate(weekEnd.getDate() + 7)
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
         const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+        const yearStart = new Date(today.getFullYear(), 0, 1)
+        const yearEnd = new Date(today.getFullYear() + 1, 0, 1)
 
         return entries.value.reduce((acc, entry) => {
             const entryDate = parseISODate(entry.date)
             if (isSameDay(entryDate, today)) acc.today += entry.amount
             if (entryDate >= weekStart && entryDate < weekEnd) acc.week += entry.amount
             if (entryDate >= monthStart && entryDate < monthEnd) acc.month += entry.amount
+            if (entryDate >= yearStart && entryDate < yearEnd) acc.year += entry.amount
             return acc
-        }, { today: 0, week: 0, month: 0 })
+        }, { today: 0, week: 0, month: 0, year: 0 })
     })
 
     return {

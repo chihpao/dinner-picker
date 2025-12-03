@@ -504,6 +504,13 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--ink-dim);
 }
 
+.entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .entry-actions {
   display: flex;
   gap: 8px;
@@ -561,13 +568,6 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 
-.checkbox-field {
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  width: auto;
-}
-
 .quick-actions {
   display: flex;
   align-items: center;
@@ -594,6 +594,46 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
 }
 
+.checkbox-square {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ink);
+  background: var(--bg-paper);
+  box-shadow: 1px 1px 0 var(--ink-dim);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+
+.checkbox-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: 2px solid var(--ink);
+  background: var(--bg-paper);
+  box-shadow: 2px 2px 0 var(--ink-dim);
+}
+
+.checkbox-square:checked {
+  background: var(--primary);
+  border-color: var(--ink);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.checkbox-square:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--bg-paper);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.checkbox-square:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 .modal-overlay {
   position: fixed;
   inset: 0;

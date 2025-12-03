@@ -45,8 +45,8 @@
       <article v-for="entry in sortedEntries" :key="entry.id" class="entry-card">
         <template v-if="editingId === entry.id">
           <div class="entry-meta">
-            <label class="inline-field checkbox-field">
-              <input type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+            <label class="checkbox-pill">
+              <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
             </label>
             <label class="inline-field">
               <span>日期</span>
@@ -80,8 +80,8 @@
         </template>
         <template v-else>
           <div class="entry-meta">
-            <label class="inline-field checkbox-field">
-              <input type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+            <label class="checkbox-pill">
+              <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
             </label>
             <p class="entry-date">{{ formatDate(entry.date) }}</p>
           </div>

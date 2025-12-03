@@ -504,6 +504,85 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--ink-dim);
 }
 
+.entry-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.entry-card .inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.entry-card .inline-field input {
+  width: 100%;
+  padding: 10px;
+  border: var(--border-width) solid var(--ink);
+  font-family: var(--font-pixel);
+  background: #fff;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 16px;
+}
+
+.modal-card {
+  background: var(--bg-paper);
+  border: var(--border-width) solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink-dim);
+  padding: 20px;
+  max-width: 420px;
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+
+.modal-card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.modal-card p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modal-card .inline-field {
+  display: grid;
+  gap: 6px;
+}
+
+.modal-card .inline-field input {
+  width: 100%;
+  padding: 10px;
+  border: var(--border-width) solid var(--ink);
+  font-family: var(--font-pixel);
+  background: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.helper-text {
+  font-size: 14px;
+}
+
+.danger-text {
+  color: var(--accent);
+}
+
 .empty-state,
 .auth-gate {
   background: var(--bg-body);

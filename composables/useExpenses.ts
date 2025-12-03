@@ -186,13 +186,55 @@ export const useExpenses = () => {
             entries.value = entries.value.filter(e => e.id !== id)
             saveLocalEntries(entries.value)
         } catch (err) {
-            alert(`刪除失敗：${err.message}`)
+            alert(`刪除失敗：${(err as Error).message}`)
+        }
+    }
+
+    const updateEntry = async (updated: ExpenseEntry) => {
+        if (!user.value) return
+        const original = entries.value.find(e => e.id === updated.id)
+        if (!original) return
+
+        // Keep immutable data while applying edits
+        const merged: ExpenseEntry = {
+            ...original,
+            ...updated,
+            user_id: user.value.id,
+        }
+        const previousEntries = [...entries.value]
+
+        // Update UI + local cache optimistically
+        entries.value = entries.value.map(e => e.id === merged.id ? merged : e)
+        saveLocalEntries(entries.value)
+
+        // If the entry is still pending sync, only update local pending store
+        const pending = loadPendingEntries()
+        const pendingIndex = pending.findIndex(e => e.id === merged.id)
+        if (pendingIndex !== -1) {
+            pending[pendingIndex] = merged
+            savePendingEntries(pending)
+            return
+        }
+
+        try {
+            const { error } = await supa.from(TABLE)
+                .update({
+                    date: merged.date,
+                    amount: merged.amount,
+                    note: merged.note ?? '',
+                })
+                .eq('id', merged.id)
+                .eq('user_id', user.value.id)
+            if (error) throw error
+        } catch (err) {
+            entries.value = previousEntries
+            saveLocalEntries(previousEntries)
+            alert(`更新失敗：${(err as Error).message}`)
         }
     }
 
     const clearAll = async () => {
         if (!user.value) return
-        if (!confirm('確定要刪除所有紀錄嗎？此操作無法復原。')) return
 
         try {
             const { error } = await supa.from(TABLE).delete().eq('user_id', user.value.id)
@@ -201,7 +243,7 @@ export const useExpenses = () => {
             saveLocalEntries([])
             savePendingEntries([])
         } catch (err) {
-            alert(`清空失敗：${err.message}`)
+            alert(`清空失敗：${(err as Error).message}`)
         }
     }
 
@@ -230,6 +272,7 @@ export const useExpenses = () => {
         loadEntries,
         addEntry,
         deleteEntry,
+        updateEntry,
         clearAll
     }
 }

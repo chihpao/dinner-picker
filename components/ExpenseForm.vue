@@ -60,9 +60,9 @@ const route = useRoute()
 
 const showAccount = computed(() => props.ledger === 'total')
 const entryText = computed(() => props.ledger === 'food' ? '食物記帳' : '記帳')
-const titleText = computed(() => props.ledger === 'food' ? '食物記帳' : '總記帳')
+const titleText = computed(() => props.ledger === 'food' ? '食物記帳' : '全消費總覽')
 const signInRedirect = computed(() => props.ledger === 'food' ? '/expense-entry' : '/total/entry')
-const redirectPath = computed(() => props.ledger === 'food' ? '/expenses' : '/total/expenses')
+const redirectPath = computed(() => props.ledger === 'food' ? '/expenses' : '/total')
 const notePlaceholder = computed(() => props.ledger === 'food' ? '午餐、晚餐...' : '交通、購物...')
 
 const backPath = computed(() => {

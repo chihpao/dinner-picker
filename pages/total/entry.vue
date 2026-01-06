@@ -11,7 +11,7 @@ watch(user, () => {
 }, { immediate: true })
 
 useHead({
-  title: '總記帳｜今晚吃哪家？',
+  title: '全消費總覽｜今晚吃哪家？',
   meta: [
     { name: 'theme-color', content: '#1b1b1b' }
   ]

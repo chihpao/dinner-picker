@@ -2,8 +2,8 @@
   <div>
     <AppHeader title="帳戶管理" :is-expenses="true" back-to="/total">
       <template #actions>
-        <NuxtLink to="/total/entry?from=/total/accounts" class="btn" aria-label="新增總記帳">📝 新增記帳</NuxtLink>
-        <NuxtLink to="/total/expenses" class="btn" aria-label="查看總記帳消費總覽">📊 消費總覽</NuxtLink>
+        <NuxtLink to="/total/entry?from=/total/accounts" class="btn" aria-label="新增記帳">📝 新增記帳</NuxtLink>
+        <NuxtLink to="/total" class="btn" aria-label="查看全消費總覽">📊 全消費總覽</NuxtLink>
       </template>
       <template #bottom>
         <ExpenseSummary ledger="total" />

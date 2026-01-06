@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 
 export interface ExpenseEntry {
     id: string
@@ -7,18 +7,45 @@ export interface ExpenseEntry {
     note: string
     createdAt: number
     user_id: string
+    account_id?: string | null
 }
 
-export const useExpenses = () => {
-    const STORAGE_KEY = 'dinnerPicker.expenses.v1'
-    const PENDING_KEY = 'dinnerPicker.expenses.pending'
-    const TABLE = 'expenses'
+type LedgerKind = 'food' | 'total'
+
+const ledgerConfig: Record<LedgerKind, {
+    storageKey: string
+    pendingKey: string
+    table: string
+    statePrefix: string
+    includeAccount: boolean
+}> = {
+    food: {
+        storageKey: 'dinnerPicker.expenses.v1',
+        pendingKey: 'dinnerPicker.expenses.pending',
+        table: 'expenses',
+        statePrefix: 'expense',
+        includeAccount: false
+    },
+    total: {
+        storageKey: 'dinnerPicker.total.expenses.v1',
+        pendingKey: 'dinnerPicker.total.expenses.pending',
+        table: 'total_expenses',
+        statePrefix: 'total-expense',
+        includeAccount: true
+    }
+}
+
+export const useExpenses = (ledger: LedgerKind = 'food') => {
+    const config = ledgerConfig[ledger]
+    const STORAGE_KEY = config.storageKey
+    const PENDING_KEY = config.pendingKey
+    const TABLE = config.table
 
     const supa = useSupabase()
     const { user } = useAuth()
 
-    const entries = useState<ExpenseEntry[]>('expense-entries', () => [])
-    const loading = useState('expenses-loading', () => false)
+    const entries = useState<ExpenseEntry[]>(`${config.statePrefix}-entries`, () => [])
+    const loading = useState(`${config.statePrefix}-loading`, () => false)
 
     // Loaders
     const loadLocalEntries = (): ExpenseEntry[] => {
@@ -89,6 +116,7 @@ export const useExpenses = () => {
             note: entry.note ?? '',
             createdAt: entry.created_at ? new Date(entry.created_at).getTime() : Date.now(),
             user_id: entry.user_id,
+            account_id: entry.account_id ?? null,
         }))
     }
 
@@ -106,6 +134,7 @@ export const useExpenses = () => {
                     note: entry.note ?? '',
                     created_at: new Date(entry.createdAt).toISOString(),
                     user_id: user.value.id,
+                    ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
                 }
                 const { error } = await supa.from(TABLE).insert(payload)
                 if (error) throw error
@@ -165,6 +194,7 @@ export const useExpenses = () => {
                 note: entry.note ?? '',
                 created_at: new Date(entry.createdAt).toISOString(),
                 user_id: user.value.id,
+                ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
             }
             const { error } = await supa.from(TABLE).insert(payload)
             if (error) throw error
@@ -222,6 +252,7 @@ export const useExpenses = () => {
                     date: merged.date,
                     amount: merged.amount,
                     note: merged.note ?? '',
+                    ...(config.includeAccount ? { account_id: merged.account_id ?? null } : {}),
                 })
                 .eq('id', merged.id)
                 .eq('user_id', user.value.id)
@@ -279,3 +310,6 @@ export const useExpenses = () => {
         clearAll
     }
 }
+
+export const useFoodExpenses = () => useExpenses('food')
+export const useTotalExpenses = () => useExpenses('total')

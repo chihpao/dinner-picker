@@ -9,13 +9,14 @@ export const useAuth = () => {
     const config = useRuntimeConfig()
 
     const authRedirectUrl = (pathname = '/') => {
-        if (import.meta.client) {
-            const baseURL = config.app.baseURL
-            // Remove leading slash from pathname if present to avoid double slash with baseURL
-            const cleanPath = pathname.startsWith('/') ? pathname.substring(1) : pathname
-            return `${window.location.origin}${baseURL}${cleanPath}`
-        }
-        return ''
+        if (!import.meta.client) return ''
+
+        const origin = window.location.origin
+        const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(window.location.hostname)
+        const baseURL = isLocalhost ? '/' : config.app.baseURL
+        // Remove leading slash from pathname if present to avoid double slash with baseURL
+        const cleanPath = pathname.startsWith('/') ? pathname.substring(1) : pathname
+        return `${origin}${baseURL}${cleanPath}`
     }
 
     const getCurrentUser = async () => {

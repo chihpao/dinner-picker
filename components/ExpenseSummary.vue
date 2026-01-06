@@ -26,12 +26,23 @@
         <p class="summary-label">{{ viewLabel }}</p>
         <p class="summary-amount">{{ formatCurrency(viewAmount) }}</p>
       </article>
+      <article v-if="showPerPerson" class="summary-card">
+        <p class="summary-label">本週每人</p>
+        <p class="summary-amount">{{ formatCurrency(perPersonAmount) }}</p>
+      </article>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-const { summaries } = useExpenses()
+const props = withDefaults(defineProps<{
+  ledger?: 'food' | 'total'
+}>(), {
+  ledger: 'food'
+})
+
+const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
+const { summaries } = expenses
 const collapsed = ref(false)
 const viewMode = ref<'week' | 'month' | 'year'>('week')
 
@@ -52,4 +63,7 @@ const viewAmount = computed(() => {
   if (viewMode.value === 'month') return summaries.value.month
   return summaries.value.year
 })
+
+const showPerPerson = computed(() => props.ledger === 'food' && viewMode.value === 'week')
+const perPersonAmount = computed(() => summaries.value.week / 2)
 </script>

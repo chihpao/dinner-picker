@@ -2,7 +2,7 @@
   <section class="panel">
     <div class="panel-header">
       <div class="panel-title-group">
-        <h2>紀錄列表</h2>
+        <h2>{{ listTitle }}</h2>
         <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
       </div>
       <div class="panel-actions">
@@ -69,6 +69,15 @@
             <button class="btn btn-sm" type="button" @click="adjustAmount(10)">+10</button>
             <button class="btn btn-sm" type="button" @click="adjustAmount(100)">+100</button>
           </div>
+          <label v-if="showAccount" class="inline-field">
+            <span>帳戶</span>
+            <select v-model="editForm.account_id">
+              <option value="">未指定</option>
+              <option v-for="account in accounts" :key="account.id" :value="account.id">
+                {{ account.name }}（{{ accountKindLabel(account.kind) }}）
+              </option>
+            </select>
+          </label>
           <label class="inline-field">
             <span>備註</span>
             <input type="text" v-model="editForm.note" placeholder="備註">
@@ -86,6 +95,7 @@
             <p class="entry-date">{{ formatDate(entry.date) }}</p>
           </div>
           <p class="entry-amount">{{ formatCurrency(entry.amount) }}</p>
+          <p v-if="showAccount" class="entry-account">{{ accountLabel(entry.account_id) }}</p>
           <p v-if="entry.note" class="entry-note">{{ entry.note }}</p>
           <div class="entry-actions">
             <button class="btn btn-sm" @click="startEdit(entry)" type="button">編輯</button>
@@ -138,7 +148,7 @@
 
     <!-- Mobile bottom toolbar -->
     <div class="mobile-toolbar" aria-label="主要操作">
-      <NuxtLink class="btn" to="/expense-entry?from=/expenses">新增記帳</NuxtLink>
+      <NuxtLink class="btn" :to="entryPath">{{ addLabel }}</NuxtLink>
       <button class="btn" type="button" @click="cycleSort">
         排序：{{ sortLabel }}
       </button>
@@ -151,14 +161,28 @@
 <script setup lang="ts">
 import type { ExpenseEntry } from '~/composables/useExpenses'
 
+const props = withDefaults(defineProps<{
+  ledger?: 'food' | 'total'
+}>(), {
+  ledger: 'food'
+})
+
 const { user } = useAuth()
-const { entries, deleteEntry, updateEntry, clearAll } = useExpenses()
+const { accounts } = useAccounts()
+const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
+const { entries, deleteEntry, updateEntry, clearAll } = expenses
+
+const showAccount = computed(() => props.ledger === 'total')
+const listTitle = computed(() => props.ledger === 'food' ? '食物紀錄列表' : '消費紀錄列表')
+const addLabel = computed(() => props.ledger === 'food' ? '新增食物記帳' : '新增記帳')
+const entryPath = computed(() => props.ledger === 'food' ? '/expense-entry?from=/expenses' : '/total/entry?from=/total/expenses')
 
 const editingId = ref<string | null>(null)
 const editForm = reactive({
   date: '',
   amount: 0 as number,
-  note: ''
+  note: '',
+  account_id: '' as string
 })
 const deleteTargetId = ref<string | null>(null)
 const bulkModalOpen = ref(false)
@@ -195,6 +219,7 @@ const startEdit = (entry: ExpenseEntry) => {
   editForm.date = entry.date
   editForm.amount = entry.amount
   editForm.note = entry.note ?? ''
+  editForm.account_id = entry.account_id ?? ''
 }
 
 const cancelEdit = () => {
@@ -223,7 +248,8 @@ const saveEdit = async () => {
     ...target,
     date: editForm.date,
     amount: Math.round(editForm.amount),
-    note: editForm.note ?? ''
+    note: editForm.note ?? '',
+    account_id: editForm.account_id || null
   })
   editingId.value = null
 }
@@ -340,5 +366,17 @@ const confirmClearAll = async () => {
   }
   await clearAll()
   clearModalOpen.value = false
+}
+
+const accountKindLabel = (kind: string) => {
+  if (kind === 'cash') return '現金'
+  if (kind === 'card') return '信用卡'
+  return '銀行'
+}
+
+const accountLabel = (accountId?: string | null) => {
+  if (!accountId) return '未指定帳戶'
+  const found = accounts.value.find(account => account.id === accountId)
+  return found ? found.name : '未指定帳戶'
 }
 </script>

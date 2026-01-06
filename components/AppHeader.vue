@@ -2,7 +2,7 @@
   <header class="hero" :class="{ 'hero--expenses': isExpenses }">
     <div class="hero-header">
       <div v-if="isExpenses" class="hero-title-block">
-        <NuxtLink class="back-link" to="/">← 返回</NuxtLink>
+        <NuxtLink class="back-link" :to="backTo">← 返回</NuxtLink>
         <h1>{{ title }}</h1>
       </div>
       <h1 v-else>{{ title }}</h1>
@@ -33,10 +33,13 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   title: string
   isExpenses?: boolean
-}>()
+  backTo?: string
+}>(), {
+  backTo: '/'
+})
 
 const { user, signInWithGoogle, signOut } = useAuth()
 const menuOpen = ref(false)

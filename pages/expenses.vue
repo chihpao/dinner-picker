@@ -1,23 +1,23 @@
 <template>
   <div>
-    <AppHeader title="消費總覽" :is-expenses="true">
+    <AppHeader title="食物消費總覽" :is-expenses="true">
       <template #actions>
-        <NuxtLink to="/expense-entry?from=/expenses" class="btn" aria-label="新增記帳紀錄">📝 記帳</NuxtLink>
+        <NuxtLink to="/expense-entry?from=/expenses" class="btn" aria-label="新增食物記帳">🍱 食物記帳</NuxtLink>
       </template>
       <template #bottom>
-        <ExpenseSummary />
+        <ExpenseSummary ledger="food" />
       </template>
     </AppHeader>
 
     <main class="expense-main">
-      <ExpenseList />
+      <ExpenseList ledger="food" />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
 useHead({
-  title: '每日記帳本｜今晚吃哪家？',
+  title: '食物記帳本｜今晚吃哪家？',
   meta: [
     { name: 'theme-color', content: '#1b1b1b' }
   ]

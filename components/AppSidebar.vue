@@ -21,9 +21,13 @@
       <div class="nav-group">
         <div class="nav-label" v-if="!isCollapsed">快速記帳</div>
         <div class="nav-divider" v-else></div>
-        <NuxtLink to="/expense-entry" class="nav-item" active-class="active" title="食物記帳">
+        <NuxtLink to="/expense-entry" class="nav-item" active-class="active" title="孜保飲食">
           <span class="icon">🍱</span>
-          <span class="text" v-if="!isCollapsed">食物記帳</span>
+          <span class="text" v-if="!isCollapsed">孜保飲食</span>
+        </NuxtLink>
+        <NuxtLink to="/total/entry" class="nav-item" active-class="active" title="一般記帳">
+          <span class="icon">📝</span>
+          <span class="text" v-if="!isCollapsed">一般記帳</span>
         </NuxtLink>
       </div>
 

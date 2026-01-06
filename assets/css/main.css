@@ -243,25 +243,6 @@ h1, h2, h3, h4, h5, h6 {
   gap: 20px;
 }
 
-.hero-title-block {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px 6px;
-  background: var(--bg-paper);
-  border: 2px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  color: var(--ink);
-  text-decoration: none;
-}
-
 .hero-actions {
   display: flex;
   gap: 12px;
@@ -927,18 +908,30 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--primary);
 }
 
+.mobile-only {
+  display: none;
+}
+
 /* Mobile */
 @media (max-width: 600px) {
   .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
+  .mobile-hidden-text { display: none !important; }
   
-  .wrap { padding: 16px; padding-bottom: 120px; } /* Increased padding for nav + toolbar */
-  .hero { padding: 18px; }
-  .hero h1 { font-size: 26px; text-shadow: 2px 2px 0 var(--ink); }
-  .hero-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .wrap { padding: 12px; padding-bottom: 80px; } /* Adjusted padding */
+  .hero { padding: 16px; margin-bottom: 24px; }
+  .hero h1 { font-size: 24px; text-shadow: 2px 2px 0 var(--ink); }
+  .hero-header { flex-direction: column; align-items: stretch; gap: 12px; }
   
-  .hero-actions { width: 100%; justify-content: flex-end; flex-direction: row; flex-wrap: wrap; }
-  .hero-actions .btn-google { width: auto; }
-  .auth-bar { width: 100%; justify-content: flex-end; }
+  .hero-actions { width: 100%; justify-content: space-between; flex-direction: row; flex-wrap: nowrap; gap: 8px; }
+  .hero-actions .btn-google { width: auto; flex: 1; padding: 0 12px; font-size: 14px; }
+  .auth-bar { width: auto; flex: 0 0 auto; }
+
+  /* Fix Location Button spacing in header */
+  .hero-actions .btn.danger {
+    padding: 0 12px;
+    min-width: 44px; /* Ensure click target size */
+  }
 
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar .btn { width: 100%; }
@@ -947,24 +940,73 @@ h1, h2, h3, h4, h5, h6 {
   
   .mobile-toolbar { 
     display: flex; 
-    bottom: 60px; /* Space for MobileNav */
+    bottom: 56px; /* Match MobileNav height */
     box-shadow: 0 -2px 0 var(--ink-dim);
-    z-index: 90; /* Below MobileNav (z-100) but above content */
+    z-index: 90;
+    padding: 8px;
+    gap: 8px;
   }
+  .mobile-toolbar .btn { padding: 0 8px; font-size: 14px; }
   
-  .wrap { padding-bottom: 130px; }
-
   .grid {
     grid-template-columns: 1fr;
-    gap: 32px; /* Explicit large gap for mobile */
+    gap: 24px;
   }
-  .card { padding: 14px 14px 12px; }
-  .card-title { font-size: 18px; padding-right: 56px; }
-  .avatar { width: 42px; height: 42px; }
-  .dist-primary { width: 100%; justify-content: space-between; }
-  .dist-secondary { font-size: 13px; }
+  .card { padding: 12px; }
+  .card-title { font-size: 18px; padding-right: 48px; }
+  
+  /* Fix Entry Card Overflow */
+  .entry-card { 
+    flex-direction: column; 
+    align-items: stretch; 
+    gap: 12px;
+    position: relative;
+    padding-bottom: 48px; /* Space for actions */
+  }
+  
+  .entry-meta {
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  
+  .entry-amount {
+    font-size: 24px;
+    align-self: flex-start;
+  }
 
-  .panel { padding: 16px; }
-  .entry-card { flex-direction: column; align-items: flex-start; }
-  .expense-summary-grid { grid-template-columns: 1fr; }
+  .entry-note {
+    width: 100%;
+    white-space: normal;
+    word-break: break-word; /* Crucial for preventing overflow */
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .entry-account {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  /* Move actions to bottom right absolute to save vertical space or keep distinct */
+  .entry-actions {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .panel { padding: 12px; }
+  .expense-summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .summary-card { padding: 10px; }
+  .summary-amount { font-size: 18px; }
+  
+  .account-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .account-actions {
+    justify-content: flex-end;
+  }
 }

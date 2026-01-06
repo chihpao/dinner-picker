@@ -2,12 +2,14 @@
   <div>
     <AppHeader title="今晚吃哪家？">
       <template #actions>
-        <NuxtLink to="/expense-entry?from=/" class="btn desktop-only" aria-label="開啟食物記帳">🍱 記帳</NuxtLink>
-      </template>
-      <template #bottom>
-        <div id="toolbar" class="toolbar">
-          <button v-if="!userLocation && !hasAllowedLocation" @click="requestLocation" class="btn danger">📍 允許目前位置</button>
-        </div>
+        <button 
+          v-if="!userLocation && !hasAllowedLocation" 
+          @click="requestLocation" 
+          class="btn danger whitespace-nowrap"
+          aria-label="允許目前位置"
+        >
+          📍 <span class="mobile-hidden-text">允許目前位置</span>
+        </button>
       </template>
     </AppHeader>
 

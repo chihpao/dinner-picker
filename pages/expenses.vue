@@ -1,8 +1,8 @@
 <template>
   <div>
-    <AppHeader title="食物消費總覽" :is-expenses="true">
+    <AppHeader title="食物紀錄" :is-expenses="true">
       <template #actions>
-        <NuxtLink to="/expense-entry?from=/expenses" class="btn desktop-only" aria-label="新增食物記帳">🍱 記帳</NuxtLink>
+        <NuxtLink to="/expense-entry?from=/expenses" class="btn desktop-only" aria-label="孜保飲食">🍱 孜保飲食</NuxtLink>
       </template>
       <template #bottom>
         <ExpenseSummary ledger="food" />
@@ -16,10 +16,14 @@
 </template>
 
 <script setup lang="ts">
+const { user } = useAuth()
+const { loadEntries } = useFoodExpenses()
+
+watch(user, () => {
+  loadEntries()
+}, { immediate: true })
+
 useHead({
-  title: '食物記帳本｜今晚吃哪家？',
-  meta: [
-    { name: 'theme-color', content: '#1b1b1b' }
-  ]
+  title: '孜保飲食紀錄｜今晚吃哪家？',
 })
 </script>

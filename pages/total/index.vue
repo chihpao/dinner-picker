@@ -2,27 +2,20 @@
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
       <template #actions>
-        <NuxtLink to="/total/entry?from=/total" class="btn desktop-only" aria-label="新增記帳">📝 新增</NuxtLink>
-        <NuxtLink to="/total/accounts" class="btn desktop-only" aria-label="管理帳戶">🏦 帳戶</NuxtLink>
+        <NuxtLink to="/total/entry?from=/total" class="btn desktop-only" aria-label="一般記帳">📝 一般記帳</NuxtLink>
       </template>
       <template #bottom>
-        <ExpenseSummary ledger="total" />
+        <div class="summary-toolbar px-4 py-2">
+          <div class="summary-switch">
+            <button @click="period = 'month'" class="btn btn-sm" :class="{ primary: period === 'month' }">本月</button>
+            <button @click="period = 'all'" class="btn btn-sm" :class="{ primary: period === 'all' }">全部</button>
+          </div>
+          <NuxtLink to="/total/entry?from=/total" class="btn primary mobile-only">📝 一般記帳</NuxtLink>
+        </div>
       </template>
     </AppHeader>
 
     <main class="expense-main">
-      <section class="panel ledger-intro">
-        <div class="panel-header">
-          <div>
-            <h2>全消費總覽</h2>
-            <p>這裡是你的個人帳本，包含記帳與帳戶管理。</p>
-          </div>
-          <div class="panel-actions-buttons mobile-actions">
-            <NuxtLink to="/total/entry?from=/total" class="btn primary">📝 新增</NuxtLink>
-            <NuxtLink to="/total/accounts" class="btn">🏦 帳戶</NuxtLink>
-          </div>
-        </div>
-      </section>
       <ExpenseList ledger="total" />
     </main>
   </div>

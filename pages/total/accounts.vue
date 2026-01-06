@@ -2,7 +2,7 @@
   <div>
     <AppHeader title="帳戶管理" :is-expenses="true" back-to="/total">
       <template #actions>
-        <NuxtLink to="/total/entry?from=/total/accounts" class="btn desktop-only" aria-label="新增記帳">📝 新增</NuxtLink>
+        <NuxtLink to="/total/entry?from=/total/accounts" class="btn desktop-only" aria-label="一般記帳">📝 一般記帳</NuxtLink>
       </template>
       <template #bottom>
         <ExpenseSummary ledger="total" />

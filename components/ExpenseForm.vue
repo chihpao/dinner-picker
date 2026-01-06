@@ -1,7 +1,6 @@
 <template>
   <section class="panel entry-panel">
     <div class="entry-header">
-      <NuxtLink class="back-link" :to="backPath">← 返回</NuxtLink>
       <h1>{{ titleText }}</h1>
       <div class="auth-bar">
         <!-- Minimal auth indicator if needed, or rely on layout -->
@@ -56,18 +55,13 @@ const { accounts } = useAccounts()
 const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
 const { addEntry } = expenses
 const router = useRouter()
-const route = useRoute()
 
 const showAccount = computed(() => props.ledger === 'total')
-const entryText = computed(() => props.ledger === 'food' ? '食物記帳' : '記帳')
-const titleText = computed(() => props.ledger === 'food' ? '食物記帳' : '全消費總覽')
+const entryText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
+const titleText = computed(() => props.ledger === 'food' ? '孜保飲食' : '全消費總覽')
 const signInRedirect = computed(() => props.ledger === 'food' ? '/expense-entry' : '/total/entry')
 const redirectPath = computed(() => props.ledger === 'food' ? '/expenses' : '/total')
 const notePlaceholder = computed(() => props.ledger === 'food' ? '午餐、晚餐...' : '交通、購物...')
-
-const backPath = computed(() => {
-  return (route.query.from as string) || '/'
-})
 
 const form = reactive({
   date: toISODate(new Date()),
@@ -99,6 +93,20 @@ const handleSubmit = async () => {
   }
 
   await addEntry(entry)
+
+  // 如果是孜保飲食，同時新增到全消費總覽
+  if (props.ledger === 'food') {
+    const { addEntry: addTotalEntry } = useTotalExpenses()
+    // 建立一個副本，並給予新的 ID，確保資料獨立
+    const totalEntry = {
+      ...entry,
+      id: generateUUID(),
+      // 確保 account_id 正確傳遞（雖然 food 模式下通常為 null）
+      account_id: entry.account_id
+    }
+    await addTotalEntry(totalEntry)
+  }
+
   router.push(redirectPath.value)
 }
 </script>

@@ -4,9 +4,6 @@
 
 <script setup lang="ts">
 useHead({
-  title: '食物記帳｜今晚吃哪家？',
-  meta: [
-    { name: 'theme-color', content: '#1b1b1b' }
-  ]
+  title: '孜保飲食｜今晚吃哪家？',
 })
 </script>

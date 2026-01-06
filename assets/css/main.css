@@ -504,6 +504,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .entry-note {
   color: var(--ink-dim);
+  word-break: break-word;
 }
 
 .entry-account {
@@ -928,21 +929,30 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Mobile */
 @media (max-width: 600px) {
-  .wrap { padding: 16px; }
+  .desktop-only { display: none !important; }
+  
+  .wrap { padding: 16px; padding-bottom: 120px; } /* Increased padding for nav + toolbar */
   .hero { padding: 18px; }
   .hero h1 { font-size: 26px; text-shadow: 2px 2px 0 var(--ink); }
   .hero-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .hero-actions { width: 100%; justify-content: flex-start; flex-direction: column; align-items: stretch; }
-  .hero-actions .btn,
-  .hero-actions .btn-google { width: 100%; justify-content: center; }
-  .auth-bar { width: 100%; justify-content: space-between; }
+  
+  .hero-actions { width: 100%; justify-content: flex-end; flex-direction: row; flex-wrap: wrap; }
+  .hero-actions .btn-google { width: auto; }
+  .auth-bar { width: 100%; justify-content: flex-end; }
 
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar .btn { width: 100%; }
 
   .panel-actions { display: none; }
-  .mobile-toolbar { display: flex; }
-  .wrap { padding-bottom: 96px; }
+  
+  .mobile-toolbar { 
+    display: flex; 
+    bottom: 60px; /* Space for MobileNav */
+    box-shadow: 0 -2px 0 var(--ink-dim);
+    z-index: 90; /* Below MobileNav (z-100) but above content */
+  }
+  
+  .wrap { padding-bottom: 130px; }
 
   .grid {
     grid-template-columns: 1fr;

@@ -2,7 +2,7 @@
   <div>
     <AppHeader title="食物消費總覽" :is-expenses="true">
       <template #actions>
-        <NuxtLink to="/expense-entry?from=/expenses" class="btn" aria-label="新增食物記帳">🍱 食物記帳</NuxtLink>
+        <NuxtLink to="/expense-entry?from=/expenses" class="btn desktop-only" aria-label="新增食物記帳">🍱 記帳</NuxtLink>
       </template>
       <template #bottom>
         <ExpenseSummary ledger="food" />

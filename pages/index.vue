@@ -2,9 +2,7 @@
   <div>
     <AppHeader title="今晚吃哪家？">
       <template #actions>
-        <NuxtLink to="/expense-entry?from=/" class="btn" aria-label="開啟食物記帳">🍱 食物記帳</NuxtLink>
-        <NuxtLink to="/expenses" class="btn" aria-label="查看食物總覽">📊 食物總覽</NuxtLink>
-        <NuxtLink to="/total" class="btn" aria-label="開啟全消費總覽">📚 全消費總覽</NuxtLink>
+        <NuxtLink to="/expense-entry?from=/" class="btn desktop-only" aria-label="開啟食物記帳">🍱 記帳</NuxtLink>
       </template>
       <template #bottom>
         <div id="toolbar" class="toolbar">

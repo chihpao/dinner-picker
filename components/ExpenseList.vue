@@ -6,7 +6,7 @@
         <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
       </div>
       <div class="panel-actions">
-        <button @click="openBulkDelete" class="btn danger btn-sm" type="button" :disabled="!selectedCount" title="批次刪除">批次刪除</button>
+        <button v-if="selectedCount" @click="openBulkDelete" class="btn danger btn-sm" type="button">刪除</button>
       </div>
     </div>
     
@@ -125,7 +125,6 @@
             <!-- 6. Actions -->
             <div class="entry-actions">
               <button class="btn btn-sm" @click="startEdit(entry)" type="button">編輯</button>
-              <button class="btn btn-sm danger" @click="openDelete(entry.id)" type="button">刪除</button>
             </div>
           </template>
         </article>
@@ -135,23 +134,11 @@
     <!-- Bulk delete confirmation modal -->
     <div v-if="bulkModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
       <div class="modal-card">
-        <h3>批次刪除</h3>
+        <h3>刪除紀錄</h3>
         <p>確定要刪除選取的 {{ selectedCount }} 筆紀錄嗎？此操作無法復原。</p>
         <div class="modal-actions">
           <button class="btn primary" @click="confirmBulkDelete" type="button">是，刪除</button>
           <button class="btn" @click="closeBulkDelete" type="button">否，取消</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete confirmation modal -->
-    <div v-if="deleteTargetId" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <h3>刪除紀錄</h3>
-        <p>是否要刪除這筆資料？選擇「是」刪除，選擇「否」取消。</p>
-        <div class="modal-actions">
-          <button class="btn primary" @click="confirmDelete" type="button">是</button>
-          <button class="btn" @click="cancelDelete" type="button">否</button>
         </div>
       </div>
     </div>
@@ -162,7 +149,7 @@
       <button class="btn" type="button" @click="cycleSort">
         排序：{{ sortLabel }}
       </button>
-      <button class="btn danger" type="button" :disabled="!selectedCount" @click="openBulkDelete">批次刪除</button>
+      <button v-if="selectedCount" class="btn danger" type="button" @click="openBulkDelete">刪除</button>
     </div>
   </section>
 </template>
@@ -193,7 +180,6 @@ const editForm = reactive({
   note: '',
   account_id: '' as string
 })
-const deleteTargetId = ref<string | null>(null)
 const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
 const sortKey = ref<'date' | 'amount' | 'account_id' | 'note'>('date')
@@ -342,21 +328,6 @@ const cycleSort = () => {
   else if (sortKey.value === 'amount') toggleSort('account_id')
   else if (sortKey.value === 'account_id') toggleSort('note')
   else toggleSort('date')
-}
-
-const openDelete = (id: string) => {
-  deleteTargetId.value = id
-}
-
-const cancelDelete = () => {
-  deleteTargetId.value = null
-}
-
-const confirmDelete = async () => {
-  if (!deleteTargetId.value) return
-  await deleteEntry(deleteTargetId.value)
-  selectedIds.value.delete(deleteTargetId.value)
-  deleteTargetId.value = null
 }
 
 const openBulkDelete = () => {

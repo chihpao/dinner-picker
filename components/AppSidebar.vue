@@ -13,7 +13,7 @@
     <nav class="sidebar-nav">
       <div class="nav-group">
         <NuxtLink to="/" class="nav-item" active-class="active" title="首頁">
-          <span class="icon">🏠</span>
+          <span class="icon"><IconHome /></span>
           <span class="text" v-if="!isCollapsed">首頁</span>
         </NuxtLink>
       </div>
@@ -22,11 +22,11 @@
         <div class="nav-label" v-if="!isCollapsed">快速記帳</div>
         <div class="nav-divider" v-else></div>
         <NuxtLink to="/expense-entry" class="nav-item" active-class="active" title="孜保飲食">
-          <span class="icon">🍱</span>
+          <span class="icon"><IconBento /></span>
           <span class="text" v-if="!isCollapsed">孜保飲食</span>
         </NuxtLink>
         <NuxtLink to="/total/entry" class="nav-item" active-class="active" title="一般記帳">
-          <span class="icon">📝</span>
+          <span class="icon"><IconEdit /></span>
           <span class="text" v-if="!isCollapsed">一般記帳</span>
         </NuxtLink>
       </div>
@@ -35,15 +35,15 @@
         <div class="nav-label" v-if="!isCollapsed">數據總覽</div>
         <div class="nav-divider" v-else></div>
         <NuxtLink to="/expenses" class="nav-item" active-class="active" title="食物紀錄">
-          <span class="icon">📊</span>
+          <span class="icon"><IconList /></span>
           <span class="text" v-if="!isCollapsed">食物紀錄</span>
         </NuxtLink>
         <NuxtLink to="/total" class="nav-item" active-class="active" title="全消費總覽">
-          <span class="icon">📚</span>
+          <span class="icon"><IconOverview /></span>
           <span class="text" v-if="!isCollapsed">全消費總覽</span>
         </NuxtLink>
         <NuxtLink to="/total/accounts" class="nav-item" active-class="active" title="帳戶管理">
-          <span class="icon">🏦</span>
+          <span class="icon"><IconBank /></span>
           <span class="text" v-if="!isCollapsed">帳戶管理</span>
         </NuxtLink>
       </div>
@@ -56,6 +56,13 @@
 </template>
 
 <script setup lang="ts">
+import IconHome from '~/components/icons/IconHome.vue'
+import IconEdit from '~/components/icons/IconEdit.vue'
+import IconList from '~/components/icons/IconList.vue'
+import IconOverview from '~/components/icons/IconOverview.vue'
+import IconBank from '~/components/icons/IconBank.vue'
+import IconBento from '~/components/icons/IconBento.vue'
+
 const isCollapsed = ref(false)
 
 const toggleCollapse = () => {

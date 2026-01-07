@@ -1,7 +1,8 @@
 <template>
-  <div>
-    <AppHeader title="今晚吃哪家？">
-      <template #actions>
+  <div class="page-container">
+    <AppHeader title="🍱 今晚吃哪家？">
+      <template #bottom>
+        <div class="hero-stats">
         <button 
           v-if="!userLocation && !hasAllowedLocation" 
           @click="requestLocation" 
@@ -10,6 +11,7 @@
         >
           📍 <span class="mobile-hidden-text">允許目前位置</span>
         </button>
+        </div>
       </template>
     </AppHeader>
 

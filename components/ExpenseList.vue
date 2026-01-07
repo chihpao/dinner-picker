@@ -48,7 +48,7 @@
             <span class="sort-icon">{{ getSortArrow('note') }}</span>
           </button>
         </div>
-        <div class="header-cell"></div>
+        <div class="header-cell" style="justify-content: flex-end;">動作</div>
       </div>
 
       <div class="expense-list">

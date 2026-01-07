@@ -1,6 +1,9 @@
 <template>
   <div>
     <AppHeader title="食物紀錄" :is-expenses="true">
+      <template #actions>
+        <NuxtLink to="/expense-entry?from=/expenses" class="btn btn-sm primary">🍱 新增</NuxtLink>
+      </template>
       <template #bottom>
         <ExpenseSummary ledger="food" />
       </template>

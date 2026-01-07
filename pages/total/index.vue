@@ -1,13 +1,11 @@
 <template>
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
+      <template #actions>
+        <NuxtLink to="/total/entry?from=/total" class="btn btn-sm primary">📝 新增</NuxtLink>
+      </template>
       <template #bottom>
-        <div class="px-4 py-2">
-          <ExpenseSummary ledger="total" />
-          <div class="mt-4 flex justify-end mobile-only">
-            <NuxtLink to="/total/entry?from=/total" class="btn primary w-full justify-center">📝 一般記帳</NuxtLink>
-          </div>
-        </div>
+        <ExpenseSummary ledger="total" />
       </template>
     </AppHeader>
 

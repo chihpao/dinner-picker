@@ -1086,14 +1086,8 @@ h1, h2, h3, h4, h5, h6 {
   .panel-actions { display: none; }
   
   .mobile-toolbar { 
-    display: flex; 
-    bottom: 56px; /* Match MobileNav height */
-    box-shadow: 0 -2px 0 var(--ink-dim);
-    z-index: 90;
-    padding: 8px;
-    gap: 8px;
+    display: none; /* Hidden as per request to keep view clean */
   }
-  .mobile-toolbar .btn { padding: 0 8px; font-size: 14px; }
   
   .grid {
     grid-template-columns: 1fr;

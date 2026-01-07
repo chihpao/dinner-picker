@@ -1065,7 +1065,7 @@ h1, h2, h3, h4, h5, h6 {
   .mobile-only { display: flex !important; }
   .mobile-hidden-text { display: none !important; }
   
-  .wrap { padding: 12px; padding-bottom: 80px; } /* Adjusted padding */
+  .wrap { padding: 12px; padding-bottom: 140px; } /* Increased to avoid toolbar overlap */
   .hero { padding: 12px; margin-bottom: 24px; }
   .hero h1 { font-size: 20px; text-shadow: 2px 2px 0 var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hero-header { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; }
@@ -1108,70 +1108,87 @@ h1, h2, h3, h4, h5, h6 {
   }
   
   .expense-list {
-    gap: 12px; /* Restore gap */
+    gap: 8px; /* Compact gap */
   }
 
   .entry-card { 
-    /* Mobile Grid Layout for Card Look */
+    /* Compact Mobile Grid Layout */
     display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto auto auto auto;
-    gap: 4px;
-    padding: 12px;
-    padding-bottom: 48px; /* Space for actions if absolute, or remove if static */
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 2px 10px;
+    padding: 10px;
+    padding-bottom: 10px;
     position: relative;
     margin-top: 0;
     margin-bottom: 0;
-    box-shadow: 4px 4px 0 var(--ink-dim); /* Restore shadow */
+    box-shadow: 3px 3px 0 var(--ink-dim);
   }
   
   /* Mobile Grid Placements */
   .entry-card > .checkbox-pill { 
-    grid-column: 1; grid-row: 1; 
+    grid-column: 1; grid-row: 1 / span 3;
     width: max-content;
     align-self: center;
-  }
-  .entry-card > .entry-date { 
-    grid-column: 2; grid-row: 1; 
-    justify-self: end;
-    align-self: center;
-  }
-  .entry-card > .entry-amount { 
-    grid-column: 1 / -1; grid-row: 2;
-    font-size: 24px;
-    color: var(--accent);
-    font-weight: bold;
-    margin-top: 4px;
-  }
-  .entry-card > .entry-account { 
-    grid-column: 1 / -1; grid-row: 3;
-    font-size: 13px;
-    color: var(--ink-dim);
-  }
-  .entry-card > .entry-note { 
-    grid-column: 1 / -1; grid-row: 4;
-    width: 100%;
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.5;
-    margin-bottom: 8px;
+    margin-right: 4px;
   }
   
-  /* Actions positioned absolute bottom-right for mobile to save space */
+  .entry-note { 
+    grid-column: 2; grid-row: 1;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  .entry-amount { 
+    grid-column: 3; grid-row: 1;
+    font-size: 16px;
+    color: var(--accent);
+    font-weight: bold;
+    justify-self: end;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  .entry-date { 
+    grid-column: 2; grid-row: 2;
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.4;
+  }
+
+  .entry-account { 
+    grid-column: 2; grid-row: 3;
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.4;
+  }
+  
+  /* Actions positioned in grid */
   .entry-card > .entry-actions {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
+    grid-column: 3; grid-row: 2 / span 2;
+    position: static;
     width: auto;
     display: flex;
-    gap: 8px;
+    justify-self: end;
+    align-self: end;
+  }
+  
+  .entry-actions .btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 
   /* Hide entry-meta wrapper if it still exists in DOM (editing mode) */
   .entry-meta {
-    display: contents; /* Or flex if needed */
+    display: contents; 
   }
-  /* But editing mode card has different structure, it uses flex-wrap in global styles */
   
   .panel { padding: 12px; }
   .expense-summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }

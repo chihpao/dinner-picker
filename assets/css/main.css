@@ -459,138 +459,184 @@ h1, h2, h3, h4, h5, h6 {
   gap: 16px;
 }
 
-/* === NEW TABLE LAYOUT === */
-.expense-list-container {
-  display: flex;
-  flex-direction: column;
-}
+/* === NEW TABLE LAYOUT (Desktop Only) === */
+@media (min-width: 601px) {
+  .expense-list-container {
+    display: flex;
+    flex-direction: column;
+  }
 
-/* Header Row */
-.expense-list-header {
-  display: grid;
-  /* Checkbox, Date, Amount, Account, Note, Actions */
-  grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 120px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--ink);
-  color: #fff;
-  border: var(--border-width) solid var(--ink);
-  border-bottom: none; /* Merged with first item */
-  font-weight: bold;
-}
+  /* Header Row */
+  .expense-list-header {
+    display: grid;
+    /* Checkbox, Date, Amount, Account, Note, Actions */
+    grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 160px;
+    gap: 0;
+    align-items: stretch;
+    background: var(--ink);
+    color: #fff;
+    border: var(--border-width) solid var(--ink);
+    border-bottom: none; /* Merged with first item */
+    font-weight: bold;
+  }
 
-.header-cell {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+  .header-cell {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-right: 2px solid rgba(255,255,255,0.2);
+    height: 100%;
+  }
+  .header-cell:last-child {
+    border-right: none;
+  }
 
-/* Updated Sort Button Styles to prevent jumping */
-.header-cell .sort-btn {
-  background: none;
-  border: none;
-  color: inherit;
-  font-family: var(--font-pixel);
-  font-weight: bold;
-  font-size: 16px; /* Explicit size to prevent resizing */
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1; /* Stabilize line height */
-}
+  .header-cell .sort-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-family: var(--font-pixel);
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+  }
 
-.header-cell .sort-btn:hover {
-  text-decoration: underline;
-}
+  .header-cell .sort-btn:hover {
+    text-decoration: underline;
+  }
 
-.sort-icon {
-  display: inline-block;
-  width: 14px; /* Fixed width for arrow */
-  text-align: center;
-  font-weight: normal; /* Arrows don't need bold */
-}
+  .sort-icon {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    font-weight: normal;
+  }
 
-/* Data Row */
-.expense-list {
-  display: flex;
-  flex-direction: column;
-  /* No gap, merged borders */
-}
+  /* Data Row */
+  .expense-list {
+    display: flex;
+    flex-direction: column;
+  }
 
-.entry-card {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  /* Remove margin and shadows for table look */
-  margin: 0;
-  box-shadow: none;
-  padding: 12px 16px;
-  display: grid;
-  grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 120px;
-  gap: 12px;
-  align-items: center;
-  /* Merge borders: shift up by border width */
-  margin-top: calc(var(--border-width) * -1);
-  position: relative; /* Ensure z-index works for border overlap */
-}
+  .entry-card {
+    background: var(--bg-paper);
+    border: var(--border-width) solid var(--ink);
+    margin: 0;
+    box-shadow: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 160px;
+    gap: 0;
+    align-items: stretch;
+    margin-top: calc(var(--border-width) * -1);
+    position: relative;
+    z-index: 0;
+  }
 
-.entry-card:hover {
-  background: #f5f7fa;
-  z-index: 1; /* Bring hovered item border to top */
-}
+  .entry-card:hover {
+    background: #f5f7fa;
+    z-index: 1;
+  }
 
-/* Content resets for grid */
-.entry-meta,
-.entry-amount,
-.entry-account,
-.entry-note,
-.entry-actions {
-  margin: 0;
-  width: auto;
-}
+  .entry-meta {
+    display: contents;
+  }
 
-.entry-meta {
-  display: contents; /* Let children (checkbox, date) participate in parent grid? No, we need structure. */
-}
-/* Re-structuring: entry-meta previously held checkbox + date. Now we split them in template. */
+  /* Grid Items Styles (Borders & Padding) */
+  .entry-card > *,
+  .entry-meta > * {
+    padding: 12px;
+    border-right: 2px solid var(--ink-dim); /* Column Line */
+    display: flex;
+    align-items: center;
+    height: 100%;
+    overflow: hidden; /* Safety */
+  }
 
-.entry-amount {
-  font-size: 18px;
-  color: var(--accent);
-  font-weight: bold;
-  text-align: right;
-}
-.entry-account {
-  font-size: 14px;
-  color: var(--ink-dim);
-}
-.entry-note {
-  color: var(--ink-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.entry-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
+  /* Checkbox specific */
+  .entry-meta > .checkbox-pill {
+    justify-content: center;
+    border-top: none;
+    border-bottom: none;
+    border-left: none;
+    background: transparent;
+    padding: 0; /* Reset pill padding */
+    box-shadow: none;
+  }
 
-/* Inline edit override */
-.entry-card.is-editing {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px;
-  z-index: 2;
-  box-shadow: 4px 4px 0 var(--ink-dim); /* Pop out when editing */
-  margin-top: 0; /* Reset margin for popped out card */
-  margin-bottom: 16px; /* Push others down */
-}
-/* When editing, the merged border hack might look weird, so we restore "card" look */
+  .entry-amount {
+    justify-content: flex-end;
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: bold;
+  }
 
+  .entry-account {
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+
+  .entry-note {
+    color: var(--ink-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* Block for ellipsis */
+    line-height: 1.5;
+    padding-top: 14px; /* Visual center align */
+  }
+
+  .entry-actions {
+    border-right: none;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Editing State Override - Restore Card Look */
+  .entry-card.is-editing {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    z-index: 2;
+    box-shadow: 4px 4px 0 var(--ink-dim);
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+  
+  .entry-card.is-editing > *,
+  .entry-card.is-editing .entry-meta > * {
+    border-right: none;
+    padding: 0;
+    height: auto;
+    display: flex; /* Restore defaults */
+  }
+  
+  .entry-card.is-editing .entry-meta {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .entry-card.is-editing .entry-actions {
+    width: 100%;
+    border: none;
+  }
+  
+  /* Reset checkbox pill in edit mode */
+  .entry-card.is-editing .checkbox-pill {
+    width: auto;
+    border: 2px solid var(--ink);
+    padding: 4px;
+    box-shadow: none;
+  }
+}
 /* === END NEW TABLE LAYOUT === */
 
 .entry-card .inline-field {

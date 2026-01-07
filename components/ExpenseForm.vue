@@ -56,7 +56,7 @@ const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses(
 const { addEntry } = expenses
 const router = useRouter()
 
-const showAccount = computed(() => props.ledger === 'total')
+const showAccount = computed(() => true)
 const entryText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
 const titleText = computed(() => props.ledger === 'food' ? '孜保飲食' : '全消費總覽')
 const signInRedirect = computed(() => props.ledger === 'food' ? '/expense-entry' : '/total/entry')
@@ -69,6 +69,15 @@ const form = reactive({
   note: '',
   account_id: '' as string
 })
+
+watch(accounts, (list) => {
+  if (props.ledger === 'food' && !form.account_id) {
+    const target = list.find(a => a.name.includes('中國信託'))
+    if (target) {
+      form.account_id = target.id
+    }
+  }
+}, { immediate: true })
 
 const accountKindLabel = (kind: string) => {
   if (kind === 'cash') return '現金'

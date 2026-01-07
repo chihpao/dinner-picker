@@ -24,7 +24,7 @@ const ledgerConfig: Record<LedgerKind, {
         pendingKey: 'dinnerPicker.expenses.pending',
         table: 'expenses',
         statePrefix: 'expense',
-        includeAccount: false
+        includeAccount: true
     },
     total: {
         storageKey: 'dinnerPicker.total.expenses.v1',

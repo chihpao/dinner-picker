@@ -172,7 +172,7 @@ const { accounts } = useAccounts()
 const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
 const { entries, deleteEntry, updateEntry, clearAll } = expenses
 
-const showAccount = computed(() => props.ledger === 'total')
+const showAccount = computed(() => true)
 const listTitle = computed(() => props.ledger === 'food' ? '食物紀錄列表' : '消費紀錄列表')
 const addLabel = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
 const entryPath = computed(() => props.ledger === 'food' ? '/expense-entry?from=/expenses' : '/total/entry?from=/total')

@@ -5,34 +5,7 @@
         <h2>{{ listTitle }}</h2>
         <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
       </div>
-      <div class="panel-actions">
-        <div class="sort-switch">
-          <span>排序</span>
-          <button
-            class="btn btn-sm"
-            :class="{ primary: sortKey === 'date' }"
-            @click="toggleSort('date')"
-            type="button"
-          >
-            日期 {{ sortKey === 'date' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-          </button>
-          <button
-            class="btn btn-sm"
-            :class="{ primary: sortKey === 'amount' }"
-            @click="toggleSort('amount')"
-            type="button"
-          >
-            金額 {{ sortKey === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
-          </button>
-        </div>
-        <div class="panel-actions-buttons">
-          <button @click="toggleSelectAll" class="btn btn-sm" type="button" :disabled="!entries.length">
-            {{ allSelected ? '取消全選' : '全選' }}
-          </button>
-          <button @click="openBulkDelete" class="btn danger btn-sm" type="button" :disabled="!selectedCount">批次刪除</button>
-          <button @click="openClearAll" class="btn danger btn-sm" type="button" :disabled="!entries.length">清空全部</button>
-        </div>
-      </div>
+      <!-- Actions moved to table header for desktop, kept in mobile toolbar -->
     </div>
     
     <div v-if="!user" class="auth-gate panel">
@@ -41,68 +14,113 @@
 
     <div v-else-if="!entries.length" class="empty-state">目前沒有紀錄，先新增一筆吧！</div>
     
-    <div v-else class="expense-list">
-      <article v-for="entry in sortedEntries" :key="entry.id" class="entry-card">
-        <template v-if="editingId === entry.id">
-          <div class="entry-meta">
-            <label class="checkbox-pill">
-              <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
-            </label>
+    <div v-else class="expense-list-container">
+      <!-- Table Header -->
+      <div class="expense-list-header">
+        <div class="header-cell checkbox-cell">
+          <label class="checkbox-pill">
+            <input class="checkbox-square" type="checkbox" :checked="allSelected" @change="toggleSelectAll" :disabled="!entries.length">
+          </label>
+        </div>
+        <div class="header-cell">
+          <button @click="toggleSort('date')" type="button">
+            日期 {{ sortKey === 'date' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          </button>
+        </div>
+        <div class="header-cell" style="justify-content: flex-end;">
+          <button @click="toggleSort('amount')" type="button">
+            金額 {{ sortKey === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          </button>
+        </div>
+        <div class="header-cell">帳戶</div>
+        <div class="header-cell">備註</div>
+        <div class="header-cell" style="justify-content: flex-end;">
+          <div class="panel-actions-buttons">
+             <button @click="openBulkDelete" class="btn danger btn-sm" type="button" :disabled="!selectedCount" title="批次刪除">刪除</button>
+             <button @click="openClearAll" class="btn danger btn-sm" type="button" :disabled="!entries.length" title="清空全部">清空</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="expense-list">
+        <article 
+          v-for="entry in sortedEntries" 
+          :key="entry.id" 
+          class="entry-card"
+          :class="{ 'is-editing': editingId === entry.id }"
+        >
+          <template v-if="editingId === entry.id">
+            <div class="entry-meta">
+              <label class="checkbox-pill">
+                <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+              </label>
+              <label class="inline-field">
+                <span>日期</span>
+                <input type="date" v-model="editForm.date">
+              </label>
+              <div class="quick-actions">
+                <span>日期快捷</span>
+                <button class="btn btn-sm" type="button" @click="setToday">今天</button>
+                <button class="btn btn-sm" type="button" @click="setYesterday">昨天</button>
+              </div>
+            </div>
             <label class="inline-field">
-              <span>日期</span>
-              <input type="date" v-model="editForm.date">
+              <span>金額 (NT$)</span>
+              <input type="number" v-model.number="editForm.amount" min="0" step="1">
             </label>
             <div class="quick-actions">
-              <span>日期快捷</span>
-              <button class="btn btn-sm" type="button" @click="setToday">今天</button>
-              <button class="btn btn-sm" type="button" @click="setYesterday">昨天</button>
+              <span>快速調整</span>
+              <button class="btn btn-sm" type="button" @click="adjustAmount(-100)">-100</button>
+              <button class="btn btn-sm" type="button" @click="adjustAmount(-10)">-10</button>
+              <button class="btn btn-sm" type="button" @click="adjustAmount(10)">+10</button>
+              <button class="btn btn-sm" type="button" @click="adjustAmount(100)">+100</button>
             </div>
-          </div>
-          <label class="inline-field">
-            <span>金額 (NT$)</span>
-            <input type="number" v-model.number="editForm.amount" min="0" step="1">
-          </label>
-          <div class="quick-actions">
-            <span>快速調整</span>
-            <button class="btn btn-sm" type="button" @click="adjustAmount(-100)">-100</button>
-            <button class="btn btn-sm" type="button" @click="adjustAmount(-10)">-10</button>
-            <button class="btn btn-sm" type="button" @click="adjustAmount(10)">+10</button>
-            <button class="btn btn-sm" type="button" @click="adjustAmount(100)">+100</button>
-          </div>
-          <label v-if="showAccount" class="inline-field">
-            <span>帳戶</span>
-            <select v-model="editForm.account_id">
-              <option value="">未指定</option>
-              <option v-for="account in accounts" :key="account.id" :value="account.id">
-                {{ account.name }}（{{ accountKindLabel(account.kind) }}）
-              </option>
-            </select>
-          </label>
-          <label class="inline-field">
-            <span>備註</span>
-            <input type="text" v-model="editForm.note" placeholder="備註">
-          </label>
-          <div class="entry-actions">
-            <button class="btn btn-sm primary" @click="saveEdit" type="button">儲存</button>
-            <button class="btn btn-sm" @click="cancelEdit" type="button">取消</button>
-          </div>
-        </template>
-        <template v-else>
-          <div class="entry-meta">
-            <label class="checkbox-pill">
-              <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+            <label v-if="showAccount" class="inline-field">
+              <span>帳戶</span>
+              <select v-model="editForm.account_id">
+                <option value="">未指定</option>
+                <option v-for="account in accounts" :key="account.id" :value="account.id">
+                  {{ account.name }}（{{ accountKindLabel(account.kind) }}）
+                </option>
+              </select>
             </label>
-            <p class="entry-date">{{ formatDate(entry.date) }}</p>
-          </div>
-          <p class="entry-amount">{{ formatCurrency(entry.amount) }}</p>
-          <p v-if="showAccount" class="entry-account">{{ accountLabel(entry.account_id) }}</p>
-          <p v-if="entry.note" class="entry-note">{{ entry.note }}</p>
-          <div class="entry-actions">
-            <button class="btn btn-sm" @click="startEdit(entry)" type="button">編輯</button>
-            <button class="btn btn-sm danger" @click="openDelete(entry.id)" type="button">刪除</button>
-          </div>
-        </template>
-      </article>
+            <label class="inline-field">
+              <span>備註</span>
+              <input type="text" v-model="editForm.note" placeholder="備註">
+            </label>
+            <div class="entry-actions">
+              <button class="btn btn-sm primary" @click="saveEdit" type="button">儲存</button>
+              <button class="btn btn-sm" @click="cancelEdit" type="button">取消</button>
+            </div>
+          </template>
+          <template v-else>
+            <!-- Data Row: Must match Grid Columns: [Checkbox] [Date] [Amount] [Account] [Note] [Actions] -->
+            
+            <!-- 1. Checkbox & 2. Date (Wrapped in entry-meta with display: contents) -->
+            <div class="entry-meta">
+              <label class="checkbox-pill">
+                <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+              </label>
+              <p class="entry-date">{{ formatDate(entry.date) }}</p>
+            </div>
+
+            <!-- 3. Amount -->
+            <p class="entry-amount">{{ formatCurrency(entry.amount) }}</p>
+            
+            <!-- 4. Account -->
+            <p class="entry-account">{{ showAccount ? accountLabel(entry.account_id) : '' }}</p>
+            
+            <!-- 5. Note -->
+            <p class="entry-note" :title="entry.note">{{ entry.note }}</p>
+            
+            <!-- 6. Actions -->
+            <div class="entry-actions">
+              <button class="btn btn-sm" @click="startEdit(entry)" type="button">編輯</button>
+              <button class="btn btn-sm danger" @click="openDelete(entry.id)" type="button">刪除</button>
+            </div>
+          </template>
+        </article>
+      </div>
     </div>
 
     <!-- Bulk delete confirmation modal -->

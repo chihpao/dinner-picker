@@ -25,23 +25,27 @@
           </label>
         </div>
         <div class="header-cell">
-          <button @click="toggleSort('date')" type="button">
-            日期 {{ sortKey === 'date' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          <button @click="toggleSort('date')" type="button" class="sort-btn">
+            <span>日期</span>
+            <span class="sort-icon">{{ getSortArrow('date') }}</span>
           </button>
         </div>
         <div class="header-cell" style="justify-content: flex-end;">
-          <button @click="toggleSort('amount')" type="button">
-            金額 {{ sortKey === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          <button @click="toggleSort('amount')" type="button" class="sort-btn">
+            <span>金額</span>
+            <span class="sort-icon">{{ getSortArrow('amount') }}</span>
           </button>
         </div>
         <div class="header-cell">
-          <button @click="toggleSort('account_id')" type="button">
-            帳戶 {{ sortKey === 'account_id' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          <button @click="toggleSort('account_id')" type="button" class="sort-btn">
+            <span>帳戶</span>
+            <span class="sort-icon">{{ getSortArrow('account_id') }}</span>
           </button>
         </div>
         <div class="header-cell">
-          <button @click="toggleSort('note')" type="button">
-            備註 {{ sortKey === 'note' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          <button @click="toggleSort('note')" type="button" class="sort-btn">
+            <span>備註</span>
+            <span class="sort-icon">{{ getSortArrow('note') }}</span>
           </button>
         </div>
         <div class="header-cell"></div>
@@ -220,6 +224,11 @@ const sortedEntries = computed(() => {
     return 0
   })
 })
+
+const getSortArrow = (key: string) => {
+  if (sortKey.value !== key) return ''
+  return sortOrder.value === 'desc' ? '↓' : '↑'
+}
 
 const sortLabel = computed(() => {
   let label = ''

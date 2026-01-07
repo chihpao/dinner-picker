@@ -485,20 +485,32 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 4px;
 }
-.header-cell button {
+
+/* Updated Sort Button Styles to prevent jumping */
+.header-cell .sort-btn {
   background: none;
   border: none;
   color: inherit;
   font-family: var(--font-pixel);
   font-weight: bold;
+  font-size: 16px; /* Explicit size to prevent resizing */
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
   gap: 4px;
+  line-height: 1; /* Stabilize line height */
 }
-.header-cell button:hover {
+
+.header-cell .sort-btn:hover {
   text-decoration: underline;
+}
+
+.sort-icon {
+  display: inline-block;
+  width: 14px; /* Fixed width for arrow */
+  text-align: center;
+  font-weight: normal; /* Arrows don't need bold */
 }
 
 /* Data Row */

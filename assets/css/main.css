@@ -531,6 +531,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
     display: grid;
     grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 160px;
+    grid-template-rows: auto;
     gap: 0;
     align-items: stretch;
     margin-top: calc(var(--border-width) * -1);
@@ -543,58 +544,61 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1;
   }
 
-  .entry-meta {
-    display: contents;
-  }
-
-  /* Grid Items Styles (Borders & Padding) */
-  .entry-card > *,
-  .entry-meta > * {
+  /* Grid Items Styles (Reset Mobile & Apply Table Look) */
+  .entry-card > * {
+    grid-column: auto; /* Reset mobile placement */
+    grid-row: auto;
+    width: auto;
+    margin: 0;
+    position: static; /* Reset absolute */
     padding: 12px;
     border-right: 2px solid var(--ink-dim); /* Column Line */
     display: flex;
     align-items: center;
-    height: 100%;
-    overflow: hidden; /* Safety */
+    height: auto; /* Allow height to stretch */
+    min-height: 100%;
+    overflow: hidden; 
   }
 
-  /* Checkbox specific */
-  .entry-meta > .checkbox-pill {
+  /* Specific Column Styles */
+  .entry-card > .checkbox-pill {
     justify-content: center;
     border-top: none;
     border-bottom: none;
     border-left: none;
+    /* border-right is inherited */
     background: transparent;
-    padding: 0; /* Reset pill padding */
+    padding: 0;
     box-shadow: none;
   }
 
-  .entry-amount {
+  .entry-card > .entry-amount {
     justify-content: flex-end;
     font-size: 18px;
     color: var(--accent);
     font-weight: bold;
   }
 
-  .entry-account {
+  .entry-card > .entry-account {
     font-size: 14px;
     color: var(--ink-dim);
   }
 
-  .entry-note {
+  .entry-card > .entry-note {
     color: var(--ink-dim);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; /* Block for ellipsis */
+    display: block; /* Override flex for ellipsis */
     line-height: 1.5;
-    padding-top: 14px; /* Visual center align */
+    padding-top: 14px;
   }
 
-  .entry-actions {
+  .entry-card > .entry-actions {
     border-right: none;
     justify-content: flex-end;
     gap: 8px;
+    padding: 8px 12px;
   }
 
   /* Editing State Override - Restore Card Look */
@@ -609,12 +613,13 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 16px;
   }
   
-  .entry-card.is-editing > *,
-  .entry-card.is-editing .entry-meta > * {
+  /* Reset internal borders when editing */
+  .entry-card.is-editing > * {
     border-right: none;
     padding: 0;
     height: auto;
-    display: flex; /* Restore defaults */
+    display: block; /* Restore default block/flex behavior */
+    width: auto;
   }
   
   .entry-card.is-editing .entry-meta {
@@ -625,7 +630,9 @@ h1, h2, h3, h4, h5, h6 {
   }
   
   .entry-card.is-editing .entry-actions {
+    display: flex;
     width: 100%;
+    justify-content: flex-end;
     border: none;
   }
   
@@ -635,6 +642,7 @@ h1, h2, h3, h4, h5, h6 {
     border: 2px solid var(--ink);
     padding: 4px;
     box-shadow: none;
+    display: inline-flex;
   }
 }
 /* === END NEW TABLE LAYOUT === */
@@ -1101,52 +1109,67 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .entry-card { 
-    /* Restore Flex Card layout */
-    display: flex;
-    flex-direction: column; 
-    align-items: stretch; 
-    gap: 12px;
+    /* Mobile Grid Layout for Card Look */
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    gap: 4px;
+    padding: 12px;
+    padding-bottom: 48px; /* Space for actions if absolute, or remove if static */
     position: relative;
-    padding-bottom: 48px; /* Space for actions */
     margin-top: 0;
     margin-bottom: 0;
     box-shadow: 4px 4px 0 var(--ink-dim); /* Restore shadow */
   }
   
-  .entry-meta {
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 4px;
-    display: flex; /* Restore flex for meta */
+  /* Mobile Grid Placements */
+  .entry-card > .checkbox-pill { 
+    grid-column: 1; grid-row: 1; 
+    width: max-content;
+    align-self: center;
   }
-  
-  .entry-amount {
+  .entry-card > .entry-date { 
+    grid-column: 2; grid-row: 1; 
+    justify-self: end;
+    align-self: center;
+  }
+  .entry-card > .entry-amount { 
+    grid-column: 1 / -1; grid-row: 2;
     font-size: 24px;
-    align-self: flex-start;
-    text-align: left;
+    color: var(--accent);
+    font-weight: bold;
+    margin-top: 4px;
   }
-
-  .entry-note {
+  .entry-card > .entry-account { 
+    grid-column: 1 / -1; grid-row: 3;
+    font-size: 13px;
+    color: var(--ink-dim);
+  }
+  .entry-card > .entry-note { 
+    grid-column: 1 / -1; grid-row: 4;
     width: 100%;
     white-space: normal;
-    word-break: break-word; /* Crucial for preventing overflow */
-    margin-bottom: 8px;
+    word-break: break-word;
     line-height: 1.5;
+    margin-bottom: 8px;
   }
-
-  .entry-account {
-    font-size: 13px;
-    margin-bottom: 4px;
-  }
-
-  /* Move actions to bottom right absolute to save vertical space or keep distinct */
-  .entry-actions {
+  
+  /* Actions positioned absolute bottom-right for mobile to save space */
+  .entry-card > .entry-actions {
     position: absolute;
     bottom: 12px;
     right: 12px;
     width: auto;
+    display: flex;
+    gap: 8px;
   }
 
+  /* Hide entry-meta wrapper if it still exists in DOM (editing mode) */
+  .entry-meta {
+    display: contents; /* Or flex if needed */
+  }
+  /* But editing mode card has different structure, it uses flex-wrap in global styles */
+  
   .panel { padding: 12px; }
   .expense-summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
   .summary-card { padding: 10px; }

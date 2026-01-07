@@ -105,13 +105,13 @@
           <template v-else>
             <!-- Data Row: Must match Grid Columns: [Checkbox] [Date] [Amount] [Account] [Note] [Actions] -->
             
-            <!-- 1. Checkbox & 2. Date (Wrapped in entry-meta with display: contents) -->
-            <div class="entry-meta">
-              <label class="checkbox-pill">
-                <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
-              </label>
-              <p class="entry-date">{{ formatDate(entry.date) }}</p>
-            </div>
+            <!-- 1. Checkbox -->
+            <label class="checkbox-pill">
+              <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
+            </label>
+            
+            <!-- 2. Date -->
+            <p class="entry-date">{{ formatDate(entry.date) }}</p>
 
             <!-- 3. Amount -->
             <p class="entry-amount">{{ formatCurrency(entry.amount) }}</p>

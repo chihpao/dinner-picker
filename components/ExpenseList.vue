@@ -30,7 +30,7 @@
             <span class="sort-icon">{{ getSortArrow('date') }}</span>
           </button>
         </div>
-        <div class="header-cell" style="justify-content: flex-end;">
+        <div class="header-cell">
           <button @click="toggleSort('amount')" type="button" class="sort-btn">
             <span>金額</span>
             <span class="sort-icon">{{ getSortArrow('amount') }}</span>
@@ -48,7 +48,7 @@
             <span class="sort-icon">{{ getSortArrow('note') }}</span>
           </button>
         </div>
-        <div class="header-cell" style="justify-content: flex-end;">動作</div>
+        <div class="header-cell">動作</div>
       </div>
 
       <div class="expense-list">

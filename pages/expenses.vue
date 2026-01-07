@@ -2,10 +2,18 @@
   <div>
     <AppHeader title="食物紀錄" :is-expenses="true">
       <template #actions>
+        <button 
+          class="btn btn-sm" 
+          @click="showSummary = !showSummary" 
+          type="button"
+          :class="{ primary: showSummary }"
+        >
+          📊 統計
+        </button>
         <NuxtLink to="/expense-entry?from=/expenses" class="btn btn-sm primary">🍱 新增</NuxtLink>
       </template>
       <template #bottom>
-        <ExpenseSummary ledger="food" />
+        <ExpenseSummary ledger="food" :is-open="showSummary" />
       </template>
     </AppHeader>
 
@@ -18,6 +26,7 @@
 <script setup lang="ts">
 const { user } = useAuth()
 const { loadEntries } = useFoodExpenses()
+const showSummary = ref(false)
 
 watch(user, () => {
   loadEntries()

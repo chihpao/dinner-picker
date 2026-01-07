@@ -2,10 +2,18 @@
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
       <template #actions>
+        <button 
+          class="btn btn-sm" 
+          @click="showSummary = !showSummary" 
+          type="button"
+          :class="{ primary: showSummary }"
+        >
+          📊 統計
+        </button>
         <NuxtLink to="/total/entry?from=/total" class="btn btn-sm primary">📝 新增</NuxtLink>
       </template>
       <template #bottom>
-        <ExpenseSummary ledger="total" />
+        <ExpenseSummary ledger="total" :is-open="showSummary" />
       </template>
     </AppHeader>
 
@@ -19,6 +27,7 @@
 const { user } = useAuth()
 const { loadEntries } = useTotalExpenses()
 const { loadAccounts } = useAccounts()
+const showSummary = ref(false)
 
 watch(user, () => {
   loadEntries()

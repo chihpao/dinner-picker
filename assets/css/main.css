@@ -604,51 +604,148 @@ h1, h2, h3, h4, h5, h6 {
     padding: 8px 8px; /* Reduced padding to help with overflow */
   }
 
-  /* Editing State Override - Restore Card Look */
-  .entry-card.is-editing {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px;
-    z-index: 2;
-    box-shadow: 4px 4px 0 var(--ink-dim);
-    margin-top: 0;
-    margin-bottom: 16px;
-  }
-  
-  /* Reset internal borders when editing */
-  .entry-card.is-editing > * {
-    border-right: none;
-    padding: 0;
-    height: auto;
-    display: block; /* Restore default block/flex behavior */
-    width: auto;
-  }
-  
-  .entry-card.is-editing .entry-meta {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  
-  .entry-card.is-editing .entry-actions {
-    display: flex;
-    width: 100%;
-    justify-content: flex-end;
-    border: none;
-  }
-  
-  /* Reset checkbox pill in edit mode */
-  .entry-card.is-editing .checkbox-pill {
-    width: auto;
-    border: 2px solid var(--ink);
-    padding: 4px;
-    box-shadow: none;
-    display: inline-flex;
-  }
+  /* Old is-editing styles removed */
 }
 /* === END NEW TABLE LAYOUT === */
+
+/* ========= NEW EDIT FORM STYLES (Universal) ========= */
+.entry-card.is-editing {
+  display: block !important; /* Override all Grids */
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  padding: 16px !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 4px 4px 0 rgba(61, 90, 254, 0.2) !important;
+  background: #fff;
+  z-index: 10;
+  margin: 8px 0 !important;
+}
+
+.edit-form-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-group {
+  display: flex;
+  align-items: flex-end; /* Align input bottom with buttons */
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.input-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-dim);
+  font-weight: bold;
+}
+
+.input-label input,
+.input-label select {
+  height: 40px;
+  padding: 0 12px;
+  border: 2px solid var(--ink);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  background: var(--bg-body);
+  border-radius: 4px;
+  min-width: 140px;
+}
+.input-label input:focus,
+.input-label select:focus {
+  border-color: var(--primary);
+  background: #fff;
+}
+
+.detail-group .input-label.flex-grow {
+  flex: 1;
+}
+.detail-group .input-label input {
+  width: 100%;
+  min-width: 200px;
+}
+
+/* Quick Action Tags */
+.quick-tags {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 4px; /* Space for scroll bar if needed */
+  align-items: center;
+}
+.quick-tags.scrollable {
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.quick-tags.scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-btn {
+  background: var(--bg-body);
+  border: 1px solid var(--ink-dim);
+  color: var(--ink);
+  padding: 4px 10px;
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  border-radius: 20px; /* Pill shape */
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.1s;
+}
+.tag-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.tag-btn:active {
+  transform: scale(0.95);
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px dashed var(--ink-dim);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+/* Mobile Adjustments for Edit Form */
+@media (max-width: 600px) {
+  .edit-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .input-label input, 
+  .input-label select {
+    width: 100%;
+  }
+  
+  .quick-tags {
+    flex-wrap: wrap;
+  }
+  .quick-tags.scrollable {
+    flex-wrap: nowrap; /* Keep horizontal scroll for amounts on small screens */
+    mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  }
+  
+  .detail-group {
+    flex-direction: column;
+  }
+  
+  .entry-card.is-editing {
+    margin: 12px -12px !important; /* Slight negative margin to maximize width */
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: 0 4px 0 rgba(61, 90, 254, 0.2) !important;
+  }
+}
 
 .entry-card .inline-field {
   display: flex;

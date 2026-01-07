@@ -59,47 +59,55 @@
           :class="{ 'is-editing': editingId === entry.id }"
         >
           <template v-if="editingId === entry.id">
-            <div class="entry-meta">
-              <label class="checkbox-pill">
-                <input class="checkbox-square" type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
-              </label>
-              <label class="inline-field">
-                <span>日期</span>
-                <input type="date" v-model="editForm.date">
-              </label>
-              <div class="quick-actions">
-                <span>日期快捷</span>
-                <button class="btn btn-sm" type="button" @click="setToday">今天</button>
-                <button class="btn btn-sm" type="button" @click="setYesterday">昨天</button>
+            <div class="edit-form-layout">
+              <!-- Row 1: Date & Quick Actions -->
+              <div class="edit-group date-group">
+                <label class="input-label">
+                  <span>日期</span>
+                  <input type="date" v-model="editForm.date">
+                </label>
+                <div class="quick-tags">
+                  <button class="tag-btn" type="button" @click="setToday">今天</button>
+                  <button class="tag-btn" type="button" @click="setYesterday">昨天</button>
+                </div>
               </div>
-            </div>
-            <label class="inline-field">
-              <span>金額 (NT$)</span>
-              <input type="number" v-model.number="editForm.amount" min="0" step="1">
-            </label>
-            <div class="quick-actions">
-              <span>快速調整</span>
-              <button class="btn btn-sm" type="button" @click="adjustAmount(-100)">-100</button>
-              <button class="btn btn-sm" type="button" @click="adjustAmount(-10)">-10</button>
-              <button class="btn btn-sm" type="button" @click="adjustAmount(10)">+10</button>
-              <button class="btn btn-sm" type="button" @click="adjustAmount(100)">+100</button>
-            </div>
-            <label v-if="showAccount" class="inline-field">
-              <span>帳戶</span>
-              <select v-model="editForm.account_id">
-                <option value="">未指定</option>
-                <option v-for="account in accounts" :key="account.id" :value="account.id">
-                  {{ account.name }}（{{ accountKindLabel(account.kind) }}）
-                </option>
-              </select>
-            </label>
-            <label class="inline-field">
-              <span>備註</span>
-              <input type="text" v-model="editForm.note" placeholder="備註">
-            </label>
-            <div class="entry-actions">
-              <button class="btn btn-sm primary" @click="saveEdit" type="button">儲存</button>
-              <button class="btn btn-sm" @click="cancelEdit" type="button">取消</button>
+
+              <!-- Row 2: Amount & Quick Actions -->
+              <div class="edit-group amount-group">
+                <label class="input-label">
+                  <span>金額</span>
+                  <input type="number" v-model.number="editForm.amount" min="0" step="1">
+                </label>
+                <div class="quick-tags scrollable">
+                  <button class="tag-btn" type="button" @click="adjustAmount(10)">+10</button>
+                  <button class="tag-btn" type="button" @click="adjustAmount(50)">+50</button>
+                  <button class="tag-btn" type="button" @click="adjustAmount(100)">+100</button>
+                  <button class="tag-btn" type="button" @click="adjustAmount(-10)">-10</button>
+                </div>
+              </div>
+
+              <!-- Row 3: Account & Note -->
+              <div class="edit-group detail-group">
+                <label v-if="showAccount" class="input-label">
+                  <span>帳戶</span>
+                  <select v-model="editForm.account_id">
+                    <option value="">未指定</option>
+                    <option v-for="account in accounts" :key="account.id" :value="account.id">
+                      {{ account.name }}
+                    </option>
+                  </select>
+                </label>
+                <label class="input-label flex-grow">
+                  <span>備註</span>
+                  <input type="text" v-model="editForm.note" placeholder="備註...">
+                </label>
+              </div>
+
+              <!-- Row 4: Actions -->
+              <div class="edit-actions">
+                <button class="btn primary btn-sm" @click="saveEdit" type="button">儲存</button>
+                <button class="btn btn-sm" @click="cancelEdit" type="button">取消</button>
+              </div>
             </div>
           </template>
           <template v-else>

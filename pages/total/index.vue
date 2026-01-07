@@ -5,12 +5,11 @@
         <NuxtLink to="/total/entry?from=/total" class="btn desktop-only" aria-label="一般記帳">📝 一般記帳</NuxtLink>
       </template>
       <template #bottom>
-        <div class="summary-toolbar px-4 py-2">
-          <div class="summary-switch">
-            <button @click="period = 'month'" class="btn btn-sm" :class="{ primary: period === 'month' }">本月</button>
-            <button @click="period = 'all'" class="btn btn-sm" :class="{ primary: period === 'all' }">全部</button>
+        <div class="px-4 py-2">
+          <ExpenseSummary ledger="total" />
+          <div class="mt-4 flex justify-end mobile-only">
+            <NuxtLink to="/total/entry?from=/total" class="btn primary w-full justify-center">📝 一般記帳</NuxtLink>
           </div>
-          <NuxtLink to="/total/entry?from=/total" class="btn primary mobile-only">📝 一般記帳</NuxtLink>
         </div>
       </template>
     </AppHeader>

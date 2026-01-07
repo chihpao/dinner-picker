@@ -5,7 +5,9 @@
         <h2>{{ listTitle }}</h2>
         <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
       </div>
-      <!-- Actions moved to table header for desktop, kept in mobile toolbar -->
+      <div class="panel-actions">
+        <button @click="openBulkDelete" class="btn danger btn-sm" type="button" :disabled="!selectedCount" title="批次刪除">批次刪除</button>
+      </div>
     </div>
     
     <div v-if="!user" class="auth-gate panel">
@@ -32,14 +34,17 @@
             金額 {{ sortKey === 'amount' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
           </button>
         </div>
-        <div class="header-cell">帳戶</div>
-        <div class="header-cell">備註</div>
-        <div class="header-cell" style="justify-content: flex-end;">
-          <div class="panel-actions-buttons">
-             <button @click="openBulkDelete" class="btn danger btn-sm" type="button" :disabled="!selectedCount" title="批次刪除">刪除</button>
-             <button @click="openClearAll" class="btn danger btn-sm" type="button" :disabled="!entries.length" title="清空全部">清空</button>
-          </div>
+        <div class="header-cell">
+          <button @click="toggleSort('account_id')" type="button">
+            帳戶 {{ sortKey === 'account_id' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          </button>
         </div>
+        <div class="header-cell">
+          <button @click="toggleSort('note')" type="button">
+            備註 {{ sortKey === 'note' ? (sortOrder === 'desc' ? '↓' : '↑') : '' }}
+          </button>
+        </div>
+        <div class="header-cell"></div>
       </div>
 
       <div class="expense-list">
@@ -147,23 +152,6 @@
       </div>
     </div>
 
-    <!-- Clear all confirmation modal -->
-    <div v-if="clearModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <h3>清空全部紀錄</h3>
-        <p>此動作將清空全部紀錄，且無法復原。</p>
-        <label class="inline-field">
-          <span>請輸入 "Deleate" 以確認</span>
-          <input type="text" v-model="clearInput" placeholder="Deleate">
-        </label>
-        <p v-if="showClearError" class="helper-text danger-text">驗證文字不正確</p>
-        <div class="modal-actions">
-          <button class="btn primary" :disabled="!clearInput" @click="confirmClearAll" type="button">確定清空</button>
-          <button class="btn" @click="closeClearAll" type="button">取消</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Mobile bottom toolbar -->
     <div class="mobile-toolbar" aria-label="主要操作">
       <NuxtLink class="btn" :to="entryPath">{{ addLabel }}</NuxtLink>
@@ -171,7 +159,6 @@
         排序：{{ sortLabel }}
       </button>
       <button class="btn danger" type="button" :disabled="!selectedCount" @click="openBulkDelete">批次刪除</button>
-      <button class="btn danger" type="button" :disabled="!entries.length" @click="openClearAll">清空</button>
     </div>
   </section>
 </template>
@@ -188,7 +175,7 @@ const props = withDefaults(defineProps<{
 const { user } = useAuth()
 const { accounts } = useAccounts()
 const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
-const { entries, deleteEntry, updateEntry, clearAll } = expenses
+const { entries, deleteEntry, updateEntry } = expenses
 
 const showAccount = computed(() => true)
 const listTitle = computed(() => props.ledger === 'food' ? '食物紀錄列表' : '消費紀錄列表')
@@ -204,27 +191,43 @@ const editForm = reactive({
 })
 const deleteTargetId = ref<string | null>(null)
 const bulkModalOpen = ref(false)
-const clearModalOpen = ref(false)
-const clearInput = ref('')
-const showClearError = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
-const sortKey = ref<'date' | 'amount'>('date')
+const sortKey = ref<'date' | 'amount' | 'account_id' | 'note'>('date')
 const sortOrder = ref<'asc' | 'desc'>('desc')
 
 const sortedEntries = computed(() => {
   const list = [...entries.value]
   return list.sort((a, b) => {
+    const asc = sortOrder.value === 'asc'
     if (sortKey.value === 'date') {
       const aDate = new Date(a.date).getTime()
       const bDate = new Date(b.date).getTime()
-      return sortOrder.value === 'desc' ? bDate - aDate : aDate - bDate
+      return asc ? aDate - bDate : bDate - aDate
     }
-    return sortOrder.value === 'desc' ? b.amount - a.amount : a.amount - b.amount
+    if (sortKey.value === 'amount') {
+      return asc ? a.amount - b.amount : b.amount - a.amount
+    }
+    if (sortKey.value === 'account_id') {
+      const aName = accountLabel(a.account_id)
+      const bName = accountLabel(b.account_id)
+      return asc ? aName.localeCompare(bName) : bName.localeCompare(aName)
+    }
+    if (sortKey.value === 'note') {
+      const aNote = a.note || ''
+      const bNote = b.note || ''
+      return asc ? aNote.localeCompare(bNote) : bNote.localeCompare(aNote)
+    }
+    return 0
   })
 })
 
 const sortLabel = computed(() => {
-  const label = sortKey.value === 'date' ? '日期' : '金額'
+  let label = ''
+  if (sortKey.value === 'date') label = '日期'
+  else if (sortKey.value === 'amount') label = '金額'
+  else if (sortKey.value === 'account_id') label = '帳戶'
+  else if (sortKey.value === 'note') label = '備註'
+  
   const arrow = sortOrder.value === 'desc' ? '↓' : '↑'
   return `${label}${arrow}`
 })
@@ -316,7 +319,7 @@ watch(entries, (list) => {
   selectedIds.value = next
 })
 
-const toggleSort = (key: 'date' | 'amount') => {
+const toggleSort = (key: 'date' | 'amount' | 'account_id' | 'note') => {
   if (sortKey.value === key) {
     sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
   } else {
@@ -326,11 +329,10 @@ const toggleSort = (key: 'date' | 'amount') => {
 }
 
 const cycleSort = () => {
-  if (sortKey.value === 'date') {
-    toggleSort('amount')
-  } else {
-    toggleSort('date')
-  }
+  if (sortKey.value === 'date') toggleSort('amount')
+  else if (sortKey.value === 'amount') toggleSort('account_id')
+  else if (sortKey.value === 'account_id') toggleSort('note')
+  else toggleSort('date')
 }
 
 const openDelete = (id: string) => {
@@ -364,26 +366,6 @@ const confirmBulkDelete = async () => {
   }
   selectedIds.value = new Set()
   bulkModalOpen.value = false
-}
-
-const openClearAll = () => {
-  clearModalOpen.value = true
-  clearInput.value = ''
-  showClearError.value = false
-}
-
-const closeClearAll = () => {
-  clearModalOpen.value = false
-  showClearError.value = false
-}
-
-const confirmClearAll = async () => {
-  if (clearInput.value !== 'Deleate') {
-    showClearError.value = true
-    return
-  }
-  await clearAll()
-  clearModalOpen.value = false
 }
 
 const accountKindLabel = (kind: string) => {

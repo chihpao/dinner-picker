@@ -40,6 +40,10 @@ const { user } = useAuth()
 const { loadEntries } = useFoodExpenses()
 const showSummary = ref(false)
 
+useHead({
+  title: '孜保飲食紀錄｜今晚吃哪家？',
+})
+
 watch(user, () => {
   loadEntries()
 }, { immediate: true })
@@ -51,6 +55,7 @@ watch(user, () => {
   align-items: center;
   gap: 6px;
 }
+
 .w-4 { width: 16px; }
 .h-4 { height: 16px; }
 
@@ -60,8 +65,3 @@ watch(user, () => {
   }
 }
 </style>
-
-useHead({
-  title: '孜保飲食紀錄｜今晚吃哪家？',
-})
-</script>

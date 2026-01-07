@@ -153,14 +153,6 @@
       </div>
     </div>
 
-    <!-- Mobile bottom toolbar -->
-    <div class="mobile-toolbar" aria-label="主要操作">
-      <NuxtLink class="btn" :to="entryPath">{{ addLabel }}</NuxtLink>
-      <button class="btn" type="button" @click="cycleSort">
-        排序：{{ sortLabel }}
-      </button>
-      <button v-if="selectedCount" class="btn danger" type="button" @click="openBulkDelete">刪除</button>
-    </div>
   </section>
 </template>
 

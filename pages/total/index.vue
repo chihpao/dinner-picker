@@ -41,6 +41,13 @@ const { loadEntries } = useTotalExpenses()
 const { loadAccounts } = useAccounts()
 const showSummary = ref(false)
 
+useHead({
+  title: '全消費總覽｜今晚吃哪家？',
+  meta: [
+    { name: 'theme-color', content: '#1b1b1b' }
+  ]
+})
+
 watch(user, () => {
   loadEntries()
   loadAccounts()
@@ -62,11 +69,3 @@ watch(user, () => {
   }
 }
 </style>
-
-useHead({
-  title: '全消費總覽｜今晚吃哪家？',
-  meta: [
-    { name: 'theme-color', content: '#1b1b1b' }
-  ]
-})
-</script>

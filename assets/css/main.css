@@ -805,25 +805,6 @@ h1, h2, h3, h4, h5, h6 {
   flex-wrap: wrap;
 }
 
-.mobile-toolbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: none;
-  gap: 8px;
-  padding: 12px;
-  background: var(--bg-paper);
-  border-top: var(--border-width) solid var(--ink);
-  box-shadow: 0 -4px 0 var(--ink);
-  z-index: 15;
-}
-
-.mobile-toolbar .btn {
-  flex: 1;
-  justify-content: center;
-}
-
 .checkbox-square {
   appearance: none;
   width: 16px;
@@ -1172,10 +1153,6 @@ h1, h2, h3, h4, h5, h6 {
   .toolbar .btn { width: 100%; }
 
   .panel-actions { display: none; }
-  
-  .mobile-toolbar { 
-    display: none; /* Hidden as per request to keep view clean */
-  }
   
   .grid {
     grid-template-columns: 1fr;

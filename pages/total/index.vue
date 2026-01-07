@@ -1,9 +1,6 @@
 <template>
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
-      <template #actions>
-        <NuxtLink to="/total/entry?from=/total" class="btn desktop-only" aria-label="一般記帳">📝 一般記帳</NuxtLink>
-      </template>
       <template #bottom>
         <div class="px-4 py-2">
           <ExpenseSummary ledger="total" />

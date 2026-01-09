@@ -16,6 +16,30 @@
     </div>
 
     <form v-else @submit.prevent="handleSubmit" class="expense-form compact-form">
+      <div v-if="isTotalLedger" class="type-toggle">
+        <button 
+          type="button" 
+          :class="['btn', form.type === 'expense' ? 'btn-expense-active' : 'btn-expense-inactive']"
+          @click="form.type = 'expense'"
+        >
+          支出
+        </button>
+        <button 
+          type="button" 
+          :class="['btn', form.type === 'income' ? 'btn-income-active' : 'btn-income-inactive']"
+          @click="form.type = 'income'"
+        >
+          收入
+        </button>
+        <button 
+          type="button" 
+          :class="['btn', form.type === 'transfer' ? 'btn-transfer-active' : 'btn-transfer-inactive']"
+          @click="form.type = 'transfer'"
+        >
+          金錢轉移
+        </button>
+      </div>
+
       <label>
         <span>日期</span>
         <input type="date" v-model="form.date" required>
@@ -24,7 +48,9 @@
         <span>金額 (NT$)</span>
         <input type="number" v-model.number="form.amount" min="0" step="1" required placeholder="例如 150">
       </label>
-      <label v-if="showAccount" class="wide">
+
+      <!-- Expense / Income Account Selection -->
+      <label v-if="showAccount && form.type !== 'transfer'" class="wide">
         <span>帳戶</span>
         <select v-model="form.account_id">
           <option value="">未指定</option>
@@ -34,11 +60,40 @@
         </select>
         <p v-if="!accounts.length" class="helper-text">尚未建立帳戶，先到「帳戶」建立。</p>
       </label>
+
+      <!-- Transfer Account Selection -->
+      <template v-if="form.type === 'transfer'">
+        <label class="wide">
+          <span>轉出帳戶 (從哪裡扣款)</span>
+          <select v-model="form.from_account_id" required>
+            <option value="" disabled>請選擇</option>
+            <option v-for="account in accounts" :key="account.id" :value="account.id">
+              {{ account.name }}（{{ accountKindLabel(account.kind) }}）
+            </option>
+          </select>
+        </label>
+        <label class="wide">
+          <span>轉入帳戶 (存到哪裡)</span>
+          <select v-model="form.to_account_id" required>
+            <option value="" disabled>請選擇</option>
+            <option v-for="account in accounts" :key="account.id" :value="account.id">
+              {{ account.name }}（{{ accountKindLabel(account.kind) }}）
+            </option>
+          </select>
+        </label>
+      </template>
+
       <label class="wide">
         <span>備註</span>
         <textarea v-model="form.note" :placeholder="notePlaceholder"></textarea>
       </label>
-      <button class="btn primary" type="submit">確認</button>
+      
+      <button 
+        :class="['btn', submitBtnClass]" 
+        type="submit"
+      >
+        確認{{ submitBtnText }}
+      </button>
     </form>
   </section>
 </template>
@@ -57,17 +112,36 @@ const { addEntry } = expenses
 const router = useRouter()
 
 const showAccount = computed(() => true)
+const isTotalLedger = computed(() => props.ledger === 'total')
 const entryText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
 const titleText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
 const signInRedirect = computed(() => props.ledger === 'food' ? '/expense-entry' : '/total/entry')
 const redirectPath = computed(() => props.ledger === 'food' ? '/expenses' : '/total')
-const notePlaceholder = computed(() => props.ledger === 'food' ? '午餐、晚餐...' : '交通、購物...')
+const notePlaceholder = computed(() => {
+  if (form.type === 'transfer') return '轉帳備註...'
+  return props.ledger === 'food' ? '午餐、晚餐...' : '交通、購物...'
+})
 
 const form = reactive({
   date: toISODate(new Date()),
   amount: '' as unknown as number,
   note: '',
-  account_id: '' as string
+  account_id: '' as string,
+  from_account_id: '' as string,
+  to_account_id: '' as string,
+  type: 'expense' as 'expense' | 'income' | 'transfer'
+})
+
+const submitBtnText = computed(() => {
+  if (form.type === 'income') return '收入'
+  if (form.type === 'transfer') return '轉帳'
+  return '支出'
+})
+
+const submitBtnClass = computed(() => {
+  if (form.type === 'income') return 'success'
+  if (form.type === 'transfer') return 'primary' // Use primary blue for transfer
+  return 'danger' // Expense is usually red/danger
 })
 
 watch(accounts, (list) => {
@@ -91,10 +165,58 @@ const handleSubmit = async () => {
     return
   }
 
+  // Handle Transfer
+  if (form.type === 'transfer') {
+    if (!form.from_account_id || !form.to_account_id) {
+      alert('請選擇轉出和轉入帳戶')
+      return
+    }
+    if (form.from_account_id === form.to_account_id) {
+      alert('轉出和轉入帳戶不能相同')
+      return
+    }
+
+    const fromAccount = accounts.value.find(a => a.id === form.from_account_id)
+    const toAccount = accounts.value.find(a => a.id === form.to_account_id)
+    const fromName = fromAccount ? fromAccount.name : '未知帳戶'
+    const toName = toAccount ? toAccount.name : '未知帳戶'
+
+    // 1. Expense Entry (From Account)
+    const entryOut = {
+      id: generateUUID(),
+      date: form.date,
+      amount: Math.round(form.amount), // Positive for expense
+      note: `[轉帳] 轉至 ${toName} ${form.note ? '(' + form.note + ')' : ''}`,
+      createdAt: Date.now(),
+      user_id: user.value!.id,
+      account_id: form.from_account_id
+    }
+
+    // 2. Income Entry (To Account)
+    const entryIn = {
+      id: generateUUID(),
+      date: form.date,
+      amount: -Math.round(form.amount), // Negative for income
+      note: `[轉帳] 來自 ${fromName} ${form.note ? '(' + form.note + ')' : ''}`,
+      createdAt: Date.now() + 1, // Ensure slightly different time
+      user_id: user.value!.id,
+      account_id: form.to_account_id
+    }
+
+    await addEntry(entryOut)
+    await addEntry(entryIn)
+
+    router.push(redirectPath.value)
+    return
+  }
+
+  // Handle Expense/Income
+  const finalAmount = form.type === 'income' ? -Math.abs(form.amount) : Math.abs(form.amount)
+
   const entry = {
     id: generateUUID(),
     date: form.date,
-    amount: Math.round(form.amount),
+    amount: Math.round(finalAmount),
     note: form.note,
     createdAt: Date.now(),
     user_id: user.value!.id,
@@ -119,3 +241,57 @@ const handleSubmit = async () => {
   router.push(redirectPath.value)
 }
 </script>
+
+<style scoped>
+.type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.type-toggle .btn {
+  flex: 1;
+  font-weight: bold;
+  transition: all 0.2s;
+  border-width: 2px;
+}
+
+/* Expense Styles */
+.btn-expense-active {
+  background-color: #ef4444; /* Red */
+  color: white;
+  border-color: #ef4444;
+}
+.btn-expense-inactive {
+  background-color: #fef2f2; /* Light Red */
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Income Styles */
+.btn-income-active {
+  background-color: #10b981; /* Green */
+  color: white;
+  border-color: #10b981;
+}
+.btn-income-inactive {
+  background-color: #ecfdf5; /* Light Green */
+  color: #10b981;
+  border-color: #10b981;
+}
+
+/* Transfer Styles */
+.btn-transfer-active {
+  background-color: #3b82f6; /* Blue */
+  color: white;
+  border-color: #3b82f6;
+}
+.btn-transfer-inactive {
+  background-color: #eff6ff; /* Light Blue */
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.btn:active {
+  transform: translateY(2px);
+}
+</style>

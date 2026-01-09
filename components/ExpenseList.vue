@@ -68,7 +68,10 @@
             <p class="entry-date">{{ formatDate(entry.date) }}</p>
 
             <!-- 3. Amount -->
-            <p class="entry-amount">{{ formatCurrency(entry.amount) }}</p>
+            <p class="entry-amount" :class="entry.amount < 0 ? 'text-success' : ''">
+              {{ formatCurrency(Math.abs(entry.amount)) }}
+              <span v-if="entry.amount < 0" class="badge-income">收</span>
+            </p>
             
             <!-- 4. Account -->
             <p class="entry-account">{{ showAccount ? accountLabel(entry.account_id) : '' }}</p>
@@ -101,6 +104,26 @@
       <div class="modal-card edit-modal">
         <h3>編輯紀錄</h3>
         <div class="edit-form-layout">
+          <!-- Row 0: Type (Total Ledger only) -->
+          <div v-if="ledger === 'total'" class="edit-group type-group">
+            <div class="type-toggle">
+              <button 
+                type="button" 
+                :class="['btn btn-sm', editForm.type === 'expense' ? 'danger' : 'outline']"
+                @click="editForm.type = 'expense'"
+              >
+                支出
+              </button>
+              <button 
+                type="button" 
+                :class="['btn btn-sm', editForm.type === 'income' ? 'success' : 'outline']"
+                @click="editForm.type = 'income'"
+              >
+                收入
+              </button>
+            </div>
+          </div>
+
           <!-- Row 1: Date & Quick Actions -->
           <div class="edit-group date-group">
             <label class="input-label">
@@ -146,7 +169,7 @@
 
           <!-- Row 4: Actions -->
           <div class="edit-actions">
-            <button class="btn primary" @click="saveEdit" type="button">儲存</button>
+            <button :class="['btn', editForm.type === 'income' ? 'success' : 'primary']" @click="saveEdit" type="button">儲存</button>
             <button class="btn" @click="cancelEdit" type="button">取消</button>
           </div>
         </div>
@@ -180,7 +203,8 @@ const editForm = reactive({
   date: '',
   amount: 0 as number,
   note: '',
-  account_id: '' as string
+  account_id: '' as string,
+  type: 'expense' as 'expense' | 'income'
 })
 const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
@@ -235,9 +259,10 @@ const allSelected = computed(() => entries.value.length > 0 && selectedIds.value
 const startEdit = (entry: ExpenseEntry) => {
   editingId.value = entry.id
   editForm.date = entry.date
-  editForm.amount = entry.amount
+  editForm.amount = Math.abs(entry.amount)
   editForm.note = entry.note ?? ''
   editForm.account_id = entry.account_id ?? ''
+  editForm.type = entry.amount < 0 ? 'income' : 'expense'
 }
 
 const cancelEdit = () => {
@@ -257,15 +282,19 @@ const saveEdit = async () => {
     return
   }
 
-  if (!editForm.amount || editForm.amount <= 0) {
-    alert('請輸入正確的金額')
-    return
+  if (editForm.amount <= 0 && editForm.amount !== 0) { // Allow 0? probably not.
+     if (!editForm.amount) {
+        alert('請輸入正確的金額')
+        return
+     }
   }
+
+  const finalAmount = editForm.type === 'income' ? -Math.abs(editForm.amount) : Math.abs(editForm.amount)
 
   await updateEntry({
     ...target,
     date: editForm.date,
-    amount: Math.round(editForm.amount),
+    amount: Math.round(finalAmount),
     note: editForm.note ?? '',
     account_id: editForm.account_id || null
   })
@@ -362,3 +391,36 @@ const accountLabel = (accountId?: string | null) => {
   return found ? found.name : '未指定帳戶'
 }
 </script>
+
+<style scoped>
+.text-success { color: #10b981; }
+.badge-income {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  font-size: 0.7rem;
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.type-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.type-toggle .btn {
+  flex: 1;
+}
+.btn.outline {
+  background: transparent;
+  border: 1px solid var(--border-color, #444);
+  color: var(--text-color, #eee);
+}
+.btn.success {
+  background-color: #10b981;
+  color: white;
+  border: none;
+}
+</style>

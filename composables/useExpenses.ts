@@ -289,14 +289,46 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
         const yearStart = new Date(today.getFullYear(), 0, 1)
         const yearEnd = new Date(today.getFullYear() + 1, 0, 1)
 
+        const initial = {
+            today: 0, todayExpense: 0, todayIncome: 0,
+            week: 0, weekExpense: 0, weekIncome: 0,
+            month: 0, monthExpense: 0, monthIncome: 0,
+            year: 0, yearExpense: 0, yearIncome: 0,
+        }
+
         return entries.value.reduce((acc, entry) => {
+            // Ignore transfer entries for summary statistics
+            if (entry.note && entry.note.includes('[轉帳]')) {
+                return acc
+            }
+
             const entryDate = parseISODate(entry.date)
-            if (isSameDay(entryDate, today)) acc.today += entry.amount
-            if (entryDate >= weekStart && entryDate < weekEnd) acc.week += entry.amount
-            if (entryDate >= monthStart && entryDate < monthEnd) acc.month += entry.amount
-            if (entryDate >= yearStart && entryDate < yearEnd) acc.year += entry.amount
+            const isIncome = entry.amount < 0
+            const absAmount = Math.abs(entry.amount)
+            
+            // Helper to update a specific period
+            const updatePeriod = (period: 'today' | 'week' | 'month' | 'year') => {
+                // Net total (Sum of signed amounts) - Note: If expense is positive and income negative,
+                // Sum = Expense - Income. If we want "Total Spent" vs "Total Earned", we separate them.
+                // Original 'today', 'week' etc were likely treated as "Total Spending".
+                // If we now mix, 'today' becoming Net might be confusing if labeled "Spending".
+                // However, for backward compatibility, let's keep 'today' as the signed sum (Net).
+                acc[period] += entry.amount
+
+                if (isIncome) {
+                    acc[`${period}Income`] += absAmount
+                } else {
+                    acc[`${period}Expense`] += absAmount
+                }
+            }
+
+            if (isSameDay(entryDate, today)) updatePeriod('today')
+            if (entryDate >= weekStart && entryDate < weekEnd) updatePeriod('week')
+            if (entryDate >= monthStart && entryDate < monthEnd) updatePeriod('month')
+            if (entryDate >= yearStart && entryDate < yearEnd) updatePeriod('year')
+
             return acc
-        }, { today: 0, week: 0, month: 0, year: 0 })
+        }, initial)
     })
 
     return {

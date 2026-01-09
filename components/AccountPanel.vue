@@ -55,7 +55,6 @@
               <span>初始金額 (NT$)</span>
               <input v-model.number="editForm.balance" type="number" min="0" step="1" required>
             </label>
-            <p class="account-total">累計支出：{{ formatCurrency(accountTotals.get(account.id) || 0) }}</p>
             <div class="account-actions">
               <button class="btn btn-sm primary" type="button" @click="saveEdit(account.id)">儲存</button>
               <button class="btn btn-sm" type="button" @click="cancelEdit">取消</button>
@@ -68,8 +67,14 @@
             <p class="account-kind">{{ accountKindLabel(account.kind) }}</p>
           </div>
           <div class="account-meta">
-            <p class="account-balance">初始金額：{{ formatCurrency(account.balance || 0) }}</p>
-            <p class="account-total">累計支出：{{ formatCurrency(accountTotals.get(account.id) || 0) }}</p>
+            <div class="meta-row">
+              <span>初始：{{ formatCurrency(account.balance || 0) }}</span>
+              <span class="text-sm text-gray">收入：{{ formatCurrency(accountStats.get(account.id)?.income || 0) }}</span>
+              <span class="text-sm text-gray">支出：{{ formatCurrency(accountStats.get(account.id)?.expense || 0) }}</span>
+            </div>
+            <p class="account-balance highlight">
+              目前餘額：{{ formatCurrency((account.balance || 0) - (accountStats.get(account.id)?.net || 0)) }}
+            </p>
             <div class="account-actions">
               <button class="btn btn-sm" type="button" @click="startEdit(account)">編輯</button>
               <button class="btn btn-sm danger" type="button" @click="confirmDelete(account.id)">刪除</button>
@@ -77,13 +82,17 @@
           </div>
         </template>
       </article>
-      <article v-if="unassignedTotal" class="account-card account-card--ghost">
+      <article v-if="unassignedStats.count > 0" class="account-card account-card--ghost">
         <div class="account-main">
           <h3>未指定帳戶</h3>
           <p class="account-kind">尚未分類</p>
         </div>
         <div class="account-meta">
-          <p class="account-total">累計支出：{{ formatCurrency(unassignedTotal) }}</p>
+          <div class="meta-row">
+            <span>收入：{{ formatCurrency(unassignedStats.income) }}</span>
+            <span>支出：{{ formatCurrency(unassignedStats.expense) }}</span>
+          </div>
+          <p class="account-total">淨支出：{{ formatCurrency(unassignedStats.net) }}</p>
         </div>
       </article>
     </div>
@@ -108,20 +117,37 @@ const editForm = reactive({
   balance: 0
 })
 
-const accountTotals = computed(() => {
-  const map = new Map<string, number>()
+const accountStats = computed(() => {
+  const map = new Map<string, { income: number; expense: number; net: number }>()
   entries.value.forEach((entry) => {
     if (!entry.account_id) return
-    map.set(entry.account_id, (map.get(entry.account_id) || 0) + entry.amount)
+    const current = map.get(entry.account_id) || { income: 0, expense: 0, net: 0 }
+    
+    // Logic: Income is negative, Expense is positive.
+    if (entry.amount < 0) {
+      current.income += Math.abs(entry.amount)
+    } else {
+      current.expense += entry.amount
+    }
+    current.net += entry.amount // Sum of signed amounts (Expense - Income)
+    
+    map.set(entry.account_id, current)
   })
   return map
 })
 
-const unassignedTotal = computed(() => {
-  return entries.value.reduce((sum, entry) => {
-    if (entry.account_id) return sum
-    return sum + entry.amount
-  }, 0)
+const unassignedStats = computed(() => {
+  return entries.value.reduce((acc, entry) => {
+    if (entry.account_id) return acc
+    if (entry.amount < 0) {
+      acc.income += Math.abs(entry.amount)
+    } else {
+      acc.expense += entry.amount
+    }
+    acc.net += entry.amount
+    acc.count++
+    return acc
+  }, { income: 0, expense: 0, net: 0, count: 0 })
 })
 
 const accountKindLabel = (kind: string) => {
@@ -191,3 +217,22 @@ const saveEdit = async (id: string) => {
   editingId.value = null
 }
 </script>
+
+<style scoped>
+.meta-row {
+  display: flex;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.highlight {
+  color: var(--primary-color, #f4b005);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.text-gray {
+  color: #aaa;
+}
+</style>

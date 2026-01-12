@@ -1,5 +1,5 @@
 <template>
-  <ExpenseForm ledger="total" />
+  <ExpenseForm />
 </template>
 
 <script setup lang="ts">

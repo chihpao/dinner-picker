@@ -2,7 +2,7 @@
   <div>
     <AppHeader title="帳戶管理" :is-expenses="true" back-to="/total">
       <template #bottom>
-        <ExpenseSummary ledger="total" />
+        <ExpenseSummary />
       </template>
     </AppHeader>
 

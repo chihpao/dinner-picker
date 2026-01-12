@@ -22,12 +22,12 @@
         </NuxtLink>
       </template>
       <template #bottom>
-        <ExpenseSummary ledger="total" :is-open="showSummary" />
+        <ExpenseSummary :is-open="showSummary" />
       </template>
     </AppHeader>
 
     <main class="expense-main">
-      <ExpenseList ledger="total" />
+      <ExpenseList />
     </main>
   </div>
 </template>

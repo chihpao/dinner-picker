@@ -470,7 +470,7 @@ h1, h2, h3, h4, h5, h6 {
   .expense-list-header {
     display: grid;
     /* Checkbox, Date, Amount, Account, Note, Actions */
-    grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 180px;
+    grid-template-columns: 40px 1fr 1fr 100px 1fr 1.5fr 180px;
     gap: 0;
     align-items: stretch;
     background: var(--ink);
@@ -533,7 +533,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: none;
     padding: 0;
     display: grid;
-    grid-template-columns: 40px 1fr 1fr 1fr 1.5fr 180px;
+    grid-template-columns: 40px 1fr 1fr 100px 1fr 1.5fr 180px;
     grid-template-rows: auto;
     gap: 0;
     align-items: stretch;

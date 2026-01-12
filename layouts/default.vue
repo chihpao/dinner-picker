@@ -15,7 +15,7 @@
 <script setup lang="ts">
 const { initAuth, user } = useAuth()
 const { fetchRestaurants } = useRestaurants()
-const { loadEntries } = useFoodExpenses()
+const { loadEntries } = useTotalExpenses()
 
 onMounted(() => {
   initAuth()

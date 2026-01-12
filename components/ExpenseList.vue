@@ -37,6 +37,12 @@
           </button>
         </div>
         <div class="header-cell">
+          <button @click="toggleSort('sub_type')" type="button" class="sort-btn">
+            <span>類型</span>
+            <span class="sort-icon">{{ getSortArrow('sub_type') }}</span>
+          </button>
+        </div>
+        <div class="header-cell">
           <button @click="toggleSort('account_id')" type="button" class="sort-btn">
             <span>帳戶</span>
             <span class="sort-icon">{{ getSortArrow('account_id') }}</span>
@@ -57,7 +63,7 @@
           :key="entry.id" 
           class="entry-card"
         >
-            <!-- Data Row: Must match Grid Columns: [Checkbox] [Date] [Amount] [Account] [Note] [Actions] -->
+            <!-- Data Row: Must match Grid Columns: [Checkbox] [Date] [Amount] [Type] [Account] [Note] [Actions] -->
             
             <!-- 1. Checkbox -->
             <label class="checkbox-pill">
@@ -72,14 +78,21 @@
               {{ formatCurrency(Math.abs(entry.amount)) }}
               <span v-if="entry.amount < 0" class="badge-income">收</span>
             </p>
+
+            <!-- 4. Type (New) -->
+            <p class="entry-type">
+              <span class="type-badge" :class="entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'">
+                {{ entry.sub_type === 'zibao' ? '孜保' : '一般' }}
+              </span>
+            </p>
             
-            <!-- 4. Account -->
+            <!-- 5. Account -->
             <p class="entry-account">{{ showAccount ? accountLabel(entry.account_id) : '' }}</p>
             
-            <!-- 5. Note -->
+            <!-- 6. Note -->
             <p class="entry-note" :title="entry.note">{{ entry.note }}</p>
             
-            <!-- 6. Actions -->
+            <!-- 7. Actions -->
             <div class="entry-actions">
               <button class="btn btn-sm" @click="startEdit(entry)" type="button">編輯</button>
             </div>
@@ -105,7 +118,7 @@
         <h3>編輯紀錄</h3>
         <div class="edit-form-layout">
           <!-- Row 0: Type (Total Ledger only) -->
-          <div v-if="ledger === 'total'" class="edit-group type-group">
+          <div class="edit-group type-group">
             <div class="type-toggle">
               <button 
                 type="button" 
@@ -150,7 +163,7 @@
             </div>
           </div>
 
-          <!-- Row 3: Account & Note -->
+          <!-- Row 3: Account & Type & Note -->
           <div class="edit-group detail-group">
             <label v-if="showAccount" class="input-label">
               <span>帳戶</span>
@@ -161,6 +174,15 @@
                 </option>
               </select>
             </label>
+            
+            <label class="input-label" v-if="editForm.type === 'expense'">
+              <span>類型</span>
+              <select v-model="editForm.sub_type">
+                <option value="general">一般</option>
+                <option value="zibao">孜保平分</option>
+              </select>
+            </label>
+
             <label class="input-label flex-grow">
               <span>備註</span>
               <input type="text" v-model="editForm.note" placeholder="備註...">
@@ -182,21 +204,13 @@
 <script setup lang="ts">
 import type { ExpenseEntry } from '~/composables/useExpenses'
 
-const props = withDefaults(defineProps<{
-  ledger?: 'food' | 'total'
-}>(), {
-  ledger: 'food'
-})
-
 const { user } = useAuth()
 const { accounts } = useAccounts()
-const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
+const expenses = useTotalExpenses()
 const { entries, deleteEntry, updateEntry } = expenses
 
 const showAccount = computed(() => true)
-const listTitle = computed(() => props.ledger === 'food' ? '食物紀錄列表' : '消費紀錄列表')
-const addLabel = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
-const entryPath = computed(() => props.ledger === 'food' ? '/expense-entry?from=/expenses' : '/total/entry?from=/total')
+const listTitle = computed(() => '消費紀錄列表')
 
 const editingId = ref<string | null>(null)
 const editForm = reactive({
@@ -204,11 +218,12 @@ const editForm = reactive({
   amount: 0 as number,
   note: '',
   account_id: '' as string,
-  type: 'expense' as 'expense' | 'income'
+  type: 'expense' as 'expense' | 'income',
+  sub_type: 'general'
 })
 const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
-const sortKey = ref<'date' | 'amount' | 'account_id' | 'note'>('date')
+const sortKey = ref<'date' | 'amount' | 'account_id' | 'note' | 'sub_type'>('date')
 const sortOrder = ref<'asc' | 'desc'>('desc')
 
 const sortedEntries = computed(() => {
@@ -233,6 +248,11 @@ const sortedEntries = computed(() => {
       const bNote = b.note || ''
       return asc ? aNote.localeCompare(bNote) : bNote.localeCompare(aNote)
     }
+    if (sortKey.value === 'sub_type') {
+      const aType = a.sub_type || ''
+      const bType = b.sub_type || ''
+      return asc ? aType.localeCompare(bType) : bType.localeCompare(aType)
+    }
     return 0
   })
 })
@@ -241,17 +261,6 @@ const getSortArrow = (key: string) => {
   if (sortKey.value !== key) return ''
   return sortOrder.value === 'desc' ? '↓' : '↑'
 }
-
-const sortLabel = computed(() => {
-  let label = ''
-  if (sortKey.value === 'date') label = '日期'
-  else if (sortKey.value === 'amount') label = '金額'
-  else if (sortKey.value === 'account_id') label = '帳戶'
-  else if (sortKey.value === 'note') label = '備註'
-  
-  const arrow = sortOrder.value === 'desc' ? '↓' : '↑'
-  return `${label}${arrow}`
-})
 
 const selectedCount = computed(() => selectedIds.value.size)
 const allSelected = computed(() => entries.value.length > 0 && selectedIds.value.size === entries.value.length)
@@ -263,6 +272,7 @@ const startEdit = (entry: ExpenseEntry) => {
   editForm.note = entry.note ?? ''
   editForm.account_id = entry.account_id ?? ''
   editForm.type = entry.amount < 0 ? 'income' : 'expense'
+  editForm.sub_type = entry.sub_type ?? 'general'
 }
 
 const cancelEdit = () => {
@@ -282,7 +292,7 @@ const saveEdit = async () => {
     return
   }
 
-  if (editForm.amount <= 0 && editForm.amount !== 0) { // Allow 0? probably not.
+  if (editForm.amount <= 0 && editForm.amount !== 0) {
      if (!editForm.amount) {
         alert('請輸入正確的金額')
         return
@@ -296,7 +306,8 @@ const saveEdit = async () => {
     date: editForm.date,
     amount: Math.round(finalAmount),
     note: editForm.note ?? '',
-    account_id: editForm.account_id || null
+    account_id: editForm.account_id || null,
+    sub_type: editForm.sub_type
   })
   editingId.value = null
 }
@@ -345,20 +356,13 @@ watch(entries, (list) => {
   selectedIds.value = next
 })
 
-const toggleSort = (key: 'date' | 'amount' | 'account_id' | 'note') => {
+const toggleSort = (key: 'date' | 'amount' | 'account_id' | 'note' | 'sub_type') => {
   if (sortKey.value === key) {
     sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
   } else {
     sortKey.value = key
     sortOrder.value = 'desc'
   }
-}
-
-const cycleSort = () => {
-  if (sortKey.value === 'date') toggleSort('amount')
-  else if (sortKey.value === 'amount') toggleSort('account_id')
-  else if (sortKey.value === 'account_id') toggleSort('note')
-  else toggleSort('date')
 }
 
 const openBulkDelete = () => {
@@ -377,12 +381,6 @@ const confirmBulkDelete = async () => {
   }
   selectedIds.value = new Set()
   bulkModalOpen.value = false
-}
-
-const accountKindLabel = (kind: string) => {
-  if (kind === 'cash') return '現金'
-  if (kind === 'card') return '信用卡'
-  return '銀行'
 }
 
 const accountLabel = (accountId?: string | null) => {
@@ -422,5 +420,22 @@ const accountLabel = (accountId?: string | null) => {
   background-color: #10b981;
   color: white;
   border: none;
+}
+
+/* Type Badge */
+.type-badge {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+.type-general {
+  color: var(--ink-dim);
+  border-color: var(--ink-dim);
+}
+.type-zibao {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: rgba(61, 90, 254, 0.1);
 }
 </style>

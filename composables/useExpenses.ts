@@ -8,9 +8,10 @@ export interface ExpenseEntry {
     createdAt: number
     user_id: string
     account_id?: string | null
+    sub_type?: string
 }
 
-type LedgerKind = 'food' | 'total'
+type LedgerKind = 'total'
 
 const ledgerConfig: Record<LedgerKind, {
     storageKey: string
@@ -19,13 +20,6 @@ const ledgerConfig: Record<LedgerKind, {
     statePrefix: string
     includeAccount: boolean
 }> = {
-    food: {
-        storageKey: 'dinnerPicker.expenses.v1',
-        pendingKey: 'dinnerPicker.expenses.pending',
-        table: 'expenses',
-        statePrefix: 'expense',
-        includeAccount: true
-    },
     total: {
         storageKey: 'dinnerPicker.total.expenses.v1',
         pendingKey: 'dinnerPicker.total.expenses.pending',
@@ -35,7 +29,7 @@ const ledgerConfig: Record<LedgerKind, {
     }
 }
 
-export const useExpenses = (ledger: LedgerKind = 'food') => {
+export const useExpenses = (ledger: LedgerKind = 'total') => {
     const config = ledgerConfig[ledger]
     const STORAGE_KEY = config.storageKey
     const PENDING_KEY = config.pendingKey
@@ -117,6 +111,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
             createdAt: entry.created_at ? new Date(entry.created_at).getTime() : Date.now(),
             user_id: entry.user_id,
             account_id: entry.account_id ?? null,
+            sub_type: entry.sub_type ?? 'general',
         }))
     }
 
@@ -134,6 +129,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
                     note: entry.note ?? '',
                     created_at: new Date(entry.createdAt).toISOString(),
                     user_id: user.value.id,
+                    sub_type: entry.sub_type ?? 'general',
                     ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
                 }
                 const { error } = await supa.from(TABLE).insert(payload)
@@ -194,6 +190,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
                 note: entry.note ?? '',
                 created_at: new Date(entry.createdAt).toISOString(),
                 user_id: user.value.id,
+                sub_type: entry.sub_type ?? 'general',
                 ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
             }
             const { error } = await supa.from(TABLE).insert(payload)
@@ -252,6 +249,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
                     date: merged.date,
                     amount: merged.amount,
                     note: merged.note ?? '',
+                    sub_type: merged.sub_type ?? 'general',
                     ...(config.includeAccount ? { account_id: merged.account_id ?? null } : {}),
                 })
                 .eq('id', merged.id)
@@ -278,7 +276,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
         }
     }
 
-    const summaries = computed(() => {
+    const calculateSummaries = (filterFn?: (e: ExpenseEntry) => boolean) => {
         const today = new Date()
         const todayISO = toISODate(today)
         const weekStart = startOfWeek(today)
@@ -301,6 +299,11 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
             if (entry.note && entry.note.includes('[轉帳]')) {
                 return acc
             }
+            
+            // Custom filter
+            if (filterFn && !filterFn(entry)) {
+                return acc
+            }
 
             const entryDate = parseISODate(entry.date)
             const isIncome = entry.amount < 0
@@ -308,11 +311,7 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
             
             // Helper to update a specific period
             const updatePeriod = (period: 'today' | 'week' | 'month' | 'year') => {
-                // Net total (Sum of signed amounts) - Note: If expense is positive and income negative,
-                // Sum = Expense - Income. If we want "Total Spent" vs "Total Earned", we separate them.
-                // Original 'today', 'week' etc were likely treated as "Total Spending".
-                // If we now mix, 'today' becoming Net might be confusing if labeled "Spending".
-                // However, for backward compatibility, let's keep 'today' as the signed sum (Net).
+                // Net total (Sum of signed amounts)
                 acc[period] += entry.amount
 
                 if (isIncome) {
@@ -329,12 +328,16 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
 
             return acc
         }, initial)
-    })
+    }
+
+    const summaries = computed(() => calculateSummaries())
+    const zibaoSummaries = computed(() => calculateSummaries((e) => e.sub_type === 'zibao'))
 
     return {
         entries,
         loading,
         summaries,
+        zibaoSummaries,
         loadEntries,
         addEntry,
         deleteEntry,
@@ -343,5 +346,4 @@ export const useExpenses = (ledger: LedgerKind = 'food') => {
     }
 }
 
-export const useFoodExpenses = () => useExpenses('food')
 export const useTotalExpenses = () => useExpenses('total')

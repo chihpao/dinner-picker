@@ -16,7 +16,7 @@
     </div>
 
     <form v-else @submit.prevent="handleSubmit" class="expense-form compact-form">
-      <div v-if="isTotalLedger" class="type-toggle">
+      <div class="type-toggle">
         <button 
           type="button" 
           :class="['btn', form.type === 'expense' ? 'btn-expense-active' : 'btn-expense-inactive']"
@@ -60,6 +60,15 @@
         </select>
         <p v-if="!accounts.length" class="helper-text">尚未建立帳戶，先到「帳戶」建立。</p>
       </label>
+      
+      <!-- Sub Type Selection -->
+      <label v-if="showAccount && form.type !== 'transfer'" class="wide">
+        <span>類型</span>
+        <select v-model="form.sub_type">
+          <option value="general">一般</option>
+          <option value="zibao">孜保平分</option>
+        </select>
+      </label>
 
       <!-- Transfer Account Selection -->
       <template v-if="form.type === 'transfer'">
@@ -99,27 +108,20 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  ledger?: 'food' | 'total'
-}>(), {
-  ledger: 'food'
-})
-
 const { user, signInWithGoogle } = useAuth()
 const { accounts } = useAccounts()
-const expenses = props.ledger === 'food' ? useFoodExpenses() : useTotalExpenses()
+const expenses = useTotalExpenses()
 const { addEntry } = expenses
 const router = useRouter()
 
 const showAccount = computed(() => true)
-const isTotalLedger = computed(() => props.ledger === 'total')
-const entryText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
-const titleText = computed(() => props.ledger === 'food' ? '孜保飲食' : '一般記帳')
-const signInRedirect = computed(() => props.ledger === 'food' ? '/expense-entry' : '/total/entry')
-const redirectPath = computed(() => props.ledger === 'food' ? '/expenses' : '/total')
+const entryText = computed(() => '一般記帳')
+const titleText = computed(() => '一般記帳')
+const signInRedirect = computed(() => '/total/entry')
+const redirectPath = computed(() => '/total')
 const notePlaceholder = computed(() => {
   if (form.type === 'transfer') return '轉帳備註...'
-  return props.ledger === 'food' ? '午餐、晚餐...' : '交通、購物...'
+  return '交通、購物...'
 })
 
 const form = reactive({
@@ -129,7 +131,8 @@ const form = reactive({
   account_id: '' as string,
   from_account_id: '' as string,
   to_account_id: '' as string,
-  type: 'expense' as 'expense' | 'income' | 'transfer'
+  type: 'expense' as 'expense' | 'income' | 'transfer',
+  sub_type: 'general' // Default to General
 })
 
 const submitBtnText = computed(() => {
@@ -145,7 +148,7 @@ const submitBtnClass = computed(() => {
 })
 
 watch(accounts, (list) => {
-  if (props.ledger === 'food' && !form.account_id) {
+  if (!form.account_id && list.length > 0) {
     const target = list.find(a => a.name.includes('中國信託'))
     if (target) {
       form.account_id = target.id
@@ -189,7 +192,8 @@ const handleSubmit = async () => {
       note: `[轉帳] 轉至 ${toName} ${form.note ? '(' + form.note + ')' : ''}`,
       createdAt: Date.now(),
       user_id: user.value!.id,
-      account_id: form.from_account_id
+      account_id: form.from_account_id,
+      sub_type: 'general'
     }
 
     // 2. Income Entry (To Account)
@@ -200,7 +204,8 @@ const handleSubmit = async () => {
       note: `[轉帳] 來自 ${fromName} ${form.note ? '(' + form.note + ')' : ''}`,
       createdAt: Date.now() + 1, // Ensure slightly different time
       user_id: user.value!.id,
-      account_id: form.to_account_id
+      account_id: form.to_account_id,
+      sub_type: 'general'
     }
 
     await addEntry(entryOut)
@@ -220,23 +225,11 @@ const handleSubmit = async () => {
     note: form.note,
     createdAt: Date.now(),
     user_id: user.value!.id,
-    account_id: form.account_id || null
+    account_id: form.account_id || null,
+    sub_type: form.sub_type
   }
 
   await addEntry(entry)
-
-  // 如果是孜保飲食，同時新增到全消費總覽
-  if (props.ledger === 'food') {
-    const { addEntry: addTotalEntry } = useTotalExpenses()
-    // 建立一個副本，並給予新的 ID，確保資料獨立
-    const totalEntry = {
-      ...entry,
-      id: generateUUID(),
-      // 確保 account_id 正確傳遞（雖然 food 模式下通常為 null）
-      account_id: entry.account_id
-    }
-    await addTotalEntry(totalEntry)
-  }
 
   router.push(redirectPath.value)
 }

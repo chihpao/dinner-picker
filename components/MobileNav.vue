@@ -4,10 +4,6 @@
       <span class="icon">🏠</span>
       <span class="label">首頁</span>
     </NuxtLink>
-    <NuxtLink to="/expenses" class="nav-item" active-class="active">
-      <span class="icon">🍱</span>
-      <span class="label">食物</span>
-    </NuxtLink>
     <NuxtLink to="/total" class="nav-item" active-class="active">
       <span class="icon">📝</span>
       <span class="label">總覽</span>

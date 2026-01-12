@@ -19,12 +19,6 @@
       </div>
 
       <div class="nav-group">
-        <div class="nav-label" v-if="!isCollapsed">快速記帳</div>
-        <div class="nav-divider" v-else></div>
-        <NuxtLink to="/expense-entry" class="nav-item" active-class="active" title="孜保飲食">
-          <span class="icon"><IconBento /></span>
-          <span class="text" v-if="!isCollapsed">孜保飲食</span>
-        </NuxtLink>
         <NuxtLink to="/total/entry" class="nav-item" active-class="active" title="一般記帳">
           <span class="icon"><IconEdit /></span>
           <span class="text" v-if="!isCollapsed">一般記帳</span>
@@ -32,12 +26,6 @@
       </div>
 
       <div class="nav-group">
-        <div class="nav-label" v-if="!isCollapsed">數據總覽</div>
-        <div class="nav-divider" v-else></div>
-        <NuxtLink to="/expenses" class="nav-item" active-class="active" title="食物紀錄">
-          <span class="icon"><IconList /></span>
-          <span class="text" v-if="!isCollapsed">食物紀錄</span>
-        </NuxtLink>
         <NuxtLink to="/total" class="nav-item" active-class="active" title="全消費總覽">
           <span class="icon"><IconOverview /></span>
           <span class="text" v-if="!isCollapsed">全消費總覽</span>
@@ -83,7 +71,7 @@ const toggleCollapse = () => {
   flex-shrink: 0;
   z-index: 50;
   transition: width 0.2s ease-in-out;
-  overflow: hidden; /* Disable scrolling */
+  overflow: hidden;
 }
 
 .sidebar.collapsed {
@@ -96,18 +84,16 @@ const toggleCollapse = () => {
   border-bottom: var(--border-width) solid var(--ink);
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Space between logo/text and toggle button */
+  justify-content: space-between;
   background: var(--primary);
   color: #fff;
   flex-shrink: 0;
+  transition: padding 0.2s;
 }
 
 .sidebar.collapsed .sidebar-brand {
   justify-content: center;
   padding: 0;
-  flex-direction: column;
-  gap: 4px;
-  height: 80px; /* Slightly taller to fit stacked logo and button */
 }
 
 .brand-content {
@@ -115,20 +101,6 @@ const toggleCollapse = () => {
   align-items: center;
   gap: 12px;
   overflow: hidden;
-}
-
-.logo-box {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  background: #fff;
-  border: 2px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  box-shadow: 2px 2px 0 var(--ink);
-  color: var(--ink);
 }
 
 .brand-text {
@@ -159,9 +131,7 @@ const toggleCollapse = () => {
 }
 
 .sidebar.collapsed .toggle-btn-header {
-  transform: rotate(180deg); /* Flip the whole button or just arrow */
-  width: 100%;
-  height: 20px;
+  transform: rotate(180deg);
 }
 
 .arrow {
@@ -170,46 +140,27 @@ const toggleCollapse = () => {
 }
 
 .sidebar-nav {
-  padding: 24px 16px;
+  padding: 24px 12px;
   display: flex;
   flex-direction: column;
   gap: 24px;
   flex: 1;
-  overflow: hidden; /* Ensure no scroll */
 }
 
 .sidebar.collapsed .sidebar-nav {
-  padding: 24px 10px;
-  align-items: center; /* Center icons */
+  padding: 24px 8px;
+  align-items: center;
 }
 
 .nav-group {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Gap between items in group */
+  gap: 4px;
 }
 
 .sidebar.collapsed .nav-group {
   align-items: center;
-}
-
-.nav-label {
-  font-size: 12px;
-  color: var(--ink-dim);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  padding-left: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.nav-divider {
-  height: 1px;
-  width: 32px;
-  background: var(--ink-dim);
-  margin: 0 auto 12px;
-  opacity: 0.3;
 }
 
 .nav-item {
@@ -230,7 +181,8 @@ const toggleCollapse = () => {
 .sidebar.collapsed .nav-item {
   padding: 10px;
   justify-content: center;
-  width: 44px; /* Square-ish for icon */
+  width: 44px;
+  height: 44px;
 }
 
 .nav-item:hover {
@@ -258,7 +210,10 @@ const toggleCollapse = () => {
 
 .icon {
   width: 24px;
-  text-align: center;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
@@ -266,10 +221,14 @@ const toggleCollapse = () => {
   padding: 16px;
   border-top: var(--border-width) solid var(--ink);
   background: var(--bg-body);
+  height: 40px; /* Fixed height for footer as well */
+  display: flex;
+  align-items: center;
 }
 
 .pixel-deco {
   height: 8px;
+  width: 100%;
   background-image: repeating-linear-gradient(
     45deg,
     var(--ink-dim) 0,

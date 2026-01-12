@@ -210,8 +210,17 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
         try {
             const { error } = await supa.from(TABLE).delete().eq('id', id).eq('user_id', user.value.id)
             if (error) throw error
+            
+            // Remove from UI and Local Storage
             entries.value = entries.value.filter(e => e.id !== id)
             saveLocalEntries(entries.value)
+
+            // Remove from Pending Storage (Critical fix for reappearing entries)
+            const pending = loadPendingEntries()
+            const newPending = pending.filter(e => e.id !== id)
+            if (newPending.length !== pending.length) {
+                savePendingEntries(newPending)
+            }
         } catch (err) {
             alert(`刪除失敗：${(err as Error).message}`)
         }

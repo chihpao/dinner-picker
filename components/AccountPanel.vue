@@ -11,104 +11,81 @@
       <p>請先登入再管理帳戶</p>
     </div>
 
-    <form v-else @submit.prevent="handleAdd" class="account-form">
-      <label>
-        <span>帳戶名稱</span>
-        <input v-model="form.name" type="text" placeholder="例如 台新銀行" required>
-      </label>
-      <label>
-        <span>類型</span>
-        <select v-model="form.kind">
-          <option value="bank">銀行</option>
-          <option value="card">信用卡</option>
-          <option value="cash">現金</option>
-        </select>
-      </label>
-      <label>
-        <span>初始金額 (NT$)</span>
-        <input v-model.number="form.balance" type="number" min="0" step="1" placeholder="例如 10000" required>
-      </label>
-      <button class="btn primary" type="submit">新增帳戶</button>
-    </form>
-
-    <div v-if="user && !accounts.length" class="empty-state">尚未建立帳戶，先新增一個吧！</div>
-
-    <div v-else-if="user" class="account-list">
-      <article v-for="account in accounts" :key="account.id" class="account-card">
-        <template v-if="editingId === account.id">
-          <div class="account-main">
-            <label class="inline-field">
-              <span>帳戶名稱</span>
-              <input v-model="editForm.name" type="text" required>
-            </label>
-            <label class="inline-field">
-              <span>類型</span>
-              <select v-model="editForm.kind">
-                <option value="bank">銀行</option>
-                <option value="card">信用卡</option>
-                <option value="cash">現金</option>
-              </select>
-            </label>
-          </div>
-          <div class="account-meta">
-            <label class="inline-field">
-              <span>初始金額 (NT$)</span>
-              <input v-model.number="editForm.balance" type="number" min="0" step="1" required>
-            </label>
-            <div class="account-actions">
-              <button class="btn btn-sm primary" type="button" @click="saveEdit(account.id)">儲存</button>
-              <button class="btn btn-sm" type="button" @click="cancelEdit">取消</button>
+    <template v-else>
+      <!-- 帳戶列表移動到上方 -->
+      <div v-if="!accounts.length" class="empty-state">尚未建立帳戶，先新增一個吧！</div>
+      
+      <div v-else class="account-list">
+        <article v-for="account in accounts" :key="account.id" class="account-card">
+          <template v-if="editingId === account.id">
+            <div class="account-main">
+              <label class="inline-field">
+                <span>帳戶名稱</span>
+                <input v-model="editForm.name" type="text" required>
+              </label>
+              <label class="inline-field">
+                <span>類型</span>
+                <select v-model="editForm.kind">
+                  <option value="bank">銀行</option>
+                  <option value="card">信用卡</option>
+                  <option value="cash">現金</option>
+                </select>
+              </label>
             </div>
-          </div>
-        </template>
-        <template v-else>
+            <div class="account-meta">
+              <label class="inline-field">
+                <span>初始金額 (NT$)</span>
+                <input v-model.number="editForm.balance" type="number" min="0" step="1" required>
+              </label>
+              <div class="account-actions">
+                <button class="btn btn-sm primary" type="button" @click="saveEdit(account.id)">儲存</button>
+                <button class="btn btn-sm" type="button" @click="cancelEdit">取消</button>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="account-main">
+              <h3>{{ account.name }}</h3>
+              <p class="account-kind">{{ accountKindLabel(account.kind) }}</p>
+            </div>
+            <div class="account-meta">
+              <div class="meta-row">
+                <span>初始：{{ formatCurrency(account.balance || 0) }}</span>
+                <span class="text-sm text-gray">收入：{{ formatCurrency(accountStats.get(account.id)?.income || 0) }}</span>
+                <span class="text-sm text-gray">支出：{{ formatCurrency(accountStats.get(account.id)?.expense || 0) }}</span>
+              </div>
+              <p class="account-balance highlight">
+                目前餘額：{{ formatCurrency((account.balance || 0) - (accountStats.get(account.id)?.net || 0)) }}
+              </p>
+              <div class="account-actions">
+                <button class="btn btn-sm" type="button" @click="startEdit(account)">編輯</button>
+                <button class="btn btn-sm danger" type="button" @click="confirmDelete(account.id)">刪除</button>
+              </div>
+            </div>
+          </template>
+        </article>
+        <article v-if="unassignedStats.count > 0" class="account-card account-card--ghost">
           <div class="account-main">
-            <h3>{{ account.name }}</h3>
-            <p class="account-kind">{{ accountKindLabel(account.kind) }}</p>
+            <h3>未指定帳戶</h3>
+            <p class="account-kind">尚未分類</p>
           </div>
           <div class="account-meta">
             <div class="meta-row">
-              <span>初始：{{ formatCurrency(account.balance || 0) }}</span>
-              <span class="text-sm text-gray">收入：{{ formatCurrency(accountStats.get(account.id)?.income || 0) }}</span>
-              <span class="text-sm text-gray">支出：{{ formatCurrency(accountStats.get(account.id)?.expense || 0) }}</span>
+              <span>收入：{{ formatCurrency(unassignedStats.income) }}</span>
+              <span>支出：{{ formatCurrency(unassignedStats.expense) }}</span>
             </div>
-            <p class="account-balance highlight">
-              目前餘額：{{ formatCurrency((account.balance || 0) - (accountStats.get(account.id)?.net || 0)) }}
-            </p>
-            <div class="account-actions">
-              <button class="btn btn-sm" type="button" @click="startEdit(account)">編輯</button>
-              <button class="btn btn-sm danger" type="button" @click="confirmDelete(account.id)">刪除</button>
-            </div>
+            <p class="account-total">淨支出：{{ formatCurrency(unassignedStats.net) }}</p>
           </div>
-        </template>
-      </article>
-      <article v-if="unassignedStats.count > 0" class="account-card account-card--ghost">
-        <div class="account-main">
-          <h3>未指定帳戶</h3>
-          <p class="account-kind">尚未分類</p>
-        </div>
-        <div class="account-meta">
-          <div class="meta-row">
-            <span>收入：{{ formatCurrency(unassignedStats.income) }}</span>
-            <span>支出：{{ formatCurrency(unassignedStats.expense) }}</span>
-          </div>
-          <p class="account-total">淨支出：{{ formatCurrency(unassignedStats.net) }}</p>
-        </div>
-      </article>
-    </div>
+        </article>
+      </div>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
 const { user } = useAuth()
-const { accounts, addAccount, updateAccount, deleteAccount } = useAccounts()
+const { accounts, updateAccount, deleteAccount } = useAccounts()
 const { entries } = useTotalExpenses()
-
-const form = reactive({
-  name: '',
-  kind: 'bank' as 'bank' | 'cash' | 'card',
-  balance: 0
-})
 
 const editingId = ref<string | null>(null)
 const editForm = reactive({
@@ -154,26 +131,6 @@ const accountKindLabel = (kind: string) => {
   if (kind === 'cash') return '現金'
   if (kind === 'card') return '信用卡'
   return '銀行'
-}
-
-const handleAdd = async () => {
-  if (!user.value) return
-  if (!form.name.trim()) return
-  if (form.balance < 0) {
-    alert('請輸入正確的初始金額')
-    return
-  }
-  await addAccount({
-    id: generateUUID(),
-    name: form.name.trim(),
-    kind: form.kind,
-    balance: Math.round(form.balance),
-    createdAt: Date.now(),
-    user_id: user.value.id
-  })
-  form.name = ''
-  form.kind = 'bank'
-  form.balance = 0
 }
 
 const confirmDelete = (id: string) => {
@@ -234,5 +191,20 @@ const saveEdit = async (id: string) => {
 }
 .text-gray {
   color: #aaa;
+}
+
+.add-account-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 2px dashed var(--ink-dim);
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-header h3 {
+  font-size: 1.2rem;
+  color: var(--ink);
 }
 </style>

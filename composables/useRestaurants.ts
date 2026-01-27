@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 
 export interface Restaurant {
     id: string
@@ -7,7 +7,6 @@ export interface Restaurant {
     lat: number
     lng: number
     distances?: {
-        current?: number
         home?: number
         work?: number
     }
@@ -21,9 +20,7 @@ export interface Profile {
 export const useRestaurants = () => {
     const restaurants = useState<Restaurant[]>('restaurants', () => [])
     const profile = useState<Profile | null>('profile', () => null)
-    const userLocation = useState<{ lat: number; lng: number } | null>('userLocation', () => null)
     const isLoading = useState('restaurants-loading', () => true)
-    const hasAllowedLocation = useState('has-allowed-location', () => false)
 
     const fetchRestaurants = async () => {
         try {
@@ -40,37 +37,9 @@ export const useRestaurants = () => {
         }
     }
 
-    const requestLocation = () => {
-        if (!navigator.geolocation) {
-            alert("您的瀏覽器不支援定位功能。")
-            return
-        }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-                localStorage.setItem('locationAllowed', 'true')
-                hasAllowedLocation.value = true
-            },
-            () => {
-                alert("定位失敗，請檢查您的定位權限設定。")
-            },
-            { enableHighAccuracy: true, timeout: 8000 }
-        )
-    }
-
-    onMounted(() => {
-        if (localStorage.getItem('locationAllowed') === 'true') {
-            hasAllowedLocation.value = true
-            requestLocation()
-        }
-    })
-
     const processedRestaurants = computed(() => {
         const withDistance = restaurants.value.map(r => {
             const distances: Restaurant['distances'] = {}
-            if (userLocation.value) {
-                distances.current = haversine(userLocation.value.lat, userLocation.value.lng, r.lat, r.lng)
-            }
             if (profile.value?.home) {
                 distances.home = haversine(profile.value.home.lat, profile.value.home.lng, r.lat, r.lng)
             }
@@ -80,13 +49,10 @@ export const useRestaurants = () => {
             return { ...r, distances }
         })
 
-        const sortKey = userLocation.value ? 'current' : (profile.value?.home ? 'home' : 'work')
-
         return withDistance.sort((a, b) => {
-            // @ts-ignore
-            const da = a.distances?.[sortKey] ?? Infinity
-            // @ts-ignore
-            const db = b.distances?.[sortKey] ?? Infinity
+            // Sort by home distance primary, then work
+            const da = a.distances?.home ?? a.distances?.work ?? Infinity
+            const db = b.distances?.home ?? b.distances?.work ?? Infinity
             return da - db
         })
     })
@@ -94,11 +60,8 @@ export const useRestaurants = () => {
     return {
         restaurants,
         profile,
-        userLocation,
         isLoading,
         processedRestaurants,
-        fetchRestaurants,
-        requestLocation,
-        hasAllowedLocation
+        fetchRestaurants
     }
 }

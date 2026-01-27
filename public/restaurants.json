@@ -15,10 +15,10 @@
     },
     {
         "id": "03",
-        "name": "樂芙",
-        "orderUrl": "https://iding.tw/stores/8f5078eb/menu",
-        "lat": 25.060235517056498,
-        "lng": 121.546343268503
+        "name": "樂米",
+        "orderUrl": "https://imenu.com.tw/Lovemebox_ms/Lovemeboxms/menu",
+        "lat": 25.058244201148607,
+        "lng": 121.55151954927109
     },
     {
         "id": "04",
@@ -27,5 +27,4 @@
         "lat": 25.06080029230364,
         "lng": 121.535651768503
     }
-
 ]

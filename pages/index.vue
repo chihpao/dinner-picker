@@ -1,17 +1,6 @@
 <template>
   <div class="page-container">
-    <AppHeader title="🍱 今晚吃哪家？">
-      <template #actions>
-        <button 
-          v-if="!userLocation && !hasAllowedLocation" 
-          @click="requestLocation" 
-          class="btn danger whitespace-nowrap"
-          aria-label="允許目前位置"
-        >
-          📍 <span class="mobile-hidden-text">允許目前位置</span>
-        </button>
-      </template>
-    </AppHeader>
+    <AppHeader title="🍱 今晚吃哪家？" />
 
     <main id="app-main">
       <div v-if="isLoading" class="loader">
@@ -39,5 +28,5 @@ useHead({
   ]
 })
 
-const { processedRestaurants, isLoading, userLocation, requestLocation, hasAllowedLocation } = useRestaurants()
+const { processedRestaurants, isLoading } = useRestaurants()
 </script>

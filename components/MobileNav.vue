@@ -1,15 +1,15 @@
 <template>
   <nav class="mobile-nav">
     <NuxtLink to="/" class="nav-item" active-class="active">
-      <span class="icon">🏠</span>
+      <span class="icon-box">🏠</span>
       <span class="label">首頁</span>
     </NuxtLink>
     <NuxtLink to="/total" class="nav-item" active-class="active">
-      <span class="icon">📝</span>
+      <span class="icon-box">📝</span>
       <span class="label">總覽</span>
     </NuxtLink>
     <NuxtLink to="/total/accounts" class="nav-item" active-class="active">
-      <span class="icon">🏦</span>
+      <span class="icon-box">🏦</span>
       <span class="label">帳戶</span>
     </NuxtLink>
   </nav>
@@ -21,44 +21,49 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-paper);
-  border-top: var(--border-width) solid var(--ink);
+  background: #fff;
+  border-top: 2px solid var(--border);
   display: flex;
   justify-content: space-around;
   padding: 8px 0;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
   z-index: 100;
-  box-shadow: 0 -4px 0 rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 0 rgba(0,0,0,0.02);
 }
 
 .nav-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   text-decoration: none;
-  color: var(--ink-dim);
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  color: var(--ink-light);
+  padding: 4px 0;
+  border-radius: 8px;
+  transition: all 0.1s;
 }
 
-.nav-item .icon {
-  font-size: 20px;
+.icon-box {
+  font-size: 24px;
+}
+
+.label {
+  font-family: var(--font-pixel);
+  font-size: 12px;
 }
 
 .nav-item.active {
-  color: var(--primary);
-  background: rgba(61, 90, 254, 0.05);
+  color: var(--ink);
+  font-weight: 700;
+  background: #f8fafc;
 }
 
-.nav-item.active .icon {
-  transform: scale(1.1);
+.nav-item:active {
+  transform: scale(0.96);
 }
 
-@media (min-width: 640px) {
-  .mobile-nav {
-    display: none;
-  }
+@media (min-width: 900px) {
+  .mobile-nav { display: none; }
 }
 </style>

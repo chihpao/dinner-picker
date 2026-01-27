@@ -1,1264 +1,303 @@
-/* Import Fonts - MUST BE FIRST */
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;700;900&display=swap');
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ========= デザイナーズ・ピクセル (Designer Pixel - Electric Indigo) ========= */
+/* ========= Theme: Neo-Pixel Refined (Sam Small x Clément Faydi) ========= */
 :root {
-  /* Palette: Electric Indigo & Retro Game Vibes */
-  --bg-body: #eef2f6;       /* Cool Grey-Blue White */
-  --bg-paper: #ffffff;      /* Pure White */
+  /* Backgrounds */
+  --bg-body: #f7f7f8;       /* Very light cool gray, almost white */
+  --bg-paper: #ffffff;      
   
-  --ink: #1a237e;           /* Deep Indigo (Primary Text/Border) */
-  --ink-dim: #5c6bc0;       /* Soft Indigo */
+  /* Text & Borders */
+  --ink: #111827;           /* Deep dense black */
+  --ink-light: #6b7280;     /* Muted gray */
+  --border: #e2e4e7;        /* Much lighter, cleaner border (Linear style) */
+  --border-focus: #4f46e5;  /* Primary focus color */
   
-  --primary: #3d5afe;       /* Electric Blue */
-  --primary-light: #536dfe;
-  --primary-dark: #304ffe;
+  /* Brand Colors */
+  --primary: #4f46e5;       /* Indigo */
+  --primary-light: #e0e7ff;
   
-  --accent: #ff4081;        /* Neon Pink */
-  --accent-dark: #f50057;
+  --success: #10b981;       
+  --success-bg: #ecfdf5;
   
-  --success: #00e676;       /* Neon Green */
-  --warning: #ffea00;       /* Pixel Yellow */
+  --danger: #ef4444;
   
   /* UI Tokens */
-  --border-width: 3px;
-  --shadow-depth: 4px;
-  --radius-sm: 4px;         /* Slight rounding for "soft pixel" feel, or 0 for hard */
-  --radius-md: 8px;
+  --border-width: 1px;      /* Thinner, precise borders */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-solid: 4px;      /* Retain for retro feel, but maybe used less */
+  --radius: 12px;           /* Slightly friendlier roundness */
+  
+  /* Animations */
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1); /* Fast, precise */
   
   /* Fonts */
   --font-pixel: 'DotGothic16', sans-serif;
-  --font-sans: 'Noto Sans TC', sans-serif;
+  --font-sans: 'Inter', 'Noto Sans TC', sans-serif; /* Prefer Inter for UI */
 }
 
-[data-theme="dark"] {
-  --bg-body: #0d1b2a;
-  --bg-paper: #1b263b;
-  --ink: #e0e1dd;
-  --ink-dim: #778da9;
-  --primary: #536dfe;
-  --accent: #ff80ab;
-}
-
-/* Global Reset & Typography */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
+/* Global Reset */
 body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-body);
   color: var(--ink);
-  font-family: var(--font-pixel);
-  line-height: 1.6;
-  /* Blueprint Grid Pattern */
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased; /* Crisp text */
+  line-height: 1.5;
+  padding-bottom: 80px;
+  
+  /* Subtle, technical grid background (Clément Faydi style) */
   background-image: 
-    linear-gradient(rgba(61, 90, 254, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(61, 90, 254, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-  -webkit-font-smoothing: none;
+    radial-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-p {
-  margin: 0;
-}
-
-button {
+h1, h2, h3, .pixel-font {
   font-family: var(--font-pixel);
+  letter-spacing: 0.02em;
 }
 
-img {
-  max-width: 100%;
-  display: block;
-}
+a { text-decoration: none; color: inherit; }
+button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans for buttons */
 
+/* ========= Layout ========= */
 .wrap {
   max-width: 1024px;
   margin: 0 auto;
-  padding: 32px 16px 64px;
+  padding: 24px 16px;
   width: 100%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 400; /* Pixel fonts are naturally bold */
-  margin: 0;
-  letter-spacing: 0.05em;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
 }
 
-/* ========= Component: RPG Window (Card) ========= */
+/* ========= Component: Neo-Brutalist Card ========= */
 .card {
   background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  padding: 14px 16px 16px;
-  position: relative;
-  transition: transform 0.1s, box-shadow 0.1s;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  /* 實體陰影：經典復古感 */
+  box-shadow: var(--shadow-solid) var(--shadow-solid) 0 rgba(0,0,0,0.12);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  position: relative;
 }
 
-/* Window Title Bar Effect (Optional, can be added via ::before if needed, 
-   but for now we keep the card clean and use the header for structure) */
 .card:hover {
   transform: translate(-2px, -2px);
-  box-shadow: calc(var(--shadow-depth) + 2px) calc(var(--shadow-depth) + 2px) 0 var(--ink);
+  box-shadow: calc(var(--shadow-solid) + 2px) calc(var(--shadow-solid) + 2px) 0 rgba(0,0,0,0.2);
 }
-.card-title {
-  font-size: 20px;
-  color: var(--ink);
+
+/* ========= Header & Hero ========= */
+.hero {
+  background: var(--bg-paper);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-solid) var(--shadow-solid) 0 rgba(0,0,0,0.12); /* 統一陰影風格 */
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
-  padding-bottom: 8px;
-  padding-right: 52px; /* keep clear of copy button on tight screens */
-  line-height: 1.3;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
-.restaurant-link {
+.hero h1 {
+  font-size: 28px;
   color: var(--ink);
-  text-decoration: none;
-  font-weight: 700;
-  min-width: 0;
-  word-break: break-word;
-  line-height: 1.3;
+  margin: 0;
 }
 
-/* ========= Component: Pixel Button ========= */
+/* ========= Buttons ========= */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  padding: 0 20px;
-  font-family: var(--font-pixel);
+  height: 40px;
+  padding: 0 24px; /* 增加呼吸感 */
   font-size: 16px;
-  color: var(--ink);
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
+  font-weight: 700;
+  border: var(--border-width) solid var(--border);
+  background: #fff;
+  border-radius: var(--radius); /* 統一圓角 */
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.12); /* 統一微陰影 */
   cursor: pointer;
-  text-decoration: none;
   transition: all 0.1s;
-  user-select: none;
-  position: relative;
 }
 
 .btn:active {
-  transform: translate(var(--shadow-depth), var(--shadow-depth));
-  box-shadow: 0 0 0 var(--ink);
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 transparent;
 }
 
-.btn.btn-sm {
-  height: 36px;
-  padding: 0 14px;
-}
-
-.btn:hover {
-  background: #f5f7fa;
-}
-
-/* Primary Button (Electric Blue) */
 .btn.primary {
   background: var(--primary);
   color: #fff;
-  border-color: var(--ink);
-}
-.btn.primary:hover {
-  background: var(--primary-light);
+  border-color: var(--primary); /* Cleaner look */
+  box-shadow: 2px 2px 0 rgba(79, 70, 229, 0.3);
 }
 
-/* Danger Button (Neon Pink) */
-.btn.danger {
-  background: var(--accent);
-  color: #fff;
-}
-.btn.danger:hover {
-  background: var(--accent-dark);
-}
-
-/* Google Button */
-.btn-google {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  height: 44px;
-  padding: 0 20px;
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  font-family: var(--font-pixel);
-  font-size: 16px;
-  color: var(--ink);
-  cursor: pointer;
-  transition: all 0.1s;
-}
-.btn-google:active {
-  transform: translate(var(--shadow-depth), var(--shadow-depth));
-  box-shadow: 0 0 0 var(--ink);
-}
-.btn-google svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* ========= Layout: Hero & Header ========= */
-.hero {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  padding: 24px;
-  margin-bottom: 40px;
-  color: var(--ink);
-}
-
-.hero h1 {
-  color: var(--ink);
-  text-shadow: 2px 2px 0 var(--bg-body);
-  font-size: 32px;
-  text-transform: uppercase;
-}
-
-.hero-header {
+/* ========= Mobile Nav (Solid & Clean) ========= */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid var(--border);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
+  justify-content: space-around;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.03); /* Soft lift */
 }
 
-.hero-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.auth-bar {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-}
-
-/* Toolbar (Location) */
-.toolbar {
-  margin-top: 20px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-/* ========= Layout: Grid ========= */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 64px; /* Increased from 32px */
-}
-
-/* ========= Component: Avatar ========= */
-.avatar {
-  width: 48px;
-  height: 48px;
-  background: var(--bg-body);
-  border: 2px solid var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  box-shadow: 2px 2px 0 var(--ink);
-}
-
-/* ========= Component: Distance Badge ========= */
-.distance-summary {
-  margin-top: 4px; /* Fixed spacing instead of pushing to bottom */
-  padding-top: 4px;
+.nav-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.dist-primary {
-  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 14px;
-  border: 2px solid var(--ink); /* Double border effect if we change bg */
-}
-.dist-primary.tier-near { background: var(--success); color: var(--ink); }
-.dist-primary.tier-mid { background: var(--warning); color: var(--ink); }
-.dist-primary.tier-far { background: var(--accent); color: #fff; }
-
-.dist-secondary {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--ink-dim);
-  display: flex;
-  flex-wrap: wrap;
   gap: 4px;
+  padding: 6px 0;
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  transition: color 0.1s var(--ease-snappy);
 }
 
-/* ========= Component: Copy Button ========= */
-.copy-icon-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  background: var(--bg-body);
-  border: 2px solid var(--ink);
-  color: var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.1s;
-  padding: 0;
+.nav-item.active {
+  color: var(--primary);
+  font-weight: 700;
 }
-.copy-icon-btn:hover {
-  background: var(--primary);
-  color: #fff;
+
+.nav-item .icon-box svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.5; /* Thinner strokes */
+  transition: stroke-width 0.1s;
 }
-.copy-icon-btn:active {
-  transform: translate(1px, 1px);
-}
-.copy-icon-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
+
+.nav-item.active .icon-box svg {
   stroke-width: 2.5;
 }
 
-.copy-tooltip {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--ink);
-  color: #fff;
-  padding: 4px 8px;
-  font-size: 12px;
-  margin-top: 4px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.copy-icon-btn:hover .copy-tooltip {
-  opacity: 1;
+/* Utilities */
+.loader { text-align: center; padding: 40px; font-family: var(--font-pixel); }
+.loader-lines { 
+  width: 60px; height: 12px; margin: 0 auto 16px;
+  background: repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 10px, transparent 10px, transparent 20px);
 }
 
-/* ========= Loader ========= */
-.loader {
-  text-align: center;
-  padding: 40px;
-  color: var(--ink);
-}
-.loader p {
-  font-family: var(--font-pixel);
-  font-size: 24px;
-  margin-top: 16px;
-  font-weight: bold;
-  letter-spacing: 0.1em;
-  animation: pulse 1.5s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-.loader-lines {
-  width: 80px;
-  height: 60px;
-  margin: 0 auto;
-  background-image: repeating-linear-gradient(135deg, var(--ink) 0, var(--ink) 5px, transparent 5px, transparent 10px);
-  animation: speedlines .5s linear infinite;
-  opacity: .5;
-}
-@keyframes speedlines {
-  from { background-position: 0 0; }
-  to { background-position: -20px 0; }
+@media (min-width: 900px) {
+  .mobile-nav { display: none; }
 }
 
-/* ========= Expense Tracker Overrides ========= */
-.hero--expenses {
-  background: var(--bg-paper);
-  color: var(--ink);
-}
-.hero--expenses h1 {
-  color: var(--ink);
-  text-shadow: 2px 2px 0 var(--bg-body);
-}
-
-.expense-form label {
-  display: block;
-  margin-bottom: 16px;
-  font-weight: bold;
-}
-.expense-form span {
-  display: block;
-  margin-bottom: 8px;
-}
-.expense-form input,
-.expense-form textarea,
-.expense-form select {
-  width: 100%;
-  padding: 12px;
-  font-family: var(--font-pixel);
-  font-size: 16px;
-  border: var(--border-width) solid var(--ink);
-  background: var(--bg-body);
-  box-sizing: border-box;
-  outline: none;
-}
-.expense-form input:focus,
-.expense-form textarea:focus,
-.expense-form select:focus {
-  background: #fff;
-  border-color: var(--primary);
-}
-
-.panel {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: var(--shadow-depth) var(--shadow-depth) 0 var(--ink);
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.panel-header,
-.entry-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.expense-main {
-  display: grid;
-  gap: 16px;
-}
-
-/* === NEW TABLE LAYOUT (Desktop Only) === */
+/* Table overrides for desktop */
 @media (min-width: 601px) {
-  .expense-list-container {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Header Row */
   .expense-list-header {
-    display: grid;
-    /* Checkbox, Date, Amount, Account, Note, Actions */
-    grid-template-columns: 40px 1fr 1fr 100px 1fr 1.5fr 180px;
-    gap: 0;
-    align-items: stretch;
-    background: var(--ink);
-    color: #fff;
-    border: var(--border-width) solid var(--ink);
-    border-bottom: none; /* Merged with first item */
-    font-weight: bold;
-  }
-
-  .header-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center Header Text */
-    padding: 12px;
-    border-right: 2px solid rgba(255,255,255,0.2);
-    height: 100%;
-    text-align: center;
-  }
-  .header-cell:last-child {
-    border-right: none;
-  }
-
-  .header-cell .sort-btn {
-    background: none;
-    border: none;
-    color: inherit;
+    background: #f9fafb;
+    color: var(--ink-light);
+    border-bottom: 1px solid var(--border);
     font-family: var(--font-pixel);
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center content within button */
-    gap: 4px;
-    line-height: 1;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
-
-  .header-cell .sort-btn:hover {
-    text-decoration: underline;
-  }
-
-  .sort-icon {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    font-weight: normal;
-  }
-
-  /* Data Row */
-  .expense-list {
-    display: flex;
-    flex-direction: column;
-  }
-
   .entry-card {
-    background: var(--bg-paper);
-    border: var(--border-width) solid var(--ink);
-    margin: 0;
-    box-shadow: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 40px 1fr 1fr 100px 1fr 1.5fr 180px;
-    grid-template-rows: auto;
-    gap: 0;
-    align-items: stretch;
-    margin-top: calc(var(--border-width) * -1);
-    position: relative;
-    z-index: 0;
-  }
-
-  .entry-card:hover {
-    background: #f5f7fa;
-    z-index: 1;
-  }
-
-  /* Grid Items Styles (Reset Mobile & Apply Table Look) */
-  .entry-card > * {
-    grid-column: auto; /* Reset mobile placement */
-    grid-row: auto;
-    width: auto;
-    margin: 0;
-    position: static; /* Reset absolute */
-    padding: 12px;
-    border-right: 2px solid var(--ink-dim); /* Column Line */
-    display: flex;
-    align-items: center;
-    height: auto; /* Allow height to stretch */
-    min-height: 100%;
-    overflow: hidden; 
-  }
-
-  /* Specific Column Styles */
-  .entry-card > .checkbox-pill {
-    justify-content: center;
+    border-bottom: 1px solid var(--border); /* Divider only */
     border-top: none;
-    border-bottom: none;
-    border-left: none;
-    /* border-right is inherited */
-    background: transparent;
-    padding: 0;
     box-shadow: none;
-  }
-
-  .entry-card > .entry-amount {
-    justify-content: flex-end;
-    font-size: 18px;
-    color: var(--accent);
-    font-weight: bold;
-  }
-
-  .entry-card > .entry-account {
-    font-size: 14px;
-    color: var(--ink-dim);
-  }
-
-  .entry-card > .entry-note {
-    color: var(--ink-dim);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block; /* Override flex for ellipsis */
-    line-height: 1.5;
-    padding-top: 14px;
-  }
-
-  .entry-card > .entry-actions {
-    border-right: none;
-    justify-content: center; /* Center actions */
-    gap: 8px;
-    padding: 8px 8px; /* Reduced padding to help with overflow */
-  }
-
-  /* Old is-editing styles removed */
-}
-/* === END NEW TABLE LAYOUT === */
-
-/* ========= EDIT MODAL STYLES ========= */
-.edit-modal {
-  width: 100%;
-  max-width: 500px;
-}
-
-.edit-form-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.edit-group {
-  display: flex;
-  align-items: flex-end; /* Align input bottom with buttons */
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.input-label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--ink-dim);
-  font-weight: bold;
-}
-
-.input-label input,
-.input-label select {
-  height: 40px;
-  padding: 0 12px;
-  border: 2px solid var(--ink);
-  font-family: var(--font-pixel);
-  font-size: 16px;
-  background: var(--bg-body);
-  border-radius: 4px;
-  min-width: 140px;
-}
-.input-label input:focus,
-.input-label select:focus {
-  border-color: var(--primary);
-  background: #fff;
-}
-
-.detail-group .input-label.flex-grow {
-  flex: 1;
-}
-.detail-group .input-label input {
-  width: 100%;
-  min-width: 200px;
-}
-
-/* Quick Action Tags */
-.quick-tags {
-  display: flex;
-  gap: 6px;
-  padding-bottom: 4px; /* Space for scroll bar if needed */
-  align-items: center;
-}
-.quick-tags.scrollable {
-  overflow-x: auto;
-  max-width: 100%;
-  scrollbar-width: none; /* Hide scrollbar Firefox */
-}
-.quick-tags.scrollable::-webkit-scrollbar {
-  display: none;
-}
-
-.tag-btn {
-  background: var(--bg-body);
-  border: 1px solid var(--ink-dim);
-  color: var(--ink);
-  padding: 4px 10px;
-  font-family: var(--font-pixel);
-  font-size: 13px;
-  border-radius: 20px; /* Pill shape */
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.1s;
-}
-.tag-btn:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-.tag-btn:active {
-  transform: scale(0.95);
-}
-
-.edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  border-top: 1px dashed var(--ink-dim);
-  padding-top: 12px;
-  margin-top: 4px;
-}
-
-/* Mobile Adjustments for Edit Form */
-@media (max-width: 600px) {
-  .edit-modal {
-    max-width: 100%;
-    margin: 16px;
-  }
-  
-  .edit-group {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  
-  .input-label input, 
-  .input-label select {
-    width: 100%;
-  }
-  
-  .quick-tags {
-    flex-wrap: wrap;
-  }
-  .quick-tags.scrollable {
-    flex-wrap: nowrap; /* Keep horizontal scroll for amounts on small screens */
-    mask-image: linear-gradient(to right, black 90%, transparent 100%);
-  }
-  
-  .detail-group {
-    flex-direction: column;
+    border-radius: 0;
   }
 }
 
-.entry-card .inline-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-}
-
-.entry-card .inline-field input {
-  width: 100%;
-  padding: 10px;
-  border: var(--border-width) solid var(--ink);
-  font-family: var(--font-pixel);
-  background: #fff;
-}
-
-.entry-card .inline-field select {
-  width: 100%;
-  padding: 10px;
-  border: var(--border-width) solid var(--ink);
-  font-family: var(--font-pixel);
-  background: #fff;
-}
-
-.panel-title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border: var(--border-width) solid var(--ink);
+/* ========= Component: Neo-Brutalist Card (Refined) ========= */
+.card {
   background: var(--bg-paper);
-  box-shadow: 2px 2px 0 var(--ink-dim);
-  font-size: 14px;
-}
-
-.panel-actions {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s var(--ease-snappy), transform 0.2s var(--ease-snappy), border-color 0.2s;
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.panel-actions-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.sort-switch {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.quick-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.checkbox-square {
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--ink);
-  background: var(--bg-paper);
-  box-shadow: 1px 1px 0 var(--ink-dim);
-  cursor: pointer;
-  padding: 0;
+  flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 
-.checkbox-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border: 2px solid var(--ink); /* Keep consistent */
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Softer float */
+  border-color: #d1d5db;
+}
+
+/* ========= Header & Hero (Refined) ========= */
+.hero {
   background: var(--bg-paper);
-  box-shadow: none; /* Removed for table look */
-  cursor: pointer;
-}
-.checkbox-pill:hover { background: #f0f0f0; }
-
-.checkbox-square:checked {
-  background: var(--primary);
-  border-color: var(--ink);
-  box-shadow: 1px 1px 0 var(--ink);
-}
-
-.checkbox-square:checked::after {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  background: var(--bg-paper);
-  box-shadow: inset 0 0 0 1px var(--ink);
-}
-
-.checkbox-square:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0; /* Full width feel */
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  /* Sticky header support */
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 20;
-  padding: 16px;
+  justify-content: space-between;
 }
 
-.modal-card {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: 6px 6px 0 var(--ink-dim);
-  padding: 20px;
-  max-width: 420px;
-  width: 100%;
-  display: grid;
-  gap: 12px;
-}
-
-.modal-card h3 {
-  margin: 0;
+.hero h1 {
   font-size: 20px;
-}
-
-.modal-card p {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.modal-card .inline-field {
-  display: grid;
-  gap: 6px;
-}
-
-.modal-card .inline-field input {
-  width: 100%;
-  padding: 10px;
-  border: var(--border-width) solid var(--ink);
-  font-family: var(--font-pixel);
-  background: #fff;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.helper-text {
-  font-size: 14px;
-}
-
-.danger-text {
-  color: var(--accent);
-}
-
-.empty-state,
-.auth-gate {
-  background: var(--bg-body);
-  border: 2px dashed var(--ink-dim);
-  padding: 16px;
-  text-align: center;
-}
-
-.expense-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  width: 100%;
-}
-
-.summary-card {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  padding: 12px;
-}
-
-.summary-label {
-  color: var(--ink-dim);
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.summary-amount {
-  font-size: 22px;
-  font-weight: 700;
   color: var(--ink);
-}
-
-.summary-section {
-  display: grid;
-  gap: 12px;
-}
-
-.summary-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.summary-switch {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.account-form {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.account-form label {
-  display: grid;
-  gap: 8px;
-  font-weight: bold;
-}
-
-.account-form input,
-.account-form select {
-  width: 100%;
-  padding: 12px;
-  font-family: var(--font-pixel);
-  font-size: 16px;
-  border: var(--border-width) solid var(--ink);
-  background: var(--bg-body);
-  box-sizing: border-box;
-  outline: none;
-}
-
-.account-form input:focus,
-.account-form select:focus {
-  background: #fff;
-  border-color: var(--primary);
-}
-
-.account-list {
-  display: grid;
-  gap: 12px;
-}
-
-.account-card {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink-dim);
-  padding: 16px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.account-card--ghost {
-  border-style: dashed;
-  color: var(--ink-dim);
-}
-
-.account-main h3 {
   margin: 0;
-  font-size: 18px;
 }
 
-.account-kind {
-  margin: 4px 0 0;
-  color: var(--ink-dim);
-  font-size: 14px;
-}
-
-.account-meta {
-  display: grid;
-  gap: 6px;
-  justify-items: end;
-}
-
-.account-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
-
-.account-total {
-  margin: 0;
-  font-weight: 700;
-}
-
-.account-balance {
-  margin: 0;
-  color: var(--ink-dim);
-  font-size: 14px;
-}
-
-.account-card .inline-field {
-  display: grid;
-  gap: 6px;
-  width: 100%;
-  min-width: 200px;
-}
-
-.account-card .inline-field input,
-.account-card .inline-field select {
-  width: 100%;
-  padding: 10px;
-  border: var(--border-width) solid var(--ink);
-  font-family: var(--font-pixel);
-  background: #fff;
-}
-
-.ledger-intro h2 {
-  margin-bottom: 8px;
-}
-
-/* Auth Menu */
-.auth-pill {
-  position: relative;
-  display: inline-block;
-}
-
-.auth-avatar {
-  width: 40px;
-  height: 40px;
-  background: #ff6d00; /* Contrast Orange */
-  color: #fff;
-  border: 2px solid var(--ink);
-  display: flex;
+/* ========= Buttons (Refined) ========= */
+.btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-.auth-avatar:active {
-  transform: scale(0.95);
-}
-
-.auth-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: var(--bg-paper);
-  border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-  z-index: 100;
-  min-width: 160px;
-  display: none;
-  flex-direction: column;
-}
-.auth-menu.open { display: flex; }
-
-.auth-menu button {
-  display: block;
-  width: 100%;
-  padding: 12px 16px;
-  text-align: left;
-  background: none;
-  border: none;
-  border-bottom: 2px solid var(--bg-body);
-  font-family: var(--font-pixel);
+  height: 40px;
+  padding: 0 16px;
   font-size: 14px;
+  font-weight: 500; /* Regular weight */
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 8px; /* Slightly tighter than card radius */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   cursor: pointer;
+  transition: all 0.1s var(--ease-snappy);
   color: var(--ink);
-  transition: background 0.1s;
-}
-.auth-menu button:last-child {
-  border-bottom: none;
-}
-.auth-menu button:hover {
-  background: var(--bg-body);
-  color: var(--primary);
 }
 
-.mobile-only {
-  display: none;
+.btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: flex !important; }
-  .mobile-hidden-text { display: none !important; }
-  
-  .wrap { padding: 12px; padding-bottom: 140px; } /* Increased to avoid toolbar overlap */
-  .hero { padding: 12px; margin-bottom: 24px; }
-  .hero h1 { font-size: 20px; text-shadow: 2px 2px 0 var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hero-header { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; }
-  
-  .hero-actions { width: auto; justify-content: flex-end; flex-direction: row; flex-wrap: nowrap; gap: 8px; flex-shrink: 0; }
-  .hero-actions .btn-google { width: auto; padding: 0 8px; font-size: 13px; }
-  .auth-bar { width: auto; flex: 0 0 auto; }
+.btn:active {
+  transform: scale(0.98); /* Subtle press */
+  background: #f3f4f6;
+}
 
-  /* Fix Location Button spacing in header */
-  .hero-actions .btn.danger {
-    padding: 0 12px;
-    min-width: 44px; /* Ensure click target size */
-  }
+.btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.3);
+}
 
-  .toolbar { flex-direction: column; align-items: stretch; }
-  .toolbar .btn { width: 100%; }
-
-  .panel-actions { display: none; }
-  
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .card { padding: 12px; }
-  .card-title { font-size: 18px; padding-right: 48px; }
-  
-  /* Reset Table Layout for Mobile */
-  .expense-list-header {
-    display: none; /* Hide header on mobile */
-  }
-  
-  .expense-list {
-    gap: 8px; /* Compact gap */
-  }
-
-  .entry-card { 
-    /* Compact Mobile Grid Layout */
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    grid-template-rows: auto auto auto;
-    gap: 2px 10px;
-    padding: 10px;
-    padding-bottom: 10px;
-    position: relative;
-    margin-top: 0;
-    margin-bottom: 0;
-    box-shadow: 3px 3px 0 var(--ink-dim);
-  }
-  
-  /* Mobile Grid Placements */
-  .entry-card > .checkbox-pill { 
-    grid-column: 1; grid-row: 1 / span 3;
-    width: max-content;
-    align-self: center;
-    margin-right: 4px;
-  }
-  
-  .entry-note { 
-    grid-column: 2; grid-row: 1;
-    font-size: 15px;
-    font-weight: bold;
-    color: var(--ink);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-    margin: 0;
-  }
-  
-  .entry-amount { 
-    grid-column: 3; grid-row: 1;
-    font-size: 16px;
-    color: var(--accent);
-    font-weight: bold;
-    justify-self: end;
-    line-height: 1.4;
-    margin: 0;
-  }
-  
-  .entry-date { 
-    grid-column: 2; grid-row: 2;
-    font-size: 12px;
-    color: var(--ink-dim);
-    line-height: 1.4;
-  }
-
-  .entry-account { 
-    grid-column: 2; grid-row: 3;
-    font-size: 12px;
-    color: var(--ink-dim);
-    line-height: 1.4;
-  }
-  
-  /* Actions positioned in grid */
-  .entry-card > .entry-actions {
-    grid-column: 3; grid-row: 2 / span 2;
-    position: static;
-    width: auto;
-    display: flex;
-    justify-self: end;
-    align-self: end;
-  }
-  
-  .entry-actions .btn {
-    height: 28px;
-    padding: 0 10px;
-    font-size: 12px;
-  }
-
-  /* Hide entry-meta wrapper if it still exists in DOM (editing mode) */
-  .entry-meta {
-    display: contents; 
-  }
-  
-  .panel { padding: 12px; }
-  .expense-summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .summary-card { padding: 10px; }
-  .summary-amount { font-size: 18px; }
-  
-  .account-card {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .account-actions {
-    justify-content: flex-end;
-  }
+.btn.primary:hover {
+  background: #4338ca; /* Darker indigo */
 }

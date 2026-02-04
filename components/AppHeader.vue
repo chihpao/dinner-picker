@@ -84,6 +84,38 @@ onMounted(() => {
   gap: 12px;
 }
 
+.hero {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.hero-header {
+  gap: 16px;
+}
+
+.hero-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .hero-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .auth-bar {
+    margin-left: auto;
+  }
+}
+
 /* Auth Buttons */
 .btn-google {
   gap: 8px;

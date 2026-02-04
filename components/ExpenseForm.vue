@@ -1,8 +1,6 @@
 <template>
   <section class="panel entry-panel">
-    <div class="entry-header">
-      <h1>{{ titleText }}</h1>
-    </div>
+
 
     <div v-if="!user" class="auth-gate panel">
       <p>請先登入再開始{{ entryText }}</p>
@@ -128,7 +126,6 @@ const router = useRouter()
 
 const showAccount = computed(() => true)
 const entryText = computed(() => '一般記帳')
-const titleText = computed(() => '一般記帳')
 const signInRedirect = computed(() => '/total/entry')
 const redirectPath = computed(() => '/total')
 const notePlaceholder = computed(() => {
@@ -428,4 +425,33 @@ const handleSubmit = async () => {
 }
 
 .btn-google svg { width: 18px; }
+
+@media (max-width: 720px) {
+  .entry-panel {
+    max-width: 100%;
+    padding: 20px 16px 28px;
+  }
+
+  .entry-header h1 {
+    text-align: left;
+    margin-bottom: 16px;
+  }
+
+  .type-toggle-wrapper {
+    justify-content: stretch;
+  }
+
+  .type-toggle {
+    width: 100%;
+  }
+
+  .btn-toggle {
+    flex: 1;
+    padding: 10px 0;
+  }
+
+  .expense-form {
+    gap: 20px;
+  }
+}
 </style>

@@ -2,8 +2,8 @@
   <div>
     <AppHeader title="帳戶管理" :is-expenses="true" back-to="/total">
       <template #actions>
-        <NuxtLink to="/total/add-account" class="btn btn-sm primary">
-          <span>+ 新增帳戶</span>
+        <NuxtLink to="/total/add-account" class="btn btn-sm primary" title="新增帳戶" aria-label="新增帳戶">
+          <span>+</span>
         </NuxtLink>
       </template>
       <template #bottom>

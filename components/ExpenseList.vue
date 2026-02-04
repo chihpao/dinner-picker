@@ -74,7 +74,17 @@
                 <span class="checkmark"></span>
               </label>
             </div>
-            
+
+            <!-- Mobile Compact Row -->
+            <div class="cell compact-main" :title="entry.note">
+              <span class="compact-date">{{ formatDate(entry.date) }}</span>
+              <span class="type-badge compact-type" :class="entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'">
+                {{ entry.sub_type === 'zibao' ? '孜保' : '一般' }}
+              </span>
+              <span v-if="showAccount" class="compact-account">{{ accountLabel(entry.account_id) }}</span>
+              <span class="compact-note">{{ entry.note || '—' }}</span>
+            </div>
+
             <!-- 2. Date -->
             <div class="cell date-cell">
               <span class="entry-date">{{ formatDate(entry.date) }}</span>
@@ -269,9 +279,6 @@ const sortedEntries = computed(() => {
 
 const getSortArrow = (key: string) => {
   if (sortKey.value !== key) return ''
-  return sortOrder.value === 'desc' ? 'H' : 'L' // H=High, L=Low (Pixel aesthetic?) Or stick to Arrows. 
-  // Wait, let's keep it simple arrows or use font icons if available. 
-  // Let's stick to arrows for simplicity in CSS content or svg.
   return sortOrder.value === 'desc' ? '↓' : '↑'
 }
 
@@ -486,6 +493,20 @@ const accountLabel = (accountId?: string | null) => {
   transform: rotate(45deg);
 }
 
+@media (max-width: 768px) {
+  .custom-checkbox {
+    padding-left: 22px;
+  }
+  .checkmark {
+    width: 20px;
+    height: 20px;
+  }
+  .custom-checkbox .checkmark:after {
+    left: 7px;
+    top: 3px;
+  }
+}
+
 /* Panel Layout */
 .panel {
   display: flex;
@@ -552,14 +573,84 @@ const accountLabel = (accountId?: string | null) => {
 }
 
 .entry-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto 36px;
+  align-items: center;
   gap: 8px;
   padding: 16px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
+}
+
+.cell { min-width: 0; }
+.checkbox-cell { align-self: center; }
+.amount-cell { justify-self: end; white-space: nowrap; }
+.actions-cell { justify-self: end; }
+
+.compact-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.compact-date {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--ink-light);
+  flex: none;
+}
+
+.compact-type {
+  font-size: 10px;
+  padding: 2px 6px;
+  flex: none;
+}
+
+.compact-account {
+  font-size: 11px;
+  color: var(--ink-light);
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
+}
+
+.compact-note {
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.compact-main .type-badge {
+  letter-spacing: 0.04em;
+}
+
+.date-cell,
+.type-cell,
+.account-cell,
+.note-cell {
+  display: none;
+}
+
+.amount-cell .entry-amount {
+  font-family: var(--font-pixel);
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .entry-card {
+    grid-template-columns: 20px minmax(0, 1fr) auto 32px;
+    padding: 12px;
+  }
 }
 
 /* Desktop Table View */
@@ -580,6 +671,17 @@ const accountLabel = (accountId?: string | null) => {
     grid-template-columns: 48px 110px 100px 90px 120px 1fr 60px;
     align-items: center;
     padding: 0 16px;
+  }
+
+  .compact-main {
+    display: none;
+  }
+
+  .date-cell,
+  .type-cell,
+  .account-cell,
+  .note-cell {
+    display: block;
   }
 
   /* Header Styles */
@@ -793,4 +895,15 @@ const accountLabel = (accountId?: string | null) => {
 }
 .icon-btn svg { width: 18px; height: 18px; }
 .icon-btn.danger:hover { color: var(--danger); background: #fef2f2; }
+
+@media (max-width: 768px) {
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
 </style>

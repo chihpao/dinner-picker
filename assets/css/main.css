@@ -31,6 +31,7 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-solid: 4px;      /* Retain for retro feel, but maybe used less */
   --radius: 12px;           /* Slightly friendlier roundness */
+  --mobile-nav-height: 76px;
   
   /* Animations */
   --ease-snappy: cubic-bezier(0.2, 0, 0, 1); /* Fast, precise */
@@ -49,7 +50,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased; /* Crisp text */
   line-height: 1.5;
-  padding-bottom: 80px;
+  padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
   
   /* Subtle, technical grid background (Clément Faydi style) */
   background-image: 
@@ -261,6 +262,23 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
   font-size: 20px;
   color: var(--ink);
   margin: 0;
+}
+
+@media (max-width: 720px) {
+  .wrap {
+    padding: 16px 12px 24px;
+  }
+
+  .hero {
+    position: static;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    padding: 12px 16px;
+  }
+
+  .hero h1 {
+    font-size: 18px;
+  }
 }
 
 /* ========= Buttons (Refined) ========= */

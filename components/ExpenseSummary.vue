@@ -101,11 +101,65 @@ const viewIncome = computed(() => {
 .danger-text { color: #ef4444; }
 .success-text { color: #10b981; }
 
+.summary-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: var(--border-width) solid var(--border);
+  padding-top: 16px;
+}
+
 .summary-toolbar {
   display: flex;
+  width: 100%;
 }
 .items-start { align-items: flex-start; }
 .flex-col { flex-direction: column; }
 .gap-3 { gap: 12px; }
 .mb-4 { margin-bottom: 16px; }
+
+.summary-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.expense-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.summary-card {
+  background: var(--bg-paper);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-label {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-light);
+}
+
+.summary-amount {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: 20px;
+}
+
+@media (max-width: 720px) {
+  .expense-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

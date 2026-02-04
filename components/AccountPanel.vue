@@ -564,4 +564,27 @@ const saveEdit = async (id: string) => {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+@media (max-width: 720px) {
+  .panel {
+    gap: 12px;
+  }
+
+  .account-card {
+    padding: 16px;
+  }
+
+  .card-actions {
+    opacity: 1;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .balance-amount {
+    font-size: 22px;
+  }
+}
 </style>

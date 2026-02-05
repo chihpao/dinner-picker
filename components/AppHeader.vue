@@ -71,10 +71,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .hero-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   width: 100%;
 }
 
@@ -84,26 +91,20 @@ onMounted(() => {
   gap: 12px;
 }
 
-.hero {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 16px;
-}
-
-.hero-header {
-  gap: 16px;
-}
-
 .hero-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
-  row-gap: 8px;
 }
 
+/* Mobile Layout */
 @media (max-width: 720px) {
   .hero-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .hero-header h1 { /* Hide h1 on mobile */
+    display: none;
   }
 
   .hero-actions {
@@ -116,7 +117,7 @@ onMounted(() => {
   }
 }
 
-/* Auth Buttons */
+/* Auth-related styles from the original file */
 .btn-google {
   gap: 8px;
   background: white;
@@ -134,7 +135,7 @@ onMounted(() => {
 .auth-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 8px; /* Squircle */
+  border-radius: 8px;
   background: var(--primary);
   color: white;
   border: 1px solid rgba(0,0,0,0.1);
@@ -222,7 +223,6 @@ onMounted(() => {
   text-align: center;
 }
 
-/* Animations */
 .pop-enter-active,
 .pop-leave-active {
   transition: all 0.2s var(--ease-snappy);

@@ -7,35 +7,14 @@
     </button>
 
     <!-- Main Content: Clickable Area -->
-    <a :href="restaurant.orderUrl" target="_blank" rel="noopener" class="card-content">
+    <NuxtLink :to="restaurant.orderUrl" target="_blank" rel="noopener" class="card-content">
       <div class="card-header">
         <h3 class="name">{{ restaurant.name }}</h3>
         <div class="link-hint">
           前往訂購 <span class="arrow">↗</span>
         </div>
       </div>
-    </a>
-
-    <!-- Footer: Data Grid -->
-    <div class="card-footer">
-      <div class="data-cell home">
-        <div class="label-row">
-          <span class="icon">🏠</span>
-          <span class="label">住家</span>
-        </div>
-        <span class="value">{{ formatDist(restaurant.distances?.home) }}</span>
-      </div>
-      
-      <div class="divider"></div>
-      
-      <div class="data-cell work">
-        <div class="label-row">
-          <span class="icon">🏢</span>
-          <span class="label">公司</span>
-        </div>
-        <span class="value">{{ formatDist(restaurant.distances?.work) }}</span>
-      </div>
-    </div>
+    </NuxtLink>
   </div>
 </template>
 
@@ -59,7 +38,6 @@ const copyLink = async () => {
   }
 }
 
-const formatDist = (d?: number) => d ? `${d.toFixed(1)} km` : '--'
 </script>
 
 <style scoped>
@@ -160,54 +138,6 @@ const formatDist = (d?: number) => d ? `${d.toFixed(1)} km` : '--'
 
 .card-content:hover .arrow {
   transform: translate(2px, -2px);
-}
-
-/* Footer Data Grid */
-.card-footer {
-  border-top: 1px solid var(--border); /* Thinner divider */
-  display: flex;
-  background: white; /* Clean background */
-  border-bottom-left-radius: 6px; /* -2px for border width approx */
-  border-bottom-right-radius: 6px;
-}
-
-.data-cell {
-  flex: 1;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.data-cell.home {
-  color: #047857; /* Dark Green */
-  background: transparent; /* Remove noise */
-}
-
-.data-cell.work {
-  color: #1d4ed8; /* Dark Blue */
-  background: transparent; /* Remove noise */
-}
-
-.label-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  opacity: 0.8;
-}
-
-.value {
-  font-family: var(--font-pixel);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.divider {
-  width: 2px;
-  background: var(--border);
 }
 
 /* Mobile Adjustments */

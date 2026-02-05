@@ -1,6 +1,6 @@
 <template>
   <section v-if="isOpen" class="summary-section">
-    <div class="summary-toolbar mb-4 flex-col items-start gap-3">
+    <div class="summary-toolbar">
       <!-- Time Period Switch -->
       <div class="summary-switch">
         <button
@@ -113,11 +113,11 @@ const viewIncome = computed(() => {
 .summary-toolbar {
   display: flex;
   width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
 }
-.items-start { align-items: flex-start; }
-.flex-col { flex-direction: column; }
-.gap-3 { gap: 12px; }
-.mb-4 { margin-bottom: 16px; }
 
 .summary-switch {
   display: flex;

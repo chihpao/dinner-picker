@@ -2,6 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
 @tailwind base;
+* {
+  box-sizing: border-box;
+}
 @tailwind components;
 @tailwind utilities;
 
@@ -50,7 +53,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased; /* Crisp text */
   line-height: 1.5;
-  padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+  /* Adjust padding for top nav on mobile, use default 0 for desktop */
+  padding-top: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+  padding-bottom: 0; /* No bottom padding needed now */
   
   /* Subtle, technical grid background (Clément Faydi style) */
   background-image: 
@@ -58,6 +63,12 @@ body {
   background-size: 20px 20px;
 }
 
+/* Adjust body padding for desktop where mobile nav is hidden */
+@media (min-width: 721px) {
+  body {
+    padding-top: 0;
+  }
+}
 h1, h2, h3, .pixel-font {
   font-family: var(--font-pixel);
   letter-spacing: 0.02em;
@@ -80,116 +91,15 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
   gap: 24px;
 }
 
-/* ========= Component: Neo-Brutalist Card ========= */
-.card {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  /* 實體陰影：經典復古感 */
-  box-shadow: var(--shadow-solid) var(--shadow-solid) 0 rgba(0,0,0,0.12);
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
 
-.card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: calc(var(--shadow-solid) + 2px) calc(var(--shadow-solid) + 2px) 0 rgba(0,0,0,0.2);
-}
 
-/* ========= Header & Hero ========= */
-.hero {
-  background: var(--bg-paper);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 32px;
-  box-shadow: var(--shadow-solid) var(--shadow-solid) 0 rgba(0,0,0,0.12); /* 統一陰影風格 */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.hero h1 {
-  font-size: 28px;
-  color: var(--ink);
-  margin: 0;
-}
 
-/* ========= Buttons ========= */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 24px; /* 增加呼吸感 */
-  font-size: 16px;
-  font-weight: 700;
-  border: var(--border-width) solid var(--border);
-  background: #fff;
-  border-radius: var(--radius); /* 統一圓角 */
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.12); /* 統一微陰影 */
-  cursor: pointer;
-  transition: all 0.1s;
-}
 
-.btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0 0 0 transparent;
-}
 
-.btn.primary {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary); /* Cleaner look */
-  box-shadow: 2px 2px 0 rgba(79, 70, 229, 0.3);
-}
 
-/* ========= Mobile Nav (Solid & Clean) ========= */
-.mobile-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  z-index: 100;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.03); /* Soft lift */
-}
 
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 0;
-  color: var(--ink-light);
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  transition: color 0.1s var(--ease-snappy);
-}
 
-.nav-item.active {
-  color: var(--primary);
-  font-weight: 700;
-}
-
-.nav-item .icon-box svg {
-  width: 24px;
-  height: 24px;
-  stroke-width: 1.5; /* Thinner strokes */
-  transition: stroke-width 0.1s;
-}
-
-.nav-item.active .icon-box svg {
-  stroke-width: 2.5;
-}
 
 /* Utilities */
 .loader { text-align: center; padding: 40px; font-family: var(--font-pixel); }
@@ -198,9 +108,7 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
   background: repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 10px, transparent 10px, transparent 20px);
 }
 
-@media (min-width: 900px) {
-  .mobile-nav { display: none; }
-}
+
 
 /* Table overrides for desktop */
 @media (min-width: 601px) {
@@ -240,46 +148,7 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
   border-color: #d1d5db;
 }
 
-/* ========= Header & Hero (Refined) ========= */
-.hero {
-  background: var(--bg-paper);
-  border-bottom: 1px solid var(--border);
-  border-radius: 0; /* Full width feel */
-  padding: 16px 24px;
-  margin-bottom: 24px;
-  /* Sticky header support */
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
-.hero h1 {
-  font-size: 20px;
-  color: var(--ink);
-  margin: 0;
-}
-
-@media (max-width: 720px) {
-  .wrap {
-    padding: 16px 12px 24px;
-  }
-
-  .hero {
-    position: static;
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    padding: 12px 16px;
-  }
-
-  .hero h1 {
-    font-size: 18px;
-  }
-}
 
 /* ========= Buttons (Refined) ========= */
 .btn {
@@ -318,4 +187,21 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
 
 .btn.primary:hover {
   background: #4338ca; /* Darker indigo */
+}
+
+@media (max-width: 720px) {
+  .wrap {
+    padding: 16px 12px 24px;
+  }
+
+  .hero {
+    position: static;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    padding: 12px 16px;
+  }
+
+  .hero h1 {
+    font-size: 18px;
+  }
 }

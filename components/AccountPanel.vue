@@ -429,8 +429,14 @@ const saveEdit = async (id: string) => {
 }
 .edit-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .edit-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 .input-group {
   display: flex;

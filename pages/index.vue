@@ -43,6 +43,20 @@ const { processedRestaurants, isLoading } = useRestaurants()
   animation: fadeIn 0.5s ease-out;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Mobile default to single column */
+  gap: 16px; /* Adjust gap for mobile */
+}
+
+/* Desktop styles for grid */
+@media (min-width: 721px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Desktop multi-column */
+    gap: 24px;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

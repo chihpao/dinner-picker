@@ -574,7 +574,7 @@ const accountLabel = (accountId?: string | null) => {
 
 .entry-card {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto 36px;
+  grid-template-columns: 24px minmax(0, 1fr) minmax(min-content, auto) 36px;
   align-items: center;
   gap: 8px;
   padding: 16px;
@@ -594,7 +594,6 @@ const accountLabel = (accountId?: string | null) => {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  white-space: nowrap;
 }
 
 .compact-date {
@@ -648,7 +647,7 @@ const accountLabel = (accountId?: string | null) => {
 
 @media (max-width: 480px) {
   .entry-card {
-    grid-template-columns: 20px minmax(0, 1fr) auto 32px;
+    grid-template-columns: 20px minmax(0, 1fr) minmax(min-content, auto) 32px;
     padding: 12px;
   }
 }

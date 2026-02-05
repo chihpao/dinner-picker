@@ -24,6 +24,7 @@ export default defineNuxtConfig({
       title: '孜保吃晚餐',
       link: [
         { rel: 'icon', type: 'image/png', href: '/dinner-picker/favicon.png' },
+        { rel: 'manifest', href: '/dinner-picker/manifest.webmanifest' }, // Explicitly add manifest link
         { rel: 'apple-touch-icon', href: '/dinner-picker/pwa-192x192.png' }, // For iOS PWA
         { rel: 'mask-icon', href: '/dinner-picker/safari-pinned-tab.svg', color: '#FFFFFF' } // For Safari pinned tabs
       ],
@@ -76,7 +77,7 @@ export default defineNuxtConfig({
     },
     workbox: {
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      navigateFallback: '/',
+      navigateFallback: '/dinner-picker/',
       // Other workbox options
     },
     client: {

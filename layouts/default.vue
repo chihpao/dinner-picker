@@ -3,12 +3,13 @@
     <div class="sidebar-wrapper">
       <AppSidebar />
     </div>
-    <div ref="mainContentRef" class="main-content">
+    <div ref="mainContentRef" class="main-content" :class="{ 'pwa-content-bottom-nav': isPwa }">
       <div class="wrap">
         <slot />
       </div>
       <MobileNav />
     </div>
+    <PwaInstallPrompt />
   </div>
 </template>
 
@@ -18,11 +19,14 @@ import { useAuth } from '~/composables/useAuth'
 import { useRestaurants } from '~/composables/useRestaurants'
 import { useTotalExpenses } from '~/composables/useExpenses' // Assuming this is where loadEntries comes from
 import { useSwipeNavigation } from '~/composables/useSwipeNavigation'
+import { usePwaMode } from '~/composables/usePwaMode' // Import usePwaMode
+import PwaInstallPrompt from '~/components/PwaInstallPrompt.vue' // Import PwaInstallPrompt
 
 const { initAuth, user } = useAuth()
 const { fetchRestaurants } = useRestaurants()
 const { loadEntries } = useTotalExpenses()
 const { initSwipe, destroySwipe } = useSwipeNavigation()
+const { isPwa } = usePwaMode() // Use the PWA mode composable
 
 const mainContentRef = ref<HTMLElement | null>(null)
 
@@ -55,6 +59,18 @@ watch(user, () => {
   display: flex;
   flex-direction: column;
   min-width: 0; /* Prevent flex child overflow */
+  padding-top: calc(8px + 56px); /* Default padding for top nav (mobile-nav height: 56px + 8px padding) */
+}
+
+/* Adjust padding for PWA bottom nav */
+.main-content.pwa-content-bottom-nav {
+  padding-top: 0; /* Remove top padding */
+  padding-bottom: calc(8px + 56px + max(0px, env(safe-area-inset-bottom))); /* Add padding for bottom nav */
+}
+
+.wrap {
+  flex: 1; /* Allow content to grow */
+  padding: 1rem; /* Example default padding for content */
 }
 
 /* Desktop Styles */
@@ -66,6 +82,11 @@ watch(user, () => {
   }
   .mobile-nav {
     display: none; /* Desktop: mobile nav hidden */
+  }
+
+  .main-content {
+    padding-top: 0; /* No top padding on desktop */
+    padding-bottom: 0; /* No bottom padding on desktop */
   }
 }
 </style>

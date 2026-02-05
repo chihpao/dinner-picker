@@ -1,5 +1,5 @@
 <template>
-  <nav class="mobile-nav">
+  <nav class="mobile-nav" :class="{ 'pwa-bottom': isPwa }">
     <NuxtLink to="/" exact class="nav-item" active-class="active">
       <span class="icon-box"><IconHome /></span>
       <span class="label">首頁</span>
@@ -20,10 +20,13 @@
 </template>
 
 <script setup lang="ts">
+import { usePwaMode } from '~/composables/usePwaMode'
 import IconHome from '~/components/icons/IconHome.vue'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconOverview from '~/components/icons/IconOverview.vue'
 import IconBank from '~/components/icons/IconBank.vue'
+
+const { isPwa } = usePwaMode()
 </script>
 
 <style scoped>
@@ -38,10 +41,20 @@ import IconBank from '~/components/icons/IconBank.vue'
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   padding: 8px 10px;
-  padding-top: max(12px, env(safe-area-inset-bottom)); /* Use padding-top for top nav */
+  padding-top: max(12px, env(safe-area-inset-top)); /* Use padding-top for top nav */
   z-index: 100;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06); /* Shadow from top */
   backdrop-filter: blur(8px);
+}
+
+.mobile-nav.pwa-bottom {
+  top: auto;
+  bottom: 0;
+  border-bottom: none;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 18px rgba(0,0,0,0.06); /* Shadow from bottom */
+  padding-top: 8px; /* Reset padding for bottom nav */
+  padding-bottom: max(12px, env(safe-area-inset-bottom)); /* Use padding-bottom for bottom nav */
 }
 
 .nav-item {

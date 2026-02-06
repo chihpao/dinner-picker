@@ -2,19 +2,15 @@
   <nav class="mobile-nav">
     <NuxtLink to="/" exact class="nav-item" active-class="active">
       <span class="icon-box"><IconHome /></span>
-      <span class="label">首頁</span>
     </NuxtLink>
     <NuxtLink to="/total/entry" exact class="nav-item" active-class="active">
       <span class="icon-box"><IconEdit /></span>
-      <span class="label">記帳</span>
     </NuxtLink>
     <NuxtLink to="/total" exact class="nav-item" active-class="active">
       <span class="icon-box"><IconOverview /></span>
-      <span class="label">總覽</span>
     </NuxtLink>
     <NuxtLink to="/total/accounts" exact class="nav-item" active-class="active">
       <span class="icon-box"><IconBank /></span>
-      <span class="label">帳戶</span>
     </NuxtLink>
   </nav>
 </template>
@@ -37,7 +33,7 @@ import IconBank from '~/components/icons/IconBank.vue'
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  padding: 8px 10px;
+  padding: 8px 16px; /* Increased side padding */
   padding-bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 100;
   box-shadow: 0 -6px 18px rgba(0,0,0,0.06);
@@ -48,18 +44,18 @@ import IconBank from '~/components/icons/IconBank.vue'
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center; /* Center vertically */
   text-decoration: none;
   color: var(--ink-light);
-  padding: 8px 6px;
+  padding: 8px;
   border-radius: 12px;
   transition: all 0.1s;
-  min-height: 56px;
+  min-height: 52px; /* Slightly tighter height since no text */
 }
 
 .icon-box {
-  width: 24px;
-  height: 24px;
+  width: 28px; /* Larger icons */
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,15 +63,11 @@ import IconBank from '~/components/icons/IconBank.vue'
 }
 
 .icon-box :deep(svg) {
-  width: 22px;
-  height: 22px;
+  width: 26px; /* Larger inner svg */
+  height: 26px;
 }
 
-.label {
-  font-family: var(--font-pixel);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-}
+/* Removed label styles */
 
 /* This is the unified active style */
 .nav-item.active {

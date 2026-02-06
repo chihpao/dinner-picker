@@ -53,9 +53,9 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased; /* Crisp text */
   line-height: 1.5;
-  /* Adjust padding for top nav on mobile, use default 0 for desktop */
-  padding-top: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
-  padding-bottom: 0; /* No bottom padding needed now */
+  /* Safe area for top notch */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: 0;
   
   /* Subtle, technical grid background (Clément Faydi style) */
   background-image: 

@@ -299,20 +299,20 @@ const saveEdit = async (id: string) => {
 .account-card {
   background: white;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 16px; /* Softer radius */
+  padding: 24px;       /* More breathing room */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.04); /* Subtler, deeper shadow */
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  gap: 20px;           /* Increased gap */
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s;
   position: relative;
   overflow: hidden;
 }
 
 .account-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
 }
 
 .account-card.ghost {
@@ -328,91 +328,108 @@ const saveEdit = async (id: string) => {
   align-items: flex-start;
 }
 
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .account-info h3 {
-  font-size: 18px;
-  margin: 0 0 6px 0;
+  font-size: 20px; /* Larger title */
+  margin: 0;
   color: var(--ink);
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .kind-tag {
-  display: inline-block;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-family: var(--font-pixel);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 99px; /* Pill shape */
+  font-family: var(--font-sans); /* Switch to sans for cleaner look */
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
-.kind-tag.bank { background: #E0F2FE; color: #0369A1; }
-.kind-tag.card { background: #FCE7F3; color: #BE185D; }
-.kind-tag.cash { background: #DCFCE7; color: #15803D; }
+.kind-tag.bank { background: #E0F2FE; color: #0284C7; }
+.kind-tag.card { background: #FCE7F3; color: #DB2777; }
+.kind-tag.cash { background: #DCFCE7; color: #16A34A; }
 .kind-tag.other { background: #F3F4F6; color: #4B5563; }
 
 .card-actions {
   display: flex;
-  gap: 4px;
-  opacity: 0.4;
+  gap: 8px;
+  opacity: 0.6; /* Higher default opacity on mobile */
   transition: opacity 0.2s;
 }
-.account-card:hover .card-actions { opacity: 1; }
 
 .icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: none;
-  background: transparent;
+  background: #f3f4f6; /* Subtle background for buttons */
   color: var(--ink-light);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
 }
-.icon-btn:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+.icon-btn:hover { background: #e5e7eb; color: var(--ink); }
 .icon-btn.danger:hover { background: #FEF2F2; color: var(--danger); }
-.icon-btn :deep(svg) { width: 16px; height: 16px; }
+.icon-btn :deep(svg) { width: 18px; height: 18px; }
 
 /* Stats */
 .card-stats {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 0;
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border); /* Clean separator */
+  border-bottom: 1px solid var(--border);
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  align-items: center;
+  font-size: 15px; /* User requested larger font */
 }
-.stat-label { color: var(--ink-light); }
-.stat-value { font-family: var(--font-pixel); font-weight: 500; }
+.stat-label { 
+  color: var(--ink-light); 
+  font-weight: 500;
+}
+.stat-value { 
+  font-family: var(--font-pixel); 
+  font-weight: 500; 
+  font-size: 16px;
+}
 .stat-value.income { color: var(--success); }
-.stat-value.expense { color: var(--danger); opacity: 0.8; }
+.stat-value.expense { color: var(--danger); opacity: 0.9; }
 
 /* Balance */
 .card-balance {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 4px;
 }
 .balance-label {
-  font-size: 11px;
+  font-size: 13px; /* Slightly larger */
   color: var(--ink-light);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
 }
 .balance-amount {
-  font-size: 24px;
+  font-size: 32px; /* Much larger */
   font-family: var(--font-pixel);
   font-weight: 700;
   color: var(--ink);
-  letter-spacing: -0.02em;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 .balance-amount.negative { color: var(--danger); }
 

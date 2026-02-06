@@ -58,11 +58,19 @@ export function usePwaInstall() {
         installPromptEvent.value = null
     }
 
+    // Detect iOS
+    const isIos = ref(false)
+    if (import.meta.client) {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        isIos.value = /iphone|ipad|ipod/.test(userAgent);
+    }
+
     return {
         installPromptEvent,
         isAppInstalled,
         swRegistered,
         manifestStatus,
+        isIos,
         initPwaListener,
         installPwa
     }

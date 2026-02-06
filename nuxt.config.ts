@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/png', href: '/dinner-picker/favicon.png' },
         { rel: 'manifest', href: '/dinner-picker/manifest.webmanifest' }, // Explicitly add manifest link
-        { rel: 'apple-touch-icon', href: '/dinner-picker/pwa-192x192.png' }, // For iOS PWA
+        { rel: 'apple-touch-icon', href: '/dinner-picker/pwa-512x512.png' }, // For iOS PWA (Use high-res)
         { rel: 'mask-icon', href: '/dinner-picker/safari-pinned-tab.svg', color: '#FFFFFF' } // For Safari pinned tabs
       ],
       meta: [

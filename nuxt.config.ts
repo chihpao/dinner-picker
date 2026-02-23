@@ -51,6 +51,8 @@ export default defineNuxtConfig({
       theme_color: '#FFFFFF',
       background_color: '#FFFFFF',
       display: 'standalone',
+      id: '/dinner-picker/',
+      start_url: '/dinner-picker/',
       icons: [
         {
           src: 'pwa-64x64.png',

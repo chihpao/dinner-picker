@@ -1,8 +1,36 @@
 <template>
   <section class="panel">
-    <!-- Removed duplicate h2 title, kept pill if needed but cleaning it up is better -->
     <div class="panel-header" v-if="accounts.length">
-       <span class="pill">共 {{ accounts.length }} 個帳戶</span>
+      <span class="pill">共 {{ accounts.length }} 個帳戶</span>
+      <div class="sort-switch" role="group" aria-label="帳戶排序">
+        <button
+          class="btn btn-sm sort-btn"
+          :class="{ primary: sortMode === 'balanceDesc' }"
+          type="button"
+          :aria-pressed="sortMode === 'balanceDesc'"
+          @click="sortMode = 'balanceDesc'"
+        >
+          餘額高
+        </button>
+        <button
+          class="btn btn-sm sort-btn"
+          :class="{ primary: sortMode === 'balanceAsc' }"
+          type="button"
+          :aria-pressed="sortMode === 'balanceAsc'"
+          @click="sortMode = 'balanceAsc'"
+        >
+          餘額低
+        </button>
+        <button
+          class="btn btn-sm sort-btn"
+          :class="{ primary: sortMode === 'name' }"
+          type="button"
+          :aria-pressed="sortMode === 'name'"
+          @click="sortMode = 'name'"
+        >
+          名稱
+        </button>
+      </div>
     </div>
 
     <div v-if="!user" class="auth-gate panel">
@@ -10,10 +38,15 @@
     </div>
 
     <template v-else>
-      <div v-if="!accounts.length" class="empty-state">尚未建立帳戶，先新增一個吧！</div>
+      <div v-if="!accounts.length" class="empty-state">
+        <p>尚未建立帳戶，先新增一個吧！</p>
+        <NuxtLink to="/total/add-account" class="btn btn-sm primary">
+          前往新增帳戶
+        </NuxtLink>
+      </div>
       
       <div v-else class="account-list">
-        <article v-for="account in accounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
+        <article v-for="account in sortedAccounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
           
           <!-- EDIT MODE -->
           <template v-if="editingId === account.id">
@@ -90,8 +123,8 @@
 
             <div class="card-balance">
               <span class="balance-label">目前餘額</span>
-              <span class="balance-amount" :class="{ 'negative': ((account.balance || 0) - (accountStats.get(account.id)?.net || 0)) < 0 }">
-                {{ formatCurrency((account.balance || 0) - (accountStats.get(account.id)?.net || 0)) }}
+              <span class="balance-amount" :class="{ 'negative': accountCurrentBalance(account.id, account.balance) < 0 }">
+                {{ formatCurrency(accountCurrentBalance(account.id, account.balance)) }}
               </span>
             </div>
           </template>
@@ -131,12 +164,15 @@
              <h3>刪除帳戶</h3>
            </div>
            <div class="modal-content">
-             <p>確定要刪除這個帳戶嗎？</p>
+             <p>確定要刪除「{{ targetAccountName }}」嗎？</p>
+             <p class="impact-text">此帳戶共有 {{ deleteImpactCount }} 筆記帳紀錄。</p>
              <p class="warning-text">相關的記帳紀錄即使刪除帳戶後仍會保留，但會變成「未指定帳戶」。</p>
            </div>
            <div class="modal-actions">
              <button class="btn" @click="cancelDelete">取消</button>
-             <button class="btn danger" @click="confirmDelete">確認刪除</button>
+             <button class="btn danger" @click="confirmDelete" :disabled="deletingAccount">
+               {{ deletingAccount ? '刪除中...' : '確認刪除' }}
+             </button>
            </div>
          </div>
        </div>
@@ -151,8 +187,11 @@ import IconTrash from '~/components/icons/IconTrash.vue'
 const { user } = useAuth()
 const { accounts, updateAccount, deleteAccount } = useAccounts()
 const { entries } = useTotalExpenses()
+const SORT_PREF_KEY = 'dinnerPicker.accounts.sort.v1'
 
 const editingId = ref<string | null>(null)
+const sortMode = ref<'balanceDesc' | 'balanceAsc' | 'name'>('balanceDesc')
+const deletingAccount = ref(false)
 const editForm = reactive({
   name: '',
   kind: 'bank' as 'bank' | 'cash' | 'card',
@@ -163,6 +202,45 @@ const editForm = reactive({
 const deleteModal = reactive({
   open: false,
   targetId: null as string | null
+})
+
+const targetAccountName = computed(() => {
+  if (!deleteModal.targetId) return '此帳戶'
+  return accounts.value.find(account => account.id === deleteModal.targetId)?.name || '此帳戶'
+})
+
+const deleteImpactCount = computed(() => {
+  if (!deleteModal.targetId) return 0
+  return entries.value.filter(entry => entry.account_id === deleteModal.targetId).length
+})
+
+const accountCurrentBalance = (accountId: string, balance: number) => {
+  const net = accountStats.value.get(accountId)?.net || 0
+  return (balance || 0) - net
+}
+
+const sortedAccounts = computed(() => {
+  const list = [...accounts.value]
+  if (sortMode.value === 'name') {
+    return list.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'))
+  }
+  if (sortMode.value === 'balanceAsc') {
+    return list.sort((a, b) => accountCurrentBalance(a.id, a.balance) - accountCurrentBalance(b.id, b.balance))
+  }
+  return list.sort((a, b) => accountCurrentBalance(b.id, b.balance) - accountCurrentBalance(a.id, a.balance))
+})
+
+onMounted(() => {
+  if (!import.meta.client) return
+  const saved = localStorage.getItem(SORT_PREF_KEY)
+  if (saved === 'balanceDesc' || saved === 'balanceAsc' || saved === 'name') {
+    sortMode.value = saved
+  }
+})
+
+watch(sortMode, (mode) => {
+  if (!import.meta.client) return
+  localStorage.setItem(SORT_PREF_KEY, mode)
 })
 
 const accountStats = computed(() => {
@@ -213,10 +291,14 @@ const cancelDelete = () => {
 }
 
 const confirmDelete = async () => {
-  if (deleteModal.targetId) {
+  if (!deleteModal.targetId || deletingAccount.value) return
+  deletingAccount.value = true
+  try {
     await deleteAccount(deleteModal.targetId)
     deleteModal.open = false
     deleteModal.targetId = null
+  } finally {
+    deletingAccount.value = false
   }
 }
 
@@ -261,15 +343,18 @@ const saveEdit = async (id: string) => {
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   max-width: 800px; /* Limit width for better read on desktop */
   margin: 0 auto;
 }
 
 .panel-header {
   display: flex;
-  justify-content: flex-end;
-  padding: 0 4px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 2px;
 }
 
 .pill {
@@ -282,10 +367,37 @@ const saveEdit = async (id: string) => {
   font-family: var(--font-pixel);
 }
 
+.sort-switch {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.sort-btn {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 22px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-paper);
+  text-align: center;
+  color: var(--ink-light);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
 .account-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Tablet+ Grid */
@@ -300,11 +412,11 @@ const saveEdit = async (id: string) => {
   background: white;
   border: 1px solid var(--border);
   border-radius: 16px; /* Softer radius */
-  padding: 24px;       /* More breathing room */
+  padding: 18px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.04); /* Subtler, deeper shadow */
   display: flex;
   flex-direction: column;
-  gap: 20px;           /* Increased gap */
+  gap: 16px;
   transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s;
   position: relative;
   overflow: hidden;
@@ -336,7 +448,7 @@ const saveEdit = async (id: string) => {
 }
 
 .account-info h3 {
-  font-size: 20px; /* Larger title */
+  font-size: 18px;
   margin: 0;
   color: var(--ink);
   font-weight: 700;
@@ -361,16 +473,16 @@ const saveEdit = async (id: string) => {
 
 .card-actions {
   display: flex;
-  gap: 8px;
-  opacity: 0.6; /* Higher default opacity on mobile */
+  gap: 6px;
+  opacity: 0.8;
   transition: opacity 0.2s;
 }
 
 .icon-btn {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: #f3f4f6; /* Subtle background for buttons */
+  background: #f3f4f6;
   color: var(--ink-light);
   cursor: pointer;
   border-radius: 8px;
@@ -387,8 +499,8 @@ const saveEdit = async (id: string) => {
 .card-stats {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px 0;
+  gap: 10px;
+  padding: 14px 0;
   border-top: 1px solid var(--border); /* Clean separator */
   border-bottom: 1px solid var(--border);
 }
@@ -397,7 +509,7 @@ const saveEdit = async (id: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 15px; /* User requested larger font */
+  font-size: 14px;
 }
 .stat-label { 
   color: var(--ink-light); 
@@ -406,7 +518,7 @@ const saveEdit = async (id: string) => {
 .stat-value { 
   font-family: var(--font-pixel); 
   font-weight: 500; 
-  font-size: 16px;
+  font-size: 15px;
 }
 .stat-value.income { color: var(--success); }
 .stat-value.expense { color: var(--danger); opacity: 0.9; }
@@ -424,7 +536,7 @@ const saveEdit = async (id: string) => {
   font-weight: 500;
 }
 .balance-amount {
-  font-size: 32px; /* Much larger */
+  font-size: 30px;
   font-family: var(--font-pixel);
   font-weight: 700;
   color: var(--ink);
@@ -471,7 +583,7 @@ const saveEdit = async (id: string) => {
 
 .form-input, .form-select {
   width: 100%;
-  height: 38px;
+  height: 44px;
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0 12px;
@@ -562,6 +674,13 @@ const saveEdit = async (id: string) => {
   color: var(--ink);
   line-height: 1.5;
 }
+
+.impact-text {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
 .warning-text {
   margin-top: 8px;
   font-size: 13px;
@@ -578,6 +697,10 @@ const saveEdit = async (id: string) => {
   margin-top: 8px;
 }
 .modal-actions .btn { flex: 1; }
+.modal-actions .btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -593,8 +716,22 @@ const saveEdit = async (id: string) => {
     gap: 12px;
   }
 
+  .account-card:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .sort-switch {
+    width: 100%;
+  }
+
+  .sort-btn {
+    flex: 1;
+  }
+
   .account-card {
-    padding: 16px;
+    padding: 14px 12px;
+    gap: 14px;
   }
 
   .card-actions {
@@ -602,12 +739,18 @@ const saveEdit = async (id: string) => {
   }
 
   .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 42px;
+    height: 42px;
   }
 
   .balance-amount {
-    font-size: 22px;
+    font-size: 24px;
+  }
+
+  .edit-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 }
 </style>

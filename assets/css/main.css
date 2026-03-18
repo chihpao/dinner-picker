@@ -32,8 +32,10 @@
   /* UI Tokens */
   --border-width: 1px;      /* Thinner, precise borders */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 24px rgba(17, 24, 39, 0.08);
   --shadow-solid: 4px;      /* Retain for retro feel, but maybe used less */
   --radius: 12px;           /* Slightly friendlier roundness */
+  --radius-sm: 8px;
   --mobile-nav-height: 76px;
   
   /* Animations */
@@ -155,7 +157,7 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
+  min-height: 40px;
   padding: 0 16px;
   font-size: 14px;
   font-weight: 500; /* Regular weight */
@@ -171,6 +173,12 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
 .btn:hover {
   background: #f9fafb;
   border-color: #d1d5db;
+}
+
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
 }
 
 .btn:active {
@@ -192,6 +200,10 @@ button { font-family: var(--font-sans); font-weight: 500; } /* Switch to Sans fo
 @media (max-width: 720px) {
   .wrap {
     padding: 16px 12px 24px;
+  }
+
+  .btn {
+    min-height: 42px;
   }
 
   .hero {

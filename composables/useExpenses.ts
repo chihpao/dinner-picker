@@ -11,6 +11,12 @@ export interface ExpenseEntry {
     sub_type?: string
 }
 
+const isTransferEntry = (entry: ExpenseEntry) => {
+    if (entry.sub_type === 'transfer') return true
+    // Backward compatibility for old records before transfer subtype was introduced.
+    return Boolean(entry.note && entry.note.includes('[轉帳]'))
+}
+
 type LedgerKind = 'total'
 
 const ledgerConfig: Record<LedgerKind, {
@@ -287,7 +293,6 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
 
     const calculateSummaries = (filterFn?: (e: ExpenseEntry) => boolean) => {
         const today = new Date()
-        const todayISO = toISODate(today)
         const weekStart = startOfWeek(today)
         const weekEnd = new Date(weekStart)
         weekEnd.setDate(weekEnd.getDate() + 7)
@@ -304,8 +309,8 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
         }
 
         return entries.value.reduce((acc, entry) => {
-            // Ignore transfer entries for summary statistics
-            if (entry.note && entry.note.includes('[轉帳]')) {
+            // Ignore transfer entries for summary statistics.
+            if (isTransferEntry(entry)) {
                 return acc
             }
             

@@ -14,12 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue' // Import all necessary Vue functions
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useRestaurants } from '~/composables/useRestaurants'
-import { useTotalExpenses } from '~/composables/useExpenses' // Assuming this is where loadEntries comes from
+import { useTotalExpenses } from '~/composables/useExpenses'
 import { useSwipeNavigation } from '~/composables/useSwipeNavigation'
-import PwaInstallPrompt from '~/components/PwaInstallPrompt.vue' // Import PwaInstallPrompt
+import PwaInstallPrompt from '~/components/PwaInstallPrompt.vue'
 
 const { initAuth, user } = useAuth()
 const { fetchRestaurants } = useRestaurants()
@@ -56,30 +56,33 @@ watch(user, () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevent flex child overflow */
+  min-width: 0;
   padding-top: 0;
-  padding-bottom: calc(8px + 56px + max(0px, env(safe-area-inset-bottom))); /* Add padding for bottom nav */
+  padding-bottom: calc(var(--mobile-nav-height) + max(0px, env(safe-area-inset-bottom)));
 }
 
 .wrap {
-  flex: 1; /* Allow content to grow */
-  padding: 1rem; /* Example default padding for content */
+  flex: 1;
+  padding: 14px 12px 18px;
 }
 
-/* Desktop Styles */
-@media (min-width: 721px) { /* Based on AGENTS.MD 720px breakpoint */
+@media (min-width: 721px) {
   .sidebar-wrapper {
     display: block;
-    width: 256px; /* Equivalent to w-64 */
+    width: 256px;
     flex-shrink: 0;
   }
   .mobile-nav {
-    display: none; /* Desktop: mobile nav hidden */
+    display: none;
   }
 
   .main-content {
-    padding-top: 0; /* No top padding on desktop */
-    padding-bottom: 0; /* No bottom padding on desktop */
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .wrap {
+    padding: 24px 16px;
   }
 }
 </style>

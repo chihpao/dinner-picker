@@ -11,6 +11,20 @@
         </button>
       </div>
     </div>
+
+    <div v-if="user && entries.length" class="list-toolbar">
+      <label class="search-box">
+        <input v-model.trim="searchQuery" type="text" placeholder="搜尋備註、帳戶、日期">
+      </label>
+      <select v-model="filterType" class="filter-select">
+        <option value="all">全部</option>
+        <option value="expense">支出</option>
+        <option value="income">收入</option>
+        <option value="zibao">孜保</option>
+        <option value="transfer">轉帳</option>
+      </select>
+      <span class="result-count">顯示 {{ sortedEntries.length }} / {{ entries.length }}</span>
+    </div>
     
     <div v-if="!user" class="auth-gate panel">
       <p>請先登入再查看/管理紀錄</p>
@@ -78,8 +92,8 @@
             <!-- Mobile Compact Row -->
             <div class="cell compact-main" :title="entry.note">
               <span class="compact-date">{{ formatDate(entry.date) }}</span>
-              <span class="type-badge compact-type" :class="entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'">
-                {{ entry.sub_type === 'zibao' ? '孜保' : '一般' }}
+              <span class="type-badge compact-type" :class="typeClass(entry)">
+                {{ typeLabel(entry) }}
               </span>
               <span v-if="showAccount" class="compact-account">{{ accountLabel(entry.account_id) }}</span>
               <span class="compact-note">{{ entry.note || '—' }}</span>
@@ -100,8 +114,8 @@
 
             <!-- 4. Type -->
             <div class="cell type-cell">
-              <span class="type-badge" :class="entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'">
-                {{ entry.sub_type === 'zibao' ? '孜保' : '一般' }}
+              <span class="type-badge" :class="typeClass(entry)">
+                {{ typeLabel(entry) }}
               </span>
             </div>
             
@@ -195,12 +209,16 @@
               </select>
             </label>
             
-            <label class="input-label" v-if="editForm.type === 'expense'">
+            <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
               <span>類型</span>
               <select v-model="editForm.sub_type">
                 <option value="general">一般</option>
                 <option value="zibao">孜保平分</option>
               </select>
+            </label>
+            <label class="input-label" v-else-if="isEditingTransfer">
+              <span>類型</span>
+              <input type="text" value="轉帳" readonly>
             </label>
 
             <label class="input-label flex-grow">
@@ -245,9 +263,55 @@ const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
 const sortKey = ref<'date' | 'amount' | 'account_id' | 'note' | 'sub_type'>('date')
 const sortOrder = ref<'asc' | 'desc'>('desc')
+const searchQuery = ref('')
+const filterType = ref<'all' | 'expense' | 'income' | 'zibao' | 'transfer'>('all')
+const isTransferEntry = (entry: ExpenseEntry) => {
+  if (entry.sub_type === 'transfer') return true
+  return Boolean(entry.note && entry.note.includes('[轉帳]'))
+}
+
+const typeClass = (entry: ExpenseEntry) => {
+  if (isTransferEntry(entry)) return 'type-transfer'
+  return entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'
+}
+
+const typeLabel = (entry: ExpenseEntry) => {
+  if (isTransferEntry(entry)) return '轉帳'
+  return entry.sub_type === 'zibao' ? '孜保' : '一般'
+}
+
+const isEditingTransfer = computed(() => {
+  if (!editingId.value) return false
+  const target = entries.value.find(e => e.id === editingId.value)
+  return target ? isTransferEntry(target) : false
+})
+
+const filteredEntries = computed(() => {
+  let list = [...entries.value]
+
+  if (filterType.value !== 'all') {
+    list = list.filter((entry) => {
+      if (filterType.value === 'transfer') return isTransferEntry(entry)
+      if (filterType.value === 'zibao') return entry.sub_type === 'zibao' && !isTransferEntry(entry)
+      if (filterType.value === 'income') return entry.amount < 0 && !isTransferEntry(entry)
+      if (filterType.value === 'expense') return entry.amount >= 0 && !isTransferEntry(entry)
+      return true
+    })
+  }
+
+  const keyword = searchQuery.value.toLowerCase()
+  if (!keyword) return list
+
+  return list.filter((entry) => {
+    const account = accountLabel(entry.account_id).toLowerCase()
+    const date = formatDate(entry.date).toLowerCase()
+    const note = (entry.note || '').toLowerCase()
+    return account.includes(keyword) || date.includes(keyword) || note.includes(keyword)
+  })
+})
 
 const sortedEntries = computed(() => {
-  const list = [...entries.value]
+  const list = [...filteredEntries.value]
   return list.sort((a, b) => {
     const asc = sortOrder.value === 'asc'
     if (sortKey.value === 'date') {
@@ -292,7 +356,7 @@ const startEdit = (entry: ExpenseEntry) => {
   editForm.note = entry.note ?? ''
   editForm.account_id = entry.account_id ?? ''
   editForm.type = entry.amount < 0 ? 'income' : 'expense'
-  editForm.sub_type = entry.sub_type ?? 'general'
+  editForm.sub_type = isTransferEntry(entry) ? 'transfer' : (entry.sub_type ?? 'general')
 }
 
 const cancelEdit = () => {
@@ -311,6 +375,7 @@ const saveEdit = async () => {
     return
   }
   const finalAmount = editForm.type === 'income' ? -Math.abs(editForm.amount) : Math.abs(editForm.amount)
+  const nextSubType = isTransferEntry(target) ? 'transfer' : editForm.sub_type
 
   await updateEntry({
     ...target,
@@ -318,7 +383,7 @@ const saveEdit = async () => {
     amount: Math.round(finalAmount),
     note: editForm.note ?? '',
     account_id: editForm.account_id || null,
-    sub_type: editForm.sub_type
+    sub_type: nextSubType
   })
   editingId.value = null
 }
@@ -440,6 +505,11 @@ const accountLabel = (accountId?: string | null) => {
   background: var(--primary-light);
   border: 1px solid rgba(79, 70, 229, 0.1);
 }
+.type-transfer {
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+}
 
 /* Custom Checkbox */
 .custom-checkbox {
@@ -537,6 +607,40 @@ const accountLabel = (accountId?: string | null) => {
   font-family: var(--font-pixel);
 }
 
+.list-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 112px;
+  gap: 8px;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.search-box input,
+.filter-select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.search-box input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.result-count {
+  grid-column: 1 / -1;
+  color: var(--ink-light);
+  font-size: 12px;
+  padding-left: 2px;
+}
+
 /* Auth Gate */
 .auth-gate {
   text-align: center;
@@ -577,11 +681,17 @@ const accountLabel = (accountId?: string | null) => {
   grid-template-columns: 24px minmax(0, 1fr) minmax(min-content, auto) 36px;
   align-items: center;
   gap: 8px;
-  padding: 16px;
+  padding: 14px 12px;
   background: white;
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.entry-card:active {
+  border-color: rgba(79, 70, 229, 0.35);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.08);
 }
 
 .cell { min-width: 0; }
@@ -598,23 +708,23 @@ const accountLabel = (accountId?: string | null) => {
 
 .compact-date {
   font-family: var(--font-pixel);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ink-light);
   flex: none;
 }
 
 .compact-type {
   font-size: 10px;
-  padding: 2px 6px;
+  padding: 3px 6px;
   flex: none;
 }
 
 .compact-account {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--ink-light);
   background: #f3f4f6;
   border-radius: 4px;
-  padding: 2px 6px;
+  padding: 3px 6px;
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -622,10 +732,12 @@ const accountLabel = (accountId?: string | null) => {
 }
 
 .compact-note {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   flex: 1;
 }
 
@@ -643,17 +755,61 @@ const accountLabel = (accountId?: string | null) => {
 .amount-cell .entry-amount {
   font-family: var(--font-pixel);
   font-weight: 600;
+  font-size: 15px;
 }
 
 @media (max-width: 480px) {
+  .list-toolbar {
+    grid-template-columns: 1fr 104px;
+    gap: 6px;
+    padding: 0 2px;
+  }
+
+  .search-box input,
+  .filter-select {
+    height: 38px;
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  .result-count {
+    font-size: 11px;
+  }
+
   .entry-card {
-    grid-template-columns: 20px minmax(0, 1fr) minmax(min-content, auto) 32px;
-    padding: 12px;
+    grid-template-columns: 20px minmax(0, 1fr) minmax(min-content, auto) 38px;
+    padding: 12px 10px;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .compact-main {
+    gap: 6px;
+  }
+
+  .compact-account {
+    display: none;
   }
 }
 
 /* Desktop Table View */
 @media (min-width: 768px) {
+  .list-toolbar {
+    grid-template-columns: minmax(220px, 360px) 120px auto;
+    justify-content: space-between;
+  }
+
+  .result-count {
+    grid-column: auto;
+    text-align: right;
+    padding-left: 0;
+    font-size: 11px;
+  }
+
   .expense-list-container {
     gap: 0;
     border: 1px solid var(--border);
@@ -882,10 +1038,14 @@ const accountLabel = (accountId?: string | null) => {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 6px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: 6px;
   color: var(--ink-light);
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s;
 }
 .icon-btn:hover {
@@ -897,8 +1057,8 @@ const accountLabel = (accountId?: string | null) => {
 
 @media (max-width: 768px) {
   .icon-btn {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
   }
   .icon-btn svg {
     width: 20px;

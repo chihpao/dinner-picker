@@ -1,88 +1,125 @@
 # AGENTS.MD - Project Context & Working Rules
 
-> **For AI Agents:** Read this file first. This file is the fast path to correct UI/UX changes without breaking logic.
+> For AI agents: read this file first. Prioritize UI quality and do not break data flow.
 
 ## 1. Project Snapshot
-- **Name**: 孜保吃晚餐 (Dinner Picker & Expense Ledger)
-- **Stack**: Nuxt 3, Vue 3 (Composition API), TailwindCSS.
-- **Logic Location**: `composables/` (`useAuth`, `useTotalExpenses`, `useRestaurants`, `useAccounts`).
-- **Default Rule**: **UI tasks must not change business logic** unless explicitly requested.
+- Name: 孜保吃晚餐 (Dinner Picker + Expense Ledger)
+- Stack: Nuxt 4 (SPA `ssr: false`), Vue 3 Composition API, TailwindCSS, Supabase, `@vite-pwa/nuxt`
+- Dev server: `http://localhost:4211`
+- Deployment shape: GitHub Pages base path `/dinner-picker/`
+- Default rule: UI/UX tasks must not change business logic unless explicitly requested
 
-## 2. Routes & Navigation (High Signal)
-- `/`：首頁
-- `/total`：全消費總覽
-- `/total/entry`：一般記帳
-- `/total/accounts`：帳戶管理
-- `/total/add-account`：新增帳戶
+## 2. Real Project Structure
+- `pages/`
+  - `index.vue` - 餐廳卡片首頁
+  - `total/index.vue` - 全消費總覽（列表 + 統計 toggle）
+  - `total/entry.vue` - 記帳頁（`ExpenseForm`）
+  - `total/accounts.vue` - 帳戶管理（`AccountPanel`）
+  - `total/add-account.vue` - 新增帳戶
+- `components/`
+  - Layout/Nav: `AppHeader.vue`, `AppSidebar.vue`, `MobileNav.vue`, `PwaInstallPrompt.vue`
+  - Expense domain: `ExpenseForm.vue`, `ExpenseList.vue`, `ExpenseSummary.vue`, `AccountPanel.vue`
+  - Restaurant domain: `RestaurantCard.vue`
+  - Icons: `components/icons/*.vue`
+- `composables/`
+  - `useAuth.ts` - Google OAuth + session state
+  - `useExpenses.ts` - 核心記帳資料流（含 `useTotalExpenses()`）
+  - `useAccounts.ts` - 帳戶 CRUD + pending sync
+  - `useRestaurants.ts` - 餐廳與距離排序
+  - `useSupabase.ts` - Supabase client
+  - `useSwipeNavigation.ts` - 手勢切頁
+  - `usePwaInstall.ts`, `usePwaMode.ts` - PWA 安裝與模式
+- `assets/css/main.css` - design tokens source of truth
+- `plugins/pwa-init.client.ts` - 啟動 PWA install listener
 
-**Mobile bottom nav** lives in `components/MobileNav.vue` and must include:
-- `首頁` → `/`
-- `記帳` → `/total/entry`
-- `總覽` → `/total`
-- `帳戶` → `/total/accounts`
+## 3. Routes & Navigation
+- `/` 首頁
+- `/total/entry` 記帳
+- `/total` 全消費總覽
+- `/total/accounts` 帳戶管理
+- `/total/add-account` 新增帳戶
 
-## 3. Design System: "Neo-Pixel Refined"
-**Philosophy**: Dieter Rams (Order), Linear App (Precision), Pixel Art (Identity).
+Mobile bottom nav is fixed 4 items in this order:
+`首頁 -> 記帳 -> 總覽 -> 帳戶`
 
-### Visual Tokens (Source of truth: `assets/css/main.css`)
-Use CSS vars whenever possible:
-- **Typography**:
-  - Headings / numbers / badges: `DotGothic16`
-  - Body / inputs: `Noto Sans TC` (via `--font-sans`, which also includes Inter)
-- **Colors**:
-  - `--bg-body: #f7f7f8`
-  - `--bg-paper: #ffffff`
-  - `--ink: #111827`, `--ink-light: #6b7280`
-  - `--border: #e2e4e7`
-  - `--primary: #4f46e5`
-- **Geometry**:
-  - `--border-width: 1px`
-  - `--radius: 12px`
-  - `--shadow-sm: 0 1px 2px rgba(0,0,0,0.05)`
-  - `--mobile-nav-height: 76px`
+## 4. Data & Logic Boundaries
+- Do not move business rules into components.
+- Use composables for all data operations.
+- Expense/account sync uses:
+  - local storage cache
+  - pending queue retry
+  - Supabase as remote source
+- `useTotalExpenses` is an alias exported from `useExpenses.ts`; keep compatibility.
+- If editing auth/supabase logic, treat as high risk and change only when asked.
 
-### Icon Rules
-- **Icons > Text** for action buttons (Edit/Delete/Add/Stats).
-- New icons must be **Vue components** in `components/icons/`.
-- **CRITICAL**: SVG must be wrapped in a `<template>` tag.
+## 5. Design System: Neo-Pixel Refined
+Philosophy: Dieter Rams (order) + Linear (precision) + Pixel art identity.
 
-## 4. Layout Rules (RWD)
-### `components/AppHeader.vue`
-- Desktop: sticky header (hero).
-- Mobile (`<=720px`): header stacks vertically; summary panel uses the `bottom` slot.
+Use CSS vars from `assets/css/main.css`:
+- Typography:
+  - Heading/number/badge: `--font-pixel` (`DotGothic16`)
+  - Body/input/button: `--font-sans` (`Inter`, `Noto Sans TC`)
+- Colors:
+  - `--bg-body #f7f7f8`
+  - `--bg-paper #ffffff`
+  - `--ink #111827`
+  - `--ink-light #6b7280`
+  - `--border #e2e4e7`
+  - `--primary #4f46e5`
+- Geometry:
+  - `--border-width 1px`
+  - `--radius 12px`, `--radius-sm 8px`
+  - `--shadow-sm`, `--shadow-md`
+  - `--mobile-nav-height 76px`
 
-### `components/ExpenseList.vue`
-- **Desktop**: strict 7-column grid  
+## 6. UI Rules (RWD)
+### `AppHeader.vue`
+- Desktop: hero-like sticky top section.
+- Mobile (`<=720px`): stacked layout; summary content in `bottom` slot.
+
+### `ExpenseList.vue`
+- Desktop: fixed 7-column list:
   `[Checkbox] [Date] [Amount] [Type] [Account] [Note] [Actions]`
-- **Mobile**: **one-line row per entry** (checkbox + compact line + amount + edit).
-  - Compact line = date + type badge + account (short) + note (ellipsis).
-  - Ensure checkbox + edit button remain tappable.
+- Mobile: single-line compact row per entry:
+  checkbox + compact text + amount + edit
+- Keep checkbox and edit action tappable.
 
-### `components/ExpenseSummary.vue`
-- Grid cards; on mobile collapse to **single column**.
+### `ExpenseSummary.vue`
+- Desktop grid cards; mobile single-column stack.
 
-### `components/ExpenseForm.vue`
-- Form grid: 2 columns on desktop, 1 column on mobile.
-- Inputs should be ~44–48px height.
+### `ExpenseForm.vue`
+- 2-column desktop / 1-column mobile.
+- Input tap targets around 44-48px height.
 
-### `components/AccountPanel.vue`
-- Card grid on desktop, single column on mobile.
-- Action icons must stay visible on mobile.
+### `AccountPanel.vue`
+- Desktop card grid; mobile single column.
+- Edit/delete actions must stay visible on small screens.
 
-## 5. Coding Conventions
-1. **Scoped CSS first** for layout-heavy components.
-2. **No business logic** in components. Use `composables/*.ts`.
-3. **No magic numbers**: check `assets/css/main.css` tokens first.
-4. Keep templates clean; move layout logic into scoped CSS.
+### `MobileNav.vue`
+- Keep 4 items.
+- Preserve safe-area bottom padding.
 
-## 6. Fast Dev Checklist (Mobile QA)
-- `/total` list rows are single-line, clear, and tappable.
-- Bottom nav has 4 items and safe-area padding.
-- `統計` toggle in `/total` doesn’t break header layout.
-- `/total/entry` is easy to use on 360px width.
-- `/total/accounts` cards readable and action buttons accessible.
+## 7. Icon Rules
+- Prefer icon-only action buttons over text.
+- New icons must be Vue components under `components/icons/`.
+- Every icon SFC must wrap SVG inside `<template>`.
 
-## 7. Recent Context (Feb 2026)
-- Mobile bottom nav expanded to 4 items (includes **記帳**).
-- Mobile expense list changed to **single-line compact rows**.
-- Header uses stacked layout on mobile to avoid overflow.
+## 8. Coding Conventions
+1. Scoped CSS first for layout-heavy changes.
+2. Avoid magic numbers; reuse tokens in `main.css`.
+3. Keep templates clean; move presentation rules to scoped style.
+4. Minimize side effects in pages/components.
+5. Keep existing route paths and nav order stable.
+
+## 9. Fast QA Checklist
+- `/total` list remains compact and tappable on 360px width.
+- `統計` toggle in `/total` does not overflow header on mobile.
+- `/total/entry` form is usable one-handed on narrow screens.
+- `/total/accounts` cards and action buttons remain accessible.
+- Bottom nav still has 4 items with proper safe-area spacing.
+- Desktop sidebar + mobile nav do not appear at the same time.
+
+## 10. Notes for AI Edits
+- This repo may already contain user in-progress changes. Do not revert unrelated modifications.
+- Prefer incremental UI edits over broad rewrites.
+- If a task asks for architecture understanding first, summarize current folders/composables before coding.

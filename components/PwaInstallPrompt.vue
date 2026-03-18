@@ -1,21 +1,23 @@
 <template>
-  <div v-if="!isPwa" class="pwa-install-wrapper">
-    <!-- Android / Desktop Install Prompt -->
-    <div v-if="installPromptEvent" class="pwa-install-prompt">
-      <button @click="installPwa">
-        下載應用程式
-      </button>
+  <div v-if="!isPwa && !dismissed" class="pwa-install-wrapper">
+    <div v-if="installPromptEvent" class="install-card">
+      <div class="card-text">
+        <strong>安裝 App</strong>
+        <span>離線可用、開啟更快</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-sm primary" @click="installPwa" type="button">安裝</button>
+        <button class="btn btn-sm" @click="dismiss" type="button">稍後</button>
+      </div>
     </div>
 
-    <!-- iOS Instructions -->
-    <div v-else-if="isIos && showIosPrompt" class="ios-install-prompt">
-      <div class="ios-content">
-        <p><strong>安裝到 iPhone/iPad：</strong></p>
-        <ol>
-          <li>點擊瀏覽器下方的「分享」按鈕 <span class="ios-icon">⏏</span></li>
-          <li>向下滑動並選擇「加入主畫面」 <span class="ios-icon">⊞</span></li>
-        </ol>
-        <button @click="dismissIosPrompt" class="dismiss-btn">我知道了</button>
+    <div v-else-if="isIos && showIosPrompt" class="install-card ios">
+      <div class="card-text">
+        <strong>安裝到 iPhone / iPad</strong>
+        <span>分享 -> 加入主畫面</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-sm" @click="dismissIosPrompt" type="button">知道了</button>
       </div>
     </div>
   </div>
@@ -30,17 +32,26 @@ const { isPwa } = usePwaMode()
 const { installPromptEvent, installPwa, isIos } = usePwaInstall()
 
 const showIosPrompt = ref(false)
+const dismissed = ref(false)
+
+const dismiss = () => {
+  dismissed.value = true
+  localStorage.setItem('pwa-prompt-dismissed-at', String(Date.now()))
+}
 
 const dismissIosPrompt = () => {
   showIosPrompt.value = false
-  localStorage.setItem('pwa-ios-prompt-dismissed', 'true')
+  dismiss()
 }
 
 onMounted(() => {
-  // Check if user previously dismissed the prompt
-  const dismissed = localStorage.getItem('pwa-ios-prompt-dismissed')
-  if (!dismissed && isIos.value) {
-     showIosPrompt.value = true
+  const dismissedAtRaw = localStorage.getItem('pwa-prompt-dismissed-at')
+  const dismissedAt = dismissedAtRaw ? Number(dismissedAtRaw) : 0
+  const oneDay = 24 * 60 * 60 * 1000
+  dismissed.value = Boolean(dismissedAt && Date.now() - dismissedAt < oneDay)
+
+  if (!dismissed.value && isIos.value) {
+    showIosPrompt.value = true
   }
 })
 </script>
@@ -48,67 +59,61 @@ onMounted(() => {
 <style scoped>
 .pwa-install-wrapper {
   position: fixed;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  z-index: 999;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--mobile-nav-height) + max(8px, env(safe-area-inset-bottom)));
+  z-index: 120;
+  pointer-events: none;
+}
+
+.install-card {
+  pointer-events: auto;
+  margin: 0 auto;
+  max-width: 520px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
   display: flex;
-  justify-content: center;
-  pointer-events: none; /* Let clicks pass through wrapper */
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.pwa-install-prompt, .ios-install-prompt {
-  pointer-events: auto; /* Re-enable clicks for the prompts */
-  background-color: #333;
-  color: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  margin: 0 20px;
-  max-width: 400px;
+.install-card.ios {
+  border-color: #c7d2fe;
 }
 
-.pwa-install-prompt button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
-.ios-install-prompt {
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #333;
-  border: 1px solid #ddd;
-  text-align: left;
+.card-text strong {
+  font-size: 13px;
+  font-family: var(--font-pixel);
 }
 
-.ios-content p {
-  margin: 0 0 8px 0;
-  font-size: 15px;
+.card-text span {
+  font-size: 12px;
+  color: var(--ink-light);
 }
 
-.ios-content ol {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 14px;
-  line-height: 1.5;
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.ios-icon {
-  font-size: 1.2em;
-  vertical-align: middle;
-}
-
-.dismiss-btn {
-  margin-top: 10px;
-  width: 100%;
-  padding: 6px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
+@media (min-width: 721px) {
+  .pwa-install-wrapper {
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    width: 360px;
+  }
 }
 </style>

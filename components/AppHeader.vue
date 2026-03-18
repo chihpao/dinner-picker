@@ -1,10 +1,26 @@
 <template>
   <header class="hero" :class="{ 'hero--expenses': isExpenses }">
     <div class="hero-header">
-      <h1>{{ title }}</h1>
+      <div class="hero-title-wrap">
+        <NuxtLink
+          v-if="backTo"
+          :to="backTo"
+          class="btn btn-sm back-btn"
+          title="返回上一頁"
+          aria-label="返回上一頁"
+        >
+          <IconArrowLeft />
+        </NuxtLink>
+        <div class="hero-heading">
+          <h1>{{ title }}</h1>
+          <p class="hero-subtitle">{{ todayLabel }}</p>
+        </div>
+      </div>
 
       <div class="hero-actions">
-        <slot name="actions"></slot>
+        <div class="hero-quick-actions">
+          <slot name="actions"></slot>
+        </div>
         
         <div class="auth-bar">
           <button v-if="!user" @click="signInWithGoogle()" class="btn btn-google" type="button">
@@ -38,9 +54,12 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
+import IconArrowLeft from '~/components/icons/IconArrowLeft.vue'
+
+const { backTo } = defineProps<{
   title: string
   isExpenses?: boolean
+  backTo?: string
 }>()
 
 const { user, signInWithGoogle, signOut } = useAuth()
@@ -48,6 +67,11 @@ const menuOpen = ref(false)
 
 const userInitial = computed(() => {
   return user.value?.email?.[0]?.toUpperCase() || 'U'
+})
+
+const todayLabel = computed(() => {
+  const now = new Date()
+  return `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`
 })
 
 const toggleMenu = () => {
@@ -59,14 +83,19 @@ const switchAccount = () => {
   menuOpen.value = false
 }
 
-// Close menu when clicking outside
+const handleDocumentClick = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
+  if (!target.closest('.auth-pill')) {
+    menuOpen.value = false
+  }
+}
+
 onMounted(() => {
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement
-    if (!target.closest('.auth-pill')) {
-      menuOpen.value = false
-    }
-  })
+  document.addEventListener('click', handleDocumentClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -75,6 +104,19 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+
+.hero-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .hero-header {
@@ -91,29 +133,115 @@ onMounted(() => {
   gap: 12px;
 }
 
+.hero-quick-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-title-wrap h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.hero-heading {
+  min-width: 0;
+}
+
+.hero-heading h1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-subtitle {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
+}
+
 .hero-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
+  margin-left: auto;
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.back-btn :deep(svg) {
+  width: 16px;
+  height: 16px;
 }
 
 /* Mobile Layout */
 @media (max-width: 720px) {
-  .hero-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .hero {
+    padding: 12px;
+    gap: 10px;
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.98);
   }
 
-  .hero-header h1 { /* Hide h1 on mobile */
-    display: none;
+  .hero-header {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-title-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hero-title-wrap h1 {
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .hero-actions {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    flex: 0 0 auto;
+    margin-left: 0;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .hero-quick-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .auth-bar {
-    margin-left: auto;
+    margin-left: 0;
+    gap: 6px;
+  }
+
+  .hero-subtitle {
+    display: none;
+  }
+
+  .btn-text {
+    display: none;
+  }
+
+  .btn-google {
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .back-btn {
+    width: 34px;
+    height: 34px;
   }
 }
 
@@ -125,6 +253,8 @@ onMounted(() => {
   color: var(--ink);
   font-family: var(--font-pixel);
   letter-spacing: 0.05em;
+  min-height: 36px;
+  padding: 0 12px;
 }
 
 .btn-google svg {
@@ -133,8 +263,8 @@ onMounted(() => {
 }
 
 .auth-avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
   background: var(--primary);
   color: white;
@@ -172,6 +302,21 @@ onMounted(() => {
   min-width: 180px;
   z-index: 50;
   transform-origin: top right;
+}
+
+@media (max-width: 720px) {
+  .btn-google {
+    min-height: 38px;
+  }
+
+  .auth-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .auth-menu {
+    min-width: 168px;
+  }
 }
 
 .menu-header {

@@ -16,6 +16,8 @@
     </AppHeader>
 
     <main id="app-main">
+      <MiniBudget />
+
       <div v-if="isLoading" class="loader">
         <div class="loader-lines"></div>
         <p>Loading...</p>

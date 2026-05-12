@@ -2,19 +2,7 @@
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
       <template #actions>
-        <button 
-          class="btn btn-sm header-icon-btn" 
-          @click="showDashboard = !showDashboard" 
-          type="button"
-          :class="{ primary: showDashboard }"
-          title="統計 / 預算"
-          :aria-pressed="showDashboard"
-          aria-label="切換面板顯示"
-        >
-          <span class="icon-btn-content">
-            <IconChartLine class="w-4 h-4" />
-          </span>
-        </button>
+
         <NuxtLink to="/total/entry?from=/total" class="btn btn-sm primary header-icon-btn" title="新增">
           <span class="icon-btn-content">
             <IconPlus class="w-4 h-4" />
@@ -22,7 +10,7 @@
         </NuxtLink>
       </template>
       <template #bottom>
-        <section v-if="showDashboard" class="dashboard-panel">
+        <section class="dashboard-panel">
           <div class="dashboard-tabs-wrapper">
             <div class="dashboard-tabs">
               <div class="tab-slider" :class="dashTab"></div>
@@ -61,21 +49,13 @@ import IconPlus from '~/components/icons/IconPlus.vue'
 const { user } = useAuth()
 const { loadEntries } = useTotalExpenses()
 const { loadAccounts } = useAccounts()
-const showDashboard = ref(false)
 const dashTab = ref<'summary' | 'budget'>('summary')
-const DASHBOARD_PREF_KEY = 'dinnerPicker.total.dashboard.open.v1'
 const DASHTAB_PREF_KEY = 'dinnerPicker.total.dashboard.tab.v1'
 
 onMounted(() => {
   if (!import.meta.client) return
-  showDashboard.value = localStorage.getItem(DASHBOARD_PREF_KEY) === '1'
   const savedTab = localStorage.getItem(DASHTAB_PREF_KEY)
   if (savedTab === 'summary' || savedTab === 'budget') dashTab.value = savedTab
-})
-
-watch(showDashboard, (open) => {
-  if (!import.meta.client) return
-  localStorage.setItem(DASHBOARD_PREF_KEY, open ? '1' : '0')
 })
 
 watch(dashTab, (tab) => {

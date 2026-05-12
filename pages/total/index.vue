@@ -2,7 +2,30 @@
   <div>
     <AppHeader title="全消費總覽" :is-expenses="true">
       <template #actions>
-
+        <button 
+          class="btn btn-sm header-icon-btn" 
+          @click="togglePanel('summary')" 
+          type="button"
+          :class="{ primary: activePanel === 'summary' }"
+          title="統計"
+          :aria-pressed="activePanel === 'summary'"
+        >
+          <span class="icon-btn-content">
+            <IconChartLine class="w-4 h-4" />
+          </span>
+        </button>
+        <button 
+          class="btn btn-sm header-icon-btn" 
+          @click="togglePanel('budget')" 
+          type="button"
+          :class="{ primary: activePanel === 'budget' }"
+          title="預算"
+          :aria-pressed="activePanel === 'budget'"
+        >
+          <span class="icon-btn-content">
+            <IconTarget class="w-4 h-4" />
+          </span>
+        </button>
         <NuxtLink to="/total/entry?from=/total" class="btn btn-sm primary header-icon-btn" title="新增">
           <span class="icon-btn-content">
             <IconPlus class="w-4 h-4" />
@@ -10,28 +33,9 @@
         </NuxtLink>
       </template>
       <template #bottom>
-        <section class="dashboard-panel">
-          <div class="dashboard-tabs-wrapper">
-            <div class="dashboard-tabs">
-              <div class="tab-slider" :class="dashTab"></div>
-              <button
-                :class="['tab-btn', { active: dashTab === 'summary' }]"
-                type="button"
-                @click="dashTab = 'summary'"
-              >
-                統計
-              </button>
-              <button
-                :class="['tab-btn', { active: dashTab === 'budget' }]"
-                type="button"
-                @click="dashTab = 'budget'"
-              >
-                預算
-              </button>
-            </div>
-          </div>
-          <ExpenseSummary v-show="dashTab === 'summary'" :is-open="true" />
-          <BudgetPanel v-show="dashTab === 'budget'" :is-open="true" />
+        <section v-if="activePanel" class="dashboard-panel">
+          <ExpenseSummary v-show="activePanel === 'summary'" :is-open="true" />
+          <BudgetPanel v-show="activePanel === 'budget'" :is-open="true" />
         </section>
       </template>
     </AppHeader>
@@ -44,24 +48,38 @@
 
 <script setup lang="ts">
 import IconChartLine from '~/components/icons/IconChartLine.vue'
+import IconTarget from '~/components/icons/IconTarget.vue'
 import IconPlus from '~/components/icons/IconPlus.vue'
 
 const { user } = useAuth()
 const { loadEntries } = useTotalExpenses()
 const { loadAccounts } = useAccounts()
-const dashTab = ref<'summary' | 'budget'>('summary')
-const DASHTAB_PREF_KEY = 'dinnerPicker.total.dashboard.tab.v1'
+const activePanel = ref<'summary' | 'budget' | null>(null)
+const PANEL_PREF_KEY = 'dinnerPicker.total.activePanel.v2'
 
 onMounted(() => {
   if (!import.meta.client) return
-  const savedTab = localStorage.getItem(DASHTAB_PREF_KEY)
-  if (savedTab === 'summary' || savedTab === 'budget') dashTab.value = savedTab
+  // We check the v1 tab key to support users clicking from MiniBudget on home page
+  const v1Tab = localStorage.getItem('dinnerPicker.total.dashboard.tab.v1')
+  if (v1Tab === 'budget') {
+    activePanel.value = 'budget'
+    localStorage.removeItem('dinnerPicker.total.dashboard.tab.v1') // clear it so it doesn't always open
+  } else {
+    const saved = localStorage.getItem(PANEL_PREF_KEY) as any
+    if (saved === 'summary' || saved === 'budget' || saved === 'null') {
+      activePanel.value = saved === 'null' ? null : saved
+    }
+  }
 })
 
-watch(dashTab, (tab) => {
+watch(activePanel, (panel) => {
   if (!import.meta.client) return
-  localStorage.setItem(DASHTAB_PREF_KEY, tab)
+  localStorage.setItem(PANEL_PREF_KEY, String(panel))
 })
+
+const togglePanel = (panel: 'summary' | 'budget') => {
+  activePanel.value = activePanel.value === panel ? null : panel
+}
 
 useHead({
   title: '全消費總覽｜今晚吃哪家？',
@@ -97,57 +115,7 @@ watch(user, () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.dashboard-tabs-wrapper {
-  padding: 12px 16px 0;
-}
-
-.dashboard-tabs {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: rgba(230, 234, 242, 0.6);
-  padding: 4px;
-  border-radius: 12px;
-  gap: 4px;
-  z-index: 1;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.tab-slider {
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  width: calc(50% - 6px);
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: -1;
-}
-
-.tab-slider.summary { transform: translateX(2px); }
-.tab-slider.budget { transform: translateX(calc(100% + 6px)); }
-
-.tab-btn {
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-pixel);
-  color: var(--ink-light);
-  min-height: 36px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: color 0.3s;
-  letter-spacing: 0.04em;
-}
-
-.tab-btn.active {
-  color: var(--primary);
+  margin-top: 12px;
 }
 
 @media (max-width: 720px) {

@@ -20,11 +20,13 @@
   - Layout/Nav: `AppHeader.vue`, `AppSidebar.vue`, `MobileNav.vue`, `PwaInstallPrompt.vue`
   - Expense domain: `ExpenseForm.vue`, `ExpenseList.vue`, `ExpenseSummary.vue`, `AccountPanel.vue`
   - Restaurant domain: `RestaurantCard.vue`
+  - Budget: `BudgetPanel.vue`
   - Icons: `components/icons/*.vue`
 - `composables/`
   - `useAuth.ts` - Google OAuth + session state
   - `useExpenses.ts` - 核心記帳資料流（含 `useTotalExpenses()`）
   - `useAccounts.ts` - 帳戶 CRUD + pending sync
+  - `useBudget.ts` - 預算設定與進度追蹤（localStorage）
   - `useRestaurants.ts` - 餐廳與距離排序
   - `useSupabase.ts` - Supabase client
   - `useSwipeNavigation.ts` - 手勢切頁
@@ -123,3 +125,88 @@ Use CSS vars from `assets/css/main.css`:
 - This repo may already contain user in-progress changes. Do not revert unrelated modifications.
 - Prefer incremental UI edits over broad rewrites.
 - If a task asks for architecture understanding first, summarize current folders/composables before coding.
+
+## 11. 孜保平分（Zibao Split）— 完整邏輯規範
+
+> **⚠️ 此章節是「孜保平分」功能的權威文件。修改任何與 `zibao`、`sub_type`、`孜保平分` 相關的程式碼前，必須先讀此章節。**
+
+### 11.1 資料模型
+
+`ExpenseEntry.sub_type` 欄位只有三種有效值：
+
+| 值 | 意義 | 建立場景 |
+|---|---|---|
+| `'general'` | 一般記帳（預設值） | 新增支出/收入時 |
+| `'zibao'` | 孜保平分 | 使用者在類型下拉選擇「孜保平分」 |
+| `'transfer'` | 轉帳 | 轉帳功能自動寫入 |
+
+- 當 `sub_type` 為 `null`/`undefined` 時，一律回退為 `'general'`（`entry.sub_type ?? 'general'`）。
+- **不要新增其他 sub_type 值。**
+
+### 11.2 轉帳判斷函式 `isTransferEntry()`
+
+```ts
+const isTransferEntry = (entry: ExpenseEntry) => {
+  if (entry.sub_type === 'transfer') return true
+  return Boolean(entry.note && entry.note.includes('[轉帳]'))  // 向下相容舊紀錄
+}
+```
+
+- 此函式存在於 `useExpenses.ts` 和 `ExpenseList.vue` 兩處，**邏輯必須一致**。
+- `sub_type === 'zibao'` **不是**轉帳。
+
+### 11.3 ExpenseForm.vue — 新增記帳
+
+- 類型下拉（`一般` / `孜保平分`）**僅在非轉帳模式下顯示**（`form.type !== 'transfer'`）。
+- 轉帳模式固定寫入 `sub_type: 'transfer'`，不顯示此下拉。
+- 提交後 `resetForm()` 將 `sub_type` 重置為 `'general'`。
+
+### 11.4 ExpenseList.vue — 列表顯示與篩選
+
+**類型徽章**（判斷優先順序：轉帳 > 孜保 > 一般）：
+- `type-general`：灰底灰字，文字「一般」
+- `type-zibao`：淺紫底紫字（`var(--primary)`），文字「孜保」
+- `type-transfer`：淺藍底藍字，文字「轉帳」
+
+**篩選邏輯**：
+- 選「孜保」篩選時：`entry.sub_type === 'zibao' && !isTransferEntry(entry)`
+
+**編輯表單規則**：
+- 轉帳紀錄的 sub_type **不可修改**，顯示為唯讀「轉帳」。
+- 只有「支出」類型且非轉帳時，才能選擇「一般 / 孜保平分」。
+- 收入類型時，不顯示 sub_type 選單。
+- 儲存時：轉帳紀錄永遠保持 `sub_type: 'transfer'`。
+
+### 11.5 ExpenseSummary.vue — 統計摘要
+
+**資料來源**（`useExpenses.ts`）：
+```ts
+const zibaoSummaries = computed(() => calculateSummaries((e) => e.sub_type === 'zibao'))
+```
+- `calculateSummaries` 內部先排除所有轉帳紀錄，再套用 filter。
+
+**孜保模式行為**：
+
+| 行為 | 說明 |
+|---|---|
+| 時間維度鎖定 | 強制 `viewMode = 'week'`，禁用月/年切換 |
+| 支出/收入卡片 | 顯示孜保專屬的週支出/收入金額 |
+| 第三張卡片 | **「本週平均」 = `weekExpense / 2`**（兩人平分，不是除以天數） |
+| 提示文字 | `本週平均 = 本週孜保支出 ÷ 2` |
+| 視覺 | `.highlight` 樣式：淺紫邊框 `#c7c6f7` + 漸層背景，金額文字紫色 |
+
+### 11.6 Supabase 同步
+
+所有讀寫 Supabase 時都帶上 `sub_type`，null 回退為 `'general'`。
+資料表：`total_expenses`，欄位：`sub_type`（text）。
+
+### 11.7 不可違反的規則
+
+1. `sub_type` 只有三種值：`'general'`、`'zibao'`、`'transfer'`，不要新增。
+2. 轉帳紀錄永遠是 `sub_type: 'transfer'`，不可改為其他值。
+3. 孜保平均是**除以 2**（兩人平分），不是除以天數。
+4. 孜保模式只看**週**，不可擴展到月或年。
+5. 統計計算順序：排除轉帳 → 再篩選孜保，順序不可反。
+6. 類型下拉只在支出/收入（非轉帳）時顯示。
+7. 編輯轉帳紀錄時 sub_type 是唯讀的。
+8. `isTransferEntry()` 在兩個檔案中邏輯必須一致。

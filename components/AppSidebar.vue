@@ -128,30 +128,37 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   color: var(--ink-light);
   text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.1s var(--ease-snappy);
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 500;
   font-size: 14px;
   font-family: var(--font-sans);
+  border: 1px solid transparent;
 }
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 8px;
+  padding: 10px;
 }
 
 .nav-item:hover {
-  background: #f3f4f6;
+  background: rgba(243, 244, 246, 0.8);
   color: var(--ink);
 }
 
 .nav-item.active {
-  background: #f3f4f6; /* Subtle active background */
-  color: var(--ink);
+  background: #ffffff;
+  color: var(--primary);
   font-weight: 600;
+  border-color: rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.nav-item:active {
+  transform: scale(0.96);
 }
 
 .nav-item .icon {
@@ -161,6 +168,11 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-item:hover .icon {
+  transform: scale(1.1);
 }
 
 /* Linear-style icon color for active */

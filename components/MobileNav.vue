@@ -54,8 +54,8 @@ import IconBank from '~/components/icons/IconBank.vue'
   color: var(--ink-light);
   gap: 3px;
   padding: 6px 8px;
-  border-radius: 10px;
-  transition: all 0.1s;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-height: 58px;
 }
 
@@ -66,6 +66,7 @@ import IconBank from '~/components/icons/IconBank.vue'
   align-items: center;
   justify-content: center;
   color: currentColor;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .icon-box :deep(svg) {
@@ -78,30 +79,23 @@ import IconBank from '~/components/icons/IconBank.vue'
   line-height: 1;
   font-family: var(--font-pixel);
   letter-spacing: 0.03em;
+  transition: opacity 0.2s;
 }
 
 /* This is the unified active style */
 .nav-item.active {
   color: var(--primary);
   font-weight: 700;
-  background: linear-gradient(180deg, #eef2ff 0%, #e6ebff 100%);
-  box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.2);
+  background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08), inset 0 0 0 1px rgba(79, 70, 229, 0.15);
 }
 
-.nav-item.active::before {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 50%;
-  width: 22px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--primary);
-  transform: translateX(-50%);
+.nav-item.active .icon-box {
+  transform: translateY(-2px) scale(1.1);
 }
 
 .nav-item:active {
-  transform: scale(0.96);
+  transform: scale(0.92);
 }
 
 @media (max-width: 400px) {

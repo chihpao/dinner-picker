@@ -2,10 +2,11 @@
   <section class="panel">
     <div class="panel-header" v-if="accounts.length">
       <span class="pill">共 {{ accounts.length }} 個帳戶</span>
-      <div class="sort-switch" role="group" aria-label="帳戶排序">
+      <div class="segment-group sort-group" role="group" aria-label="帳戶排序">
+        <div class="segment-slider" :class="sortMode"></div>
         <button
-          class="btn btn-sm sort-btn"
-          :class="{ primary: sortMode === 'balanceDesc' }"
+          class="segment-btn"
+          :class="{ active: sortMode === 'balanceDesc' }"
           type="button"
           :aria-pressed="sortMode === 'balanceDesc'"
           @click="sortMode = 'balanceDesc'"
@@ -13,8 +14,8 @@
           餘額高
         </button>
         <button
-          class="btn btn-sm sort-btn"
-          :class="{ primary: sortMode === 'balanceAsc' }"
+          class="segment-btn"
+          :class="{ active: sortMode === 'balanceAsc' }"
           type="button"
           :aria-pressed="sortMode === 'balanceAsc'"
           @click="sortMode = 'balanceAsc'"
@@ -22,8 +23,8 @@
           餘額低
         </button>
         <button
-          class="btn btn-sm sort-btn"
-          :class="{ primary: sortMode === 'name' }"
+          class="segment-btn"
+          :class="{ active: sortMode === 'name' }"
           type="button"
           :aria-pressed="sortMode === 'name'"
           @click="sortMode = 'name'"
@@ -367,15 +368,56 @@ const saveEdit = async (id: string) => {
   font-family: var(--font-pixel);
 }
 
-.sort-switch {
-  display: inline-flex;
-  gap: 6px;
+/* ── Segment Controls ──────────────── */
+.segment-group {
+  position: relative;
+  display: grid;
+  background: rgba(230, 234, 242, 0.6);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  width: 100%;
+  max-width: 320px;
+  z-index: 1;
 }
 
-.sort-btn {
-  min-height: 34px;
-  padding: 0 10px;
-  font-size: 12px;
+.sort-group {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.segment-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(33.333% - 5.33px);
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: -1;
+}
+
+.segment-slider.balanceDesc { transform: translateX(0); }
+.segment-slider.balanceAsc { transform: translateX(calc(100% + 4px)); }
+.segment-slider.name { transform: translateX(calc(200% + 8px)); }
+
+.segment-btn {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-pixel);
+  color: var(--ink-light);
+  min-height: 36px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.3s, opacity 0.3s;
+  letter-spacing: 0.04em;
+}
+
+.segment-btn.active {
+  color: var(--primary);
 }
 
 .empty-state {
@@ -721,12 +763,8 @@ const saveEdit = async (id: string) => {
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
 
-  .sort-switch {
-    width: 100%;
-  }
-
-  .sort-btn {
-    flex: 1;
+  .segment-group {
+    max-width: none;
   }
 
   .account-card {

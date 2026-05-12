@@ -1,11 +1,12 @@
 <template>
   <section v-if="isOpen" class="summary-section">
     <div class="summary-toolbar">
-      <div class="summary-switch">
+      <div class="segment-group mode-group">
+        <div class="segment-slider" :class="viewMode"></div>
         <button
           v-for="mode in modes"
           :key="mode.value"
-          :class="['btn btn-sm', { primary: viewMode === mode.value, disabled: isModeLocked(mode.value) }]"
+          :class="['segment-btn', { active: viewMode === mode.value, disabled: isModeLocked(mode.value) }]"
           @click="viewMode = mode.value"
           type="button"
           :disabled="isModeLocked(mode.value)"
@@ -15,9 +16,10 @@
         </button>
       </div>
 
-      <div class="summary-switch">
+      <div class="segment-group filter-group">
+        <div class="segment-slider" :class="filterMode"></div>
         <button
-          :class="['btn btn-sm', { primary: filterMode === 'all' }]"
+          :class="['segment-btn', { active: filterMode === 'all' }]"
           @click="filterMode = 'all'"
           type="button"
           :aria-pressed="filterMode === 'all'"
@@ -25,7 +27,7 @@
           全部
         </button>
         <button
-          :class="['btn btn-sm', { primary: filterMode === 'zibao' }]"
+          :class="['segment-btn', { active: filterMode === 'zibao' }]"
           @click="filterMode = 'zibao'"
           type="button"
           :aria-pressed="filterMode === 'zibao'"
@@ -76,7 +78,7 @@ const modes = [
   { value: 'week', label: '週' },
   { value: 'month', label: '月' },
   { value: 'year', label: '年' },
-]
+] as const
 
 const isModeLocked = (mode: 'week' | 'month' | 'year') => {
   return filterMode.value === 'zibao' && mode !== 'week'
@@ -137,8 +139,6 @@ const averageLabel = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  border-top: var(--border-width) solid var(--border);
-  padding-top: 14px;
 }
 
 .summary-toolbar {
@@ -157,22 +157,69 @@ const averageLabel = computed(() => {
   font-family: var(--font-sans);
 }
 
-.summary-switch {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
+/* ── Segment Controls ──────────────── */
+.segment-group {
+  position: relative;
+  display: grid;
+  background: rgba(230, 234, 242, 0.6);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
   width: 100%;
+  z-index: 1;
 }
 
-.summary-switch .btn {
+.mode-group {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.filter-group {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.segment-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: -1;
+}
+
+/* Mode Group Slider */
+.mode-group .segment-slider { width: calc(33.333% - 5.33px); }
+.mode-group .segment-slider.week { transform: translateX(0); }
+.mode-group .segment-slider.month { transform: translateX(calc(100% + 4px)); }
+.mode-group .segment-slider.year { transform: translateX(calc(200% + 8px)); }
+
+/* Filter Group Slider */
+.filter-group .segment-slider { width: calc(50% - 6px); }
+.filter-group .segment-slider.all { transform: translateX(2px); }
+.filter-group .segment-slider.zibao { transform: translateX(calc(100% + 6px)); }
+
+.segment-btn {
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-pixel);
+  color: var(--ink-light);
   min-height: 36px;
-  padding: 0 12px;
-  font-size: 12px;
-  flex: 1;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: color 0.3s, opacity 0.3s;
+  letter-spacing: 0.04em;
 }
 
-.summary-switch .btn.disabled {
-  opacity: 0.45;
+.segment-btn.active {
+  color: var(--primary);
+}
+
+.segment-btn.disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -219,29 +266,30 @@ const averageLabel = computed(() => {
     grid-template-columns: 1fr;
   }
 
-  .summary-toolbar {
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .summary-switch {
-    overflow-x: auto;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .summary-switch::-webkit-scrollbar {
-    display: none;
-  }
-
-  .summary-switch .btn {
-    min-width: 64px;
-    flex: 1 0 auto;
-  }
-
   .summary-card {
     box-shadow: none;
+  }
+}
+
+/* ── Desktop ───────────────────────── */
+@media (min-width: 721px) {
+  .summary-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .segment-group {
+    width: auto;
+    min-width: 200px;
+  }
+  
+  .mode-group {
+    min-width: 280px;
+  }
+  
+  .expense-summary-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 </style>

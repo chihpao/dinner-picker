@@ -1,7 +1,9 @@
 <template>
   <section class="panel entry-panel" :class="{ 'entry-panel--compact': compact }">
-    <div class="entry-titlebar">
-      <h2>快速記帳</h2>
+    <!-- Today's spending indicator -->
+    <div v-if="user" class="today-bar">
+      <span class="today-label">今日已花</span>
+      <span class="today-amount">{{ formatCurrency(todayExpense) }}</span>
     </div>
 
     <div v-if="!user" class="auth-gate panel">
@@ -13,51 +15,75 @@
     </div>
 
     <form v-else @submit.prevent="handleSubmit" class="expense-form">
-      <div class="type-toggle">
-        <button
-          type="button"
-          :class="['btn-toggle', form.type === 'expense' ? 'active expense' : '']"
-          @click="form.type = 'expense'"
-        >
-          支出
-        </button>
-        <button
-          type="button"
-          :class="['btn-toggle', form.type === 'income' ? 'active income' : '']"
-          @click="form.type = 'income'"
-        >
-          收入
-        </button>
-        <button
-          type="button"
-          :class="['btn-toggle', form.type === 'transfer' ? 'active transfer' : '']"
-          @click="form.type = 'transfer'"
-        >
-          轉帳
-        </button>
+      <!-- Type Toggle -->
+      <div class="type-toggle-wrapper">
+        <div class="type-toggle">
+          <div class="toggle-slider" :class="form.type"></div>
+          <button
+            type="button"
+            :class="['btn-toggle', { active: form.type === 'expense' }]"
+            @click="form.type = 'expense'"
+          >
+            支出
+          </button>
+          <button
+            type="button"
+            :class="['btn-toggle', { active: form.type === 'income' }]"
+            @click="form.type = 'income'"
+          >
+            收入
+          </button>
+          <button
+            type="button"
+            :class="['btn-toggle', { active: form.type === 'transfer' }]"
+            @click="form.type = 'transfer'"
+          >
+            轉帳
+          </button>
+        </div>
       </div>
 
-      <div class="quick-date">
-        <button class="chip" type="button" @click="setToday">今天</button>
-        <button class="chip" type="button" @click="setYesterday">昨天</button>
-        <button class="chip" type="button" @click="setDaysAgo(2)">前天</button>
+      <!-- Amount: Big & prominent -->
+      <div class="amount-section">
+        <div class="amount-wrapper">
+          <span class="prefix">NT$</span>
+          <input
+            class="amount-input"
+            type="number"
+            v-model.number="form.amount"
+            min="0"
+            step="1"
+            required
+            placeholder="0"
+            inputmode="numeric"
+          >
+        </div>
+        <div class="quick-amounts">
+          <button v-for="amt in quickAmounts" :key="amt" type="button" class="amt-chip" @click="setAmount(amt)">
+            {{ amt }}
+          </button>
+        </div>
       </div>
 
-      <div class="form-grid">
-        <label class="form-field">
-          <span class="label-text">日期</span>
-          <input class="input" type="date" v-model="form.date" required>
-        </label>
-        <label class="form-field">
-          <span class="label-text">金額</span>
-          <div class="input-wrapper">
-            <span class="prefix">NT$</span>
-            <input class="input with-prefix" type="number" v-model.number="form.amount" min="0" step="1" required placeholder="0">
-          </div>
-        </label>
+      <!-- Date row: compact inline -->
+      <div class="date-row">
+        <input class="input date-input" type="date" v-model="form.date" required>
+        <div class="quick-date">
+          <button
+            v-for="d in dateChips"
+            :key="d.days"
+            class="chip"
+            :class="{ active: isDateActive(d.days) }"
+            type="button"
+            @click="setDaysAgo(d.days)"
+          >
+            {{ d.label }}
+          </button>
+        </div>
       </div>
 
-      <div v-if="form.type !== 'transfer'" class="form-grid">
+      <!-- Account + Type: inline on mobile -->
+      <div v-if="form.type !== 'transfer'" class="inline-selects">
         <label class="form-field">
           <span class="label-text">帳戶</span>
           <select class="input select" v-model="form.account_id">
@@ -77,8 +103,9 @@
         </label>
       </div>
 
+      <!-- Transfer accounts -->
       <template v-if="form.type === 'transfer'">
-        <div class="form-grid">
+        <div class="inline-selects">
           <label class="form-field">
             <span class="label-text">轉出帳戶</span>
             <select class="input select" v-model="form.from_account_id" required>
@@ -100,11 +127,12 @@
         </div>
       </template>
 
-      <label class="form-field">
-        <span class="label-text">備註</span>
-        <textarea class="input textarea" v-model="form.note" :placeholder="notePlaceholder"></textarea>
-      </label>
+      <!-- Note: single-line input -->
+      <div class="note-row">
+        <input class="input note-input" type="text" v-model="form.note" :placeholder="notePlaceholder">
+      </div>
 
+      <!-- Submit -->
       <div class="form-actions">
         <button
           :class="['btn-submit', submitBtnClass]"
@@ -133,7 +161,7 @@ const route = useRoute()
 const router = useRouter()
 const { user, signInWithGoogle } = useAuth()
 const { accounts } = useAccounts()
-const { addEntry } = useTotalExpenses()
+const { addEntry, summaries } = useTotalExpenses()
 
 const submitting = ref(false)
 const signInRedirect = computed(() => props.signInRedirectTo)
@@ -142,7 +170,16 @@ const redirectPath = computed(() => {
   if (from && from.startsWith('/')) return from
   return props.defaultRedirect
 })
-const notePlaceholder = computed(() => form.type === 'transfer' ? '轉帳備註...' : '交通、購物、聚餐...')
+const notePlaceholder = computed(() => form.type === 'transfer' ? '轉帳備註...' : '午餐、晚餐、交通...')
+
+const todayExpense = computed(() => summaries.value.todayExpense)
+
+const quickAmounts = [50, 100, 150, 200, 300, 500]
+const dateChips = [
+  { days: 0, label: '今天' },
+  { days: 1, label: '昨天' },
+  { days: 2, label: '前天' },
+]
 
 const form = reactive({
   date: toISODate(new Date()),
@@ -160,15 +197,25 @@ const submitBtnClass = computed(() => form.type === 'income' ? 'success' : form.
 
 watch(accounts, (list) => {
   if (!list.length) return
-  if (!form.account_id) form.account_id = list[0].id
-  if (!form.from_account_id) form.from_account_id = list[0].id
-  if (!form.to_account_id && list.length > 1) form.to_account_id = list[1].id
+  if (!form.account_id) form.account_id = list[0]?.id ?? ''
+  if (!form.from_account_id) form.from_account_id = list[0]?.id ?? ''
+  if (!form.to_account_id && list.length > 1) form.to_account_id = list[1]?.id ?? ''
 }, { immediate: true })
 
 const setDaysAgo = (days: number) => {
   const target = new Date()
   target.setDate(target.getDate() - days)
   form.date = toISODate(target)
+}
+
+const isDateActive = (days: number) => {
+  const target = new Date()
+  target.setDate(target.getDate() - days)
+  return form.date === toISODate(target)
+}
+
+const setAmount = (amt: number) => {
+  form.amount = amt
 }
 
 const setToday = () => setDaysAgo(0)
@@ -252,12 +299,39 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+/* ── Today Bar ─────────────────────── */
+.today-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+  border: 1px solid rgba(79, 70, 229, 0.1);
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.today-label {
+  font-size: 12px;
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+  letter-spacing: 0.04em;
+}
+
+.today-amount {
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Panel ─────────────────────────── */
 .entry-panel {
   position: relative;
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
-  padding: 18px 16px 16px;
+  padding: 16px 14px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background:
@@ -272,7 +346,7 @@ const handleSubmit = async () => {
   top: -1px;
   left: -1px;
   right: -1px;
-  height: 6px;
+  height: 5px;
   border-radius: var(--radius) var(--radius) 0 0;
   background: linear-gradient(90deg, var(--primary), #22c55e);
   opacity: 0.75;
@@ -282,105 +356,230 @@ const handleSubmit = async () => {
   max-width: 100%;
 }
 
-.entry-titlebar {
-  margin-bottom: 14px;
-}
-
-.entry-titlebar h2 {
-  margin: 0;
-  font-size: 20px;
-}
-
+/* ── Form ──────────────────────────── */
 .expense-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* ── Type Toggle (Segmented Control) ── */
+.type-toggle-wrapper {
+  margin-bottom: 8px;
 }
 
 .type-toggle {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  background: #e6eaff;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(230, 234, 242, 0.6);
   padding: 4px;
-  border-radius: 12px;
-  gap: 6px;
+  border-radius: 14px;
+  gap: 4px;
+  z-index: 1;
 }
+
+.toggle-slider {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: calc(33.333% - 5.33px);
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: -1;
+}
+
+.toggle-slider.expense { transform: translateX(0); }
+.toggle-slider.income { transform: translateX(calc(100% + 4px)); }
+.toggle-slider.transfer { transform: translateX(calc(200% + 8px)); }
 
 .btn-toggle {
   border: none;
   background: transparent;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-pixel);
   color: var(--ink-light);
-  min-height: 44px;
-  padding: 10px 8px;
+  min-height: 42px;
+  padding: 8px 6px;
   cursor: pointer;
+  transition: color 0.3s;
+  letter-spacing: 0.05em;
 }
 
 .btn-toggle.active {
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
   color: var(--ink);
 }
 
-.btn-toggle.active.expense { color: var(--danger); }
-.btn-toggle.active.income { color: var(--success); }
-.btn-toggle.active.transfer { color: var(--primary); }
+.type-toggle:has(.toggle-slider.expense) .btn-toggle:nth-child(2).active { color: var(--danger); }
+.type-toggle:has(.toggle-slider.income) .btn-toggle:nth-child(3).active { color: var(--success); }
+.type-toggle:has(.toggle-slider.transfer) .btn-toggle:nth-child(4).active { color: var(--primary); }
+
+/* ── Amount Section ────────────────── */
+.amount-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.amount-wrapper {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 8px 16px;
+}
+
+.amount-wrapper:focus-within {
+  background: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15), 0 8px 24px rgba(79, 70, 229, 0.08);
+  transform: translateY(-2px);
+}
+
+.amount-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 38px !important;
+  height: 64px !important;
+  font-weight: 800;
+  color: var(--ink);
+  text-align: right;
+  padding: 0;
+  font-family: var(--font-pixel);
+  letter-spacing: 0.02em;
+}
+
+.amount-input:focus {
+  outline: none;
+}
+
+.amount-input::placeholder {
+  color: rgba(0,0,0,0.15);
+}
+
+.prefix {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+  pointer-events: none;
+}
+
+.quick-amounts {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.amt-chip {
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #ffffff;
+  border-radius: 12px;
+  min-height: 40px;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-pixel);
+  color: var(--ink-light);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.amt-chip:hover {
+  border-color: rgba(79, 70, 229, 0.3);
+  color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.08);
+}
+
+.amt-chip:active {
+  transform: scale(0.92);
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: none;
+}
+
+/* ── Date Row ──────────────────────── */
+.date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input {
+  width: auto;
+  min-width: 0;
+  flex: 1;
+  height: 40px;
+  font-size: 13px;
+}
 
 .quick-date {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .chip {
   border: 1px solid var(--border);
   background: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
   min-height: 36px;
-  padding: 6px 12px;
-  font-size: 12px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-family: var(--font-pixel);
   color: var(--ink-light);
+  cursor: pointer;
+  transition: all 0.1s;
+  white-space: nowrap;
 }
 
-.chip:hover {
+.chip:hover, .chip.active {
   border-color: var(--primary);
   color: var(--primary);
+  background: var(--primary-light);
 }
 
-.form-grid {
+/* ── Inline Selects ────────────────── */
+.inline-selects {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-@media (min-width: 640px) {
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .label-text {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--ink-light);
 }
 
 .input {
-  height: 48px;
+  height: 44px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
+  padding: 0 12px;
   width: 100%;
-  font-size: 15px;
+  font-size: 14px;
   background: linear-gradient(180deg, #fff 0%, #fcfcff 100%);
 }
 
@@ -390,38 +589,26 @@ const handleSubmit = async () => {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-.input-wrapper {
-  position: relative;
+/* Removed duplicated prefix and unused wrappers */
+
+/* ── Note Row ──────────────────────── */
+.note-row {
+  display: flex;
 }
 
-.prefix {
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: var(--ink-light);
-  font-family: var(--font-pixel);
+.note-input {
+  height: 44px;
+  font-size: 14px;
 }
 
-.with-prefix {
-  padding-left: 46px;
-  font-family: var(--font-pixel);
-}
-
-.textarea {
-  min-height: 98px;
-  padding: 12px 14px;
-  resize: vertical;
-}
-
+/* ── Submit ─────────────────────────── */
 .form-actions {
   margin-top: 2px;
 }
 
 .btn-submit {
   width: 100%;
-  height: 48px;
+  height: 50px;
   border: none;
   border-radius: 12px;
   color: #fff;
@@ -429,6 +616,11 @@ const handleSubmit = async () => {
   font-family: var(--font-pixel);
   letter-spacing: 0.05em;
   cursor: pointer;
+  transition: all 0.1s var(--ease-snappy);
+}
+
+.btn-submit:active {
+  transform: scale(0.98);
 }
 
 .btn-submit:disabled {
@@ -443,6 +635,7 @@ const handleSubmit = async () => {
   box-shadow: 0 8px 16px rgba(79, 70, 229, 0.24);
 }
 
+/* ── Auth Gate ──────────────────────── */
 .auth-gate {
   text-align: center;
   padding: 32px;
@@ -463,17 +656,75 @@ const handleSubmit = async () => {
   height: 18px;
 }
 
+/* ── Mobile Polish ─────────────────── */
 @media (max-width: 720px) {
   .entry-panel {
-    border-radius: 16px;
-    padding: 14px 12px 18px;
+    border-radius: 20px;
+    padding: 16px 12px 20px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
   }
 
   .form-actions {
     position: sticky;
-    bottom: calc(var(--mobile-nav-height) + 8px);
-    background: linear-gradient(to top, rgba(247, 247, 248, 0.98), rgba(247, 247, 248, 0));
-    padding-top: 10px;
+    bottom: calc(var(--mobile-nav-height) + 12px);
+    margin: 16px -12px -20px;
+    padding: 12px 12px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    z-index: 10;
+  }
+
+  .btn-submit {
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+    transform: translateZ(0); /* force hardware accel for smooth sticky */
+  }
+
+  .quick-amounts {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+
+  .amt-chip {
+    padding: 6px 0;
+    font-size: 12px;
+    min-height: 38px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .quick-amounts {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .inline-selects {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Desktop ───────────────────────── */
+@media (min-width: 721px) {
+  .entry-panel {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .date-row {
+    gap: 12px;
+  }
+
+  .amount-input {
+    font-size: 42px !important;
+    height: 72px !important;
+  }
+
+  .form-actions {
+    margin-top: 16px;
   }
 }
 </style>

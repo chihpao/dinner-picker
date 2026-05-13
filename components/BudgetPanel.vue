@@ -16,115 +16,97 @@
       </button>
     </div>
 
-    <!-- Edit Mode -->
+    <!-- Edit Mode: List rules and add new -->
     <div v-if="editing" class="budget-edit">
-      <label class="budget-field">
-        <span class="budget-field-label">每月預算</span>
-        <div class="budget-input-wrap">
-          <span class="budget-prefix">NT$</span>
-          <input
-            type="number"
-            :value="monthlyBudget"
-            @change="handleMonthlyChange"
-            min="0"
-            step="1000"
-            placeholder="0"
-            class="budget-input"
-          >
+      <div v-if="budgetRules.length > 0" class="rule-list">
+        <div v-for="rule in budgetRules" :key="rule.id" class="rule-edit-card">
+          <div class="rule-edit-header">
+            <span class="rule-category-badge">{{ getCategoryLabel(rule.category) }}</span>
+            <button class="icon-btn danger" @click="deleteBudgetRule(rule.id)" type="button" title="刪除規則">
+              <IconTrash class="w-4 h-4" />
+            </button>
+          </div>
+          <div class="rule-edit-body">
+            <span class="rule-date-range">{{ formatDate(rule.start_date) }} ~ {{ formatDate(rule.end_date) }}</span>
+            <span class="rule-amount-text">{{ formatCurrency(rule.amount) }}</span>
+          </div>
         </div>
-        <div class="quick-tags">
-          <button
-            v-for="amt in monthPresets"
-            :key="amt"
-            type="button"
-            class="tag-btn"
-            :class="{ active: monthlyBudget === amt }"
-            @click="setMonthlyBudget(amt)"
-          >
-            {{ (amt / 1000).toFixed(0) }}K
-          </button>
-        </div>
-      </label>
+      </div>
+      
+      <div class="new-rule-form">
+        <h4>新增預算規則</h4>
+        
+        <label class="budget-field">
+          <span class="budget-field-label">類別</span>
+          <select class="input select" v-model="newRule.category">
+            <option value="all">全部類別</option>
+            <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
+              {{ cat.label }}
+            </option>
+          </select>
+        </label>
 
-      <label class="budget-field">
-        <span class="budget-field-label">每週預算</span>
-        <div class="budget-input-wrap">
-          <span class="budget-prefix">NT$</span>
-          <input
-            type="number"
-            :value="weeklyBudget"
-            @change="handleWeeklyChange"
-            min="0"
-            step="500"
-            placeholder="0"
-            class="budget-input"
-          >
+        <div class="date-fields">
+          <label class="budget-field">
+            <span class="budget-field-label">開始日期</span>
+            <input class="input" type="date" v-model="newRule.start_date">
+          </label>
+          <label class="budget-field">
+            <span class="budget-field-label">結束日期</span>
+            <input class="input" type="date" v-model="newRule.end_date">
+          </label>
         </div>
-        <div class="quick-tags">
-          <button
-            v-for="amt in weekPresets"
-            :key="amt"
-            type="button"
-            class="tag-btn"
-            :class="{ active: weeklyBudget === amt }"
-            @click="setWeeklyBudget(amt)"
-          >
-            {{ (amt / 1000).toFixed(1) }}K
-          </button>
-        </div>
-      </label>
+
+        <label class="budget-field">
+          <span class="budget-field-label">預算金額</span>
+          <div class="budget-input-wrap">
+            <span class="budget-prefix">NT$</span>
+            <input
+              type="number"
+              v-model.number="newRule.amount"
+              min="0"
+              step="1000"
+              placeholder="0"
+              class="budget-input"
+            >
+          </div>
+        </label>
+
+        <button class="btn primary w-full mt-2" type="button" @click="submitNewRule" :disabled="!isNewRuleValid">
+          新增規則
+        </button>
+      </div>
     </div>
 
     <!-- Display Mode -->
-    <div v-else-if="hasBudget" class="budget-meters">
-      <!-- Monthly Budget -->
-      <div v-if="monthlyBudget > 0" class="meter-card">
+    <div v-else-if="activeBudgets.length > 0" class="budget-meters">
+      <div v-for="rule in activeBudgets" :key="rule.id" class="meter-card">
         <div class="meter-header">
-          <span class="meter-label">本月預算</span>
+          <div class="meter-title">
+            <span class="rule-category-badge">{{ getCategoryLabel(rule.category) }}</span>
+            <span class="meter-label">{{ formatShortDate(rule.start_date) }} ~ {{ formatShortDate(rule.end_date) }}</span>
+          </div>
           <span class="meter-fraction">
-            <span class="meter-spent">{{ formatCurrency(monthSpent) }}</span>
+            <span class="meter-spent">{{ formatCurrency(getRuleProgress(rule).spent) }}</span>
             <span class="meter-sep">/</span>
-            <span class="meter-total">{{ formatCurrency(monthlyBudget) }}</span>
+            <span class="meter-total">{{ formatCurrency(rule.amount) }}</span>
           </span>
         </div>
+        
         <div class="meter-bar-track">
           <div
             class="meter-bar-fill"
-            :style="{ width: `${monthPercent}%` }"
+            :class="getRuleProgress(rule).status"
+            :style="{ width: `${getRuleProgress(rule).percent}%` }"
           />
         </div>
+        
         <div class="meter-footer">
-          <span class="meter-remaining">
-            {{ monthRemaining >= 0 ? `剩餘 ${formatCurrency(monthRemaining)}` : `超支 ${formatCurrency(Math.abs(monthRemaining))}` }}
+          <span class="meter-remaining" :class="getRuleProgress(rule).status">
+            {{ getRuleProgress(rule).remaining >= 0 ? `剩餘 ${formatCurrency(getRuleProgress(rule).remaining)}` : `超支 ${formatCurrency(Math.abs(getRuleProgress(rule).remaining))}` }}
           </span>
-          <span v-if="monthDailyPace !== null && monthRemaining > 0" class="meter-pace">
-            每日可花 {{ formatCurrency(monthDailyPace) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Weekly Budget -->
-      <div v-if="weeklyBudget > 0" class="meter-card">
-        <div class="meter-header">
-          <span class="meter-label">本週預算</span>
-          <span class="meter-fraction">
-            <span class="meter-spent">{{ formatCurrency(weekSpent) }}</span>
-            <span class="meter-sep">/</span>
-            <span class="meter-total">{{ formatCurrency(weeklyBudget) }}</span>
-          </span>
-        </div>
-        <div class="meter-bar-track">
-          <div
-            class="meter-bar-fill"
-            :style="{ width: `${weekPercent}%` }"
-          />
-        </div>
-        <div class="meter-footer">
-          <span class="meter-remaining">
-            {{ weekRemaining >= 0 ? `剩餘 ${formatCurrency(weekRemaining)}` : `超支 ${formatCurrency(Math.abs(weekRemaining))}` }}
-          </span>
-          <span v-if="weekDailyPace !== null && weekRemaining > 0" class="meter-pace">
-            每日可花 {{ formatCurrency(weekDailyPace) }}
+          <span v-if="getRuleProgress(rule).remaining > 0 && getRuleProgress(rule).dailyPace > 0" class="meter-pace">
+            每天可花 {{ formatCurrency(getRuleProgress(rule).dailyPace) }}
           </span>
         </div>
       </div>
@@ -132,7 +114,7 @@
 
     <!-- Empty state when no budget set -->
     <div v-else class="budget-empty">
-      <p>尚未設定預算</p>
+      <p>目前期間沒有預算規則</p>
       <button class="btn btn-sm primary" type="button" @click="editing = true">
         立即設定
       </button>
@@ -142,6 +124,8 @@
 
 <script setup lang="ts">
 import IconTarget from '~/components/icons/IconTarget.vue'
+import IconTrash from '~/components/icons/IconTrash.vue'
+import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
 
 withDefaults(defineProps<{
   isOpen?: boolean
@@ -149,34 +133,61 @@ withDefaults(defineProps<{
   isOpen: true
 })
 
+const { user } = useAuth()
 const {
-  monthlyBudget, weeklyBudget,
-  monthSpent, weekSpent,
-  monthRemaining, weekRemaining,
-  monthPercent, weekPercent,
-  monthDailyPace, weekDailyPace,
-  hasBudget,
-  loadBudget,
-  setMonthlyBudget, setWeeklyBudget,
+  budgetRules,
+  activeBudgets,
+  loadBudgetRules,
+  addBudgetRule,
+  deleteBudgetRule,
+  getRuleProgress,
 } = useBudget()
 
 const editing = ref(false)
 
-const monthPresets = [5000, 8000, 10000, 15000, 20000, 30000]
-const weekPresets = [1500, 2000, 3000, 4000, 5000, 7000]
-
-onMounted(() => {
-  loadBudget()
+const newRule = reactive({
+  category: 'all',
+  amount: '' as unknown as number,
+  start_date: toISODate(new Date()),
+  end_date: toISODate(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)), // End of month
 })
 
-const handleMonthlyChange = (e: Event) => {
-  const val = Number((e.target as HTMLInputElement).value)
-  setMonthlyBudget(val)
+onMounted(() => {
+  loadBudgetRules()
+})
+
+const isNewRuleValid = computed(() => {
+  return newRule.amount > 0 && newRule.start_date && newRule.end_date && newRule.start_date <= newRule.end_date
+})
+
+const submitNewRule = async () => {
+  if (!isNewRuleValid.value) return
+  await addBudgetRule({
+    category: newRule.category,
+    amount: newRule.amount,
+    start_date: newRule.start_date,
+    end_date: newRule.end_date,
+  })
+  // reset form
+  newRule.amount = '' as unknown as number
 }
 
-const handleWeeklyChange = (e: Event) => {
-  const val = Number((e.target as HTMLInputElement).value)
-  setWeeklyBudget(val)
+const getCategoryLabel = (val: string) => {
+  if (val === 'all') return '全部類別'
+  const found = EXPENSE_CATEGORIES.find(c => c.value === val)
+  return found ? found.label : val
+}
+
+const formatDate = (dateStr: string) => {
+  return dateStr.replace(/-/g, '/')
+}
+
+const formatShortDate = (dateStr: string) => {
+  const parts = dateStr.split('-')
+  if (parts.length === 3) {
+    return `${parts[1]}/${parts[2]}`
+  }
+  return dateStr
 }
 </script>
 
@@ -214,15 +225,81 @@ const handleWeeklyChange = (e: Event) => {
 
 /* ── Edit Mode ────────────────────── */
 .budget-edit {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-@media (min-width: 640px) {
-  .budget-edit {
-    grid-template-columns: 1fr 1fr;
-  }
+.rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rule-edit-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule-edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rule-edit-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.rule-category-badge {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+.rule-date-range {
+  font-size: 12px;
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+}
+
+.rule-amount-text {
+  font-size: 16px;
+  font-weight: bold;
+  font-family: var(--font-pixel);
+}
+
+.new-rule-form {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.new-rule-form h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.date-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .budget-field {
@@ -237,25 +314,32 @@ const handleWeeklyChange = (e: Event) => {
   color: var(--ink-light);
 }
 
+.input {
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 14px;
+  background: white;
+  min-width: 0;
+}
+
 .budget-input-wrap {
   position: relative;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   padding: 6px 12px;
 }
 
 .budget-input-wrap:focus-within {
-  background: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15), 0 4px 12px rgba(79, 70, 229, 0.08);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
 .budget-prefix {
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   font-size: 14px;
@@ -267,7 +351,7 @@ const handleWeeklyChange = (e: Event) => {
 
 .budget-input {
   width: 100%;
-  height: 40px;
+  height: 32px;
   border: none;
   background: transparent;
   font-size: 20px;
@@ -281,46 +365,6 @@ const handleWeeklyChange = (e: Event) => {
 
 .budget-input:focus {
   outline: none;
-}
-
-.budget-input::placeholder {
-  color: rgba(0,0,0,0.15);
-}
-
-.quick-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.tag-btn {
-  border: 1px solid rgba(0,0,0,0.06);
-  background: #ffffff;
-  border-radius: 8px;
-  min-height: 32px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: var(--font-pixel);
-  color: var(--ink-light);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-}
-
-.tag-btn:hover {
-  border-color: rgba(79, 70, 229, 0.3);
-  color: var(--primary);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.08);
-}
-
-.tag-btn.active {
-  transform: scale(0.95);
-  background: var(--primary);
-  color: #ffffff;
-  border-color: var(--primary);
-  box-shadow: none;
 }
 
 /* ── Display Mode ─────────────────── */
@@ -352,6 +396,12 @@ const handleWeeklyChange = (e: Event) => {
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
+}
+
+.meter-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .meter-label {
@@ -399,6 +449,14 @@ const handleWeeklyChange = (e: Event) => {
   background: linear-gradient(90deg, var(--primary), #818cf8);
 }
 
+.meter-bar-fill.warning {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.meter-bar-fill.danger {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
 /* ── Footer Stats ─────────────────── */
 .meter-footer {
   display: flex;
@@ -413,6 +471,10 @@ const handleWeeklyChange = (e: Event) => {
   font-size: 13px;
   font-weight: 700;
   color: var(--ink);
+}
+
+.meter-remaining.danger {
+  color: #ef4444;
 }
 
 .meter-pace {
@@ -437,13 +499,33 @@ const handleWeeklyChange = (e: Event) => {
   font-family: var(--font-pixel);
 }
 
-@media (max-width: 720px) {
-  .budget-meters {
-    grid-template-columns: 1fr;
-  }
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--ink-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
 
-  .meter-card {
-    box-shadow: none;
-  }
+.icon-btn:hover {
+  background: rgba(0,0,0,0.05);
+  color: var(--ink);
+}
+
+.icon-btn.danger:hover {
+  color: var(--danger);
+  background: #fef2f2;
+}
+
+.w-full {
+  width: 100%;
+}
+.mt-2 {
+  margin-top: 8px;
 }
 </style>

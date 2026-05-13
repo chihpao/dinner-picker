@@ -65,6 +65,19 @@
         </div>
       </div>
 
+      <!-- Zibao Toggle: only for expense mode -->
+      <div v-if="form.type === 'expense'" class="zibao-toggle-row">
+        <button
+          type="button"
+          class="zibao-pill"
+          :class="{ active: form.sub_type === 'zibao' }"
+          @click="form.sub_type = form.sub_type === 'zibao' ? 'general' : 'zibao'"
+        >
+          <span class="zibao-pill-indicator"></span>
+          <span class="zibao-pill-label">{{ form.sub_type === 'zibao' ? '孜保平分' : '一般' }}</span>
+        </button>
+      </div>
+
       <!-- Date row: compact inline -->
       <div class="date-row">
         <input class="input date-input" type="date" v-model="form.date" required>
@@ -82,7 +95,7 @@
         </div>
       </div>
 
-      <!-- Account + Type: inline on mobile -->
+      <!-- Account + Category: inline on mobile -->
       <div v-if="form.type !== 'transfer'" class="inline-selects">
         <label class="form-field">
           <span class="label-text">帳戶</span>
@@ -94,11 +107,13 @@
           </select>
         </label>
 
-        <label class="form-field">
-          <span class="label-text">類型</span>
-          <select class="input select" v-model="form.sub_type">
-            <option value="general">一般</option>
-            <option value="zibao">孜保平分</option>
+        <label v-if="form.type === 'expense'" class="form-field">
+          <span class="label-text">類別</span>
+          <select class="input select" v-model="form.category">
+            <option value="">未指定</option>
+            <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
+              {{ cat.label }}
+            </option>
           </select>
         </label>
       </div>
@@ -163,6 +178,8 @@ const { user, signInWithGoogle } = useAuth()
 const { accounts } = useAccounts()
 const { addEntry, summaries } = useTotalExpenses()
 
+import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+
 const submitting = ref(false)
 const signInRedirect = computed(() => props.signInRedirectTo)
 const redirectPath = computed(() => {
@@ -190,6 +207,7 @@ const form = reactive({
   to_account_id: '' as string,
   type: 'expense' as 'expense' | 'income' | 'transfer',
   sub_type: 'general',
+  category: '' as string,
 })
 
 const submitBtnText = computed(() => form.type === 'income' ? '收入' : form.type === 'transfer' ? '轉帳' : '支出')
@@ -227,6 +245,7 @@ const resetForm = () => {
   form.sub_type = 'general'
   form.type = 'expense'
   form.date = toISODate(new Date())
+  form.category = ''
 }
 
 const handleSubmit = async () => {
@@ -287,6 +306,7 @@ const handleSubmit = async () => {
         user_id: user.value.id,
         account_id: form.account_id || null,
         sub_type: form.sub_type,
+        category: form.type === 'expense' ? (form.category || null) : null,
       })
     }
 
@@ -361,6 +381,56 @@ const handleSubmit = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* ── Zibao Toggle Pill ────────────── */
+.zibao-toggle-row {
+  display: flex;
+  align-items: center;
+}
+
+.zibao-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-light);
+  letter-spacing: 0.04em;
+}
+
+.zibao-pill:hover {
+  border-color: rgba(79, 70, 229, 0.3);
+  background: #f5f3ff;
+}
+
+.zibao-pill.active {
+  border-color: rgba(79, 70, 229, 0.35);
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  color: var(--primary);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
+}
+
+.zibao-pill-indicator {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.zibao-pill.active .zibao-pill-indicator {
+  background: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
 /* ── Type Toggle (Segmented Control) ── */
@@ -556,9 +626,12 @@ const handleSubmit = async () => {
 
 /* ── Inline Selects ────────────────── */
 .inline-selects {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 10px;
+}
+
+.inline-selects .form-field {
+  flex: 1;
 }
 
 .form-field {

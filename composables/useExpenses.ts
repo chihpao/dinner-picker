@@ -1,5 +1,15 @@
 import { computed } from 'vue'
 
+export const EXPENSE_CATEGORIES = [
+    { value: 'food', label: '飲食' },
+    { value: 'misc', label: '雜費' },
+    { value: 'entertainment', label: '娛樂' },
+    { value: 'tobacco', label: '菸' },
+    { value: 'saving', label: '存款' },
+] as const
+
+export type ExpenseCategory = typeof EXPENSE_CATEGORIES[number]['value']
+
 export interface ExpenseEntry {
     id: string
     date: string
@@ -9,6 +19,7 @@ export interface ExpenseEntry {
     user_id: string
     account_id?: string | null
     sub_type?: string
+    category?: string | null
 }
 
 const isTransferEntry = (entry: ExpenseEntry) => {
@@ -118,6 +129,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             user_id: entry.user_id,
             account_id: entry.account_id ?? null,
             sub_type: entry.sub_type ?? 'general',
+            category: entry.category ?? null,
         }))
     }
 
@@ -136,6 +148,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
                     created_at: new Date(entry.createdAt).toISOString(),
                     user_id: user.value.id,
                     sub_type: entry.sub_type ?? 'general',
+                    category: entry.category ?? null,
                     ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
                 }
                 const { error } = await supa.from(TABLE).insert(payload)
@@ -197,6 +210,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
                 created_at: new Date(entry.createdAt).toISOString(),
                 user_id: user.value.id,
                 sub_type: entry.sub_type ?? 'general',
+                category: entry.category ?? null,
                 ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
             }
             const { error } = await supa.from(TABLE).insert(payload)
@@ -216,7 +230,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
         try {
             const { error } = await supa.from(TABLE).delete().eq('id', id).eq('user_id', user.value.id)
             if (error) throw error
-            
+
             // Remove from UI and Local Storage
             entries.value = entries.value.filter(e => e.id !== id)
             saveLocalEntries(entries.value)
@@ -265,6 +279,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
                     amount: merged.amount,
                     note: merged.note ?? '',
                     sub_type: merged.sub_type ?? 'general',
+                    category: merged.category ?? null,
                     ...(config.includeAccount ? { account_id: merged.account_id ?? null } : {}),
                 })
                 .eq('id', merged.id)
@@ -313,7 +328,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             if (isTransferEntry(entry)) {
                 return acc
             }
-            
+
             // Custom filter
             if (filterFn && !filterFn(entry)) {
                 return acc
@@ -322,7 +337,7 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             const entryDate = parseISODate(entry.date)
             const isIncome = entry.amount < 0
             const absAmount = Math.abs(entry.amount)
-            
+
             // Helper to update a specific period
             const updatePeriod = (period: 'today' | 'week' | 'month' | 'year') => {
                 // Net total (Sum of signed amounts)

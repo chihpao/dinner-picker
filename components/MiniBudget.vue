@@ -1,6 +1,6 @@
 <template>
   <div 
-    v-if="hasBudget" 
+    v-if="hasBudget && firstRule && progress" 
     class="mini-budget" 
     @click="goToBudget"
     role="button"
@@ -8,40 +8,49 @@
     aria-label="前往預算設定"
   >
     <div class="mini-budget-header">
-      <span class="label">本週預算剩餘</span>
-      <span class="amount" :class="weekStatus">
-        {{ weekRemaining >= 0 ? formatCurrency(weekRemaining) : `超支 ${formatCurrency(Math.abs(weekRemaining))}` }}
+      <span class="label">預算剩餘</span>
+      <span class="amount" :class="progress.status">
+        {{ progress.remaining >= 0 ? formatCurrency(progress.remaining) : `超支 ${formatCurrency(Math.abs(progress.remaining))}` }}
       </span>
     </div>
     <div class="mini-budget-track">
       <div 
         class="mini-budget-fill" 
-        :class="weekStatus" 
-        :style="{ width: `${weekPercent}%` }"
+        :class="progress.status" 
+        :style="{ width: `${progress.percent}%` }"
       ></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const { 
   hasBudget, 
-  weekRemaining, 
-  weekPercent, 
-  weekStatus,
-  loadBudget
+  activeBudgets,
+  loadBudgetRules,
+  getRuleProgress
 } = useBudget()
 
 const router = useRouter()
 
 onMounted(() => {
-  loadBudget()
+  loadBudgetRules()
+})
+
+const firstRule = computed(() => {
+  if (activeBudgets.value.length === 0) return null
+  return activeBudgets.value[0]
+})
+
+const progress = computed(() => {
+  if (!firstRule.value) return null
+  return getRuleProgress(firstRule.value)
 })
 
 const goToBudget = () => {
-  // Store the intention to open budget tab
   if (import.meta.client) {
     localStorage.setItem('dinnerPicker.total.dashboard.tab.v1', 'budget')
   }

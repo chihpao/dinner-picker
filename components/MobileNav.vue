@@ -1,18 +1,18 @@
 <template>
   <nav class="mobile-nav">
-    <NuxtLink to="/" exact class="nav-item" active-class="active" aria-label="首頁">
+    <NuxtLink to="/" class="nav-item" exact-active-class="active" aria-label="首頁">
       <span class="icon-box"><IconHome /></span>
       <span class="nav-label">首頁</span>
     </NuxtLink>
-    <NuxtLink to="/total/entry" exact class="nav-item" active-class="active" aria-label="記帳">
+    <NuxtLink to="/total/entry" class="nav-item" exact-active-class="active" aria-label="記帳">
       <span class="icon-box"><IconEdit /></span>
       <span class="nav-label">記帳</span>
     </NuxtLink>
-    <NuxtLink to="/total" exact class="nav-item" active-class="active" aria-label="總覽">
+    <NuxtLink to="/total" class="nav-item" exact-active-class="active" aria-label="總覽">
       <span class="icon-box"><IconOverview /></span>
       <span class="nav-label">總覽</span>
     </NuxtLink>
-    <NuxtLink to="/total/accounts" exact class="nav-item" active-class="active" aria-label="帳戶">
+    <NuxtLink to="/total/accounts" class="nav-item" exact-active-class="active" aria-label="帳戶">
       <span class="icon-box"><IconBank /></span>
       <span class="nav-label">帳戶</span>
     </NuxtLink>

@@ -12,7 +12,7 @@
     
     <nav class="sidebar-nav">
       <div class="nav-group">
-        <NuxtLink to="/" class="nav-item" active-class="active">
+        <NuxtLink to="/" class="nav-item" exact-active-class="active">
           <span class="icon"><IconHome /></span>
           <span class="text" v-if="!isCollapsed">首頁</span>
         </NuxtLink>
@@ -21,15 +21,15 @@
 
 
       <div class="nav-group">
-        <NuxtLink to="/total/entry" class="nav-item" active-class="active">
+        <NuxtLink to="/total/entry" class="nav-item" exact-active-class="active">
           <span class="icon"><IconEdit /></span>
           <span class="text" v-if="!isCollapsed">一般記帳</span>
         </NuxtLink>
-        <NuxtLink to="/total" class="nav-item" active-class="active">
+        <NuxtLink to="/total" class="nav-item" exact-active-class="active">
           <span class="icon"><IconOverview /></span>
           <span class="text" v-if="!isCollapsed">全消費總覽</span>
         </NuxtLink>
-        <NuxtLink to="/total/accounts" class="nav-item" active-class="active">
+        <NuxtLink to="/total/accounts" class="nav-item" exact-active-class="active">
           <span class="icon"><IconBank /></span>
           <span class="text" v-if="!isCollapsed">帳戶管理</span>
         </NuxtLink>

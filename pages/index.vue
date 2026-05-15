@@ -1,36 +1,28 @@
 <template>
   <div class="page-container">
-    <AppHeader title="🍱 今晚吃哪家？">
-      <template #actions>
-        <NuxtLink to="/total" class="btn btn-sm header-icon-btn" title="總覽">
-          <span class="icon-btn-content">
-            <IconOverview class="w-4 h-4" />
-          </span>
-        </NuxtLink>
-        <NuxtLink to="/total/accounts" class="btn btn-sm header-icon-btn" title="帳戶">
-          <span class="icon-btn-content">
-            <IconBank class="w-4 h-4" />
-          </span>
-        </NuxtLink>
-      </template>
-    </AppHeader>
+    <AppHeader title="🍱 今晚吃哪家？" hideAuth />
 
     <main id="app-main">
-      <MiniBudget />
-
       <div v-if="isLoading" class="loader">
         <div class="loader-lines"></div>
-        <p>Loading...</p>
+        <p>探索美食中...</p>
       </div>
 
-      <div v-else class="grid-wrapper">
-        <div class="grid">
-          <RestaurantCard
-            v-for="restaurant in processedRestaurants"
-            :key="restaurant.id"
-            :restaurant="restaurant"
-          />
-        </div>
+      <div v-else class="home-content">
+        <!-- List Section -->
+        <section class="list-section">
+          <div class="section-header">
+            <h3 class="section-title">餐廳清單</h3>
+            <span class="pill">共 {{ processedRestaurants.length }} 家</span>
+          </div>
+          <div class="grid">
+            <RestaurantCard
+              v-for="restaurant in processedRestaurants"
+              :key="restaurant.id"
+              :restaurant="restaurant"
+            />
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -43,7 +35,7 @@ import IconBank from '~/components/icons/IconBank.vue'
 useHead({
   title: '今晚吃哪家？',
   meta: [
-    { name: 'theme-color', content: '#f4f6f8' }
+    { name: 'theme-color', content: '#f7f7f8' }
   ]
 })
 
@@ -52,63 +44,57 @@ const { processedRestaurants, isLoading } = useRestaurants()
 
 <style scoped>
 .page-container {
-  max-width: 100%;
-  display: grid;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.grid-wrapper {
-  animation: fadeIn 0.5s ease-out;
+.home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.4s var(--ease-snappy);
+}
+
+/* ── List Section ──────────────────── */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.section-title {
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  margin: 0;
+}
+
+.pill {
+  font-size: 11px;
+  padding: 4px 10px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--ink-light);
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
-.icon-btn-content {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.w-4 {
-  width: 16px;
-}
-
-.h-4 {
-  height: 16px;
-}
-
-.header-icon-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (min-width: 721px) {
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
-  }
-}
-
-@media (max-width: 420px) {
-  .header-icon-btn {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
   }
 }
 </style>

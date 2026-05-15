@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AppHeader title="全消費總覽" :is-expenses="true">
+    <AppHeader title="全消費總覽" :is-expenses="true" hideAuth>
       <template #actions>
         <button 
           class="btn btn-sm header-icon-btn" 

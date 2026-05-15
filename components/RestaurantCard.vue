@@ -1,149 +1,120 @@
 <template>
-  <div class="card">
-    <!-- Top Action: Copy Link (Absolute Position) -->
-    <button class="copy-btn" @click.stop="copyLink" :class="{ 'is-copied': copied }" aria-label="複製連結" title="複製連結">
-      <span v-if="!copied">📋</span>
-      <span v-else>✅</span>
-    </button>
-
-    <!-- Main Content: Clickable Area -->
-    <NuxtLink :to="restaurant.orderUrl" target="_blank" rel="noopener" class="card-content">
-      <div class="card-header">
+  <NuxtLink :to="restaurant.orderUrl" target="_blank" rel="noopener" class="card restaurant-card">
+    <div class="card-body">
+      <div class="card-icon">{{ getIcon(restaurant.name) }}</div>
+      <div class="card-info">
         <h3 class="name">{{ restaurant.name }}</h3>
-        <div class="link-hint">
-          前往訂購 <span class="arrow">↗</span>
+      </div>
+      <div class="card-action">
+        <div class="order-btn-circle" title="前往訂購">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
         </div>
       </div>
-    </NuxtLink>
-  </div>
+    </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
 import type { Restaurant } from '~/composables/useRestaurants'
 
-const props = defineProps<{
+defineProps<{
   restaurant: Restaurant
 }>()
 
-const copied = ref(false)
-
-const copyLink = async () => {
-  if (!props.restaurant.orderUrl) return
-  try {
-    await navigator.clipboard.writeText(props.restaurant.orderUrl)
-    copied.value = true
-    setTimeout(() => copied.value = false, 1500)
-  } catch (e) {
-    prompt('複製連結：', props.restaurant.orderUrl)
-  }
+const getIcon = (name: string) => {
+  const icons = ['🍱', '🥗', '🍲', '🍚', '🍗', '🥬', '🥢', '🥘']
+  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return icons[hash % icons.length]
 }
-
 </script>
 
 <style scoped>
-.card {
-  /* Inherits styles from global .card */
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  /* Ensure z-index context */
-  isolation: isolate;
+.restaurant-card {
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.3s var(--ease-snappy);
 }
 
-/* Copy Button - Floating Top Right */
-.copy-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border: 2px solid var(--border);
-  background: #fff;
-  border-radius: 6px;
+.card-body {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-icon {
+  font-size: 26px;
+  width: 56px;
+  height: 56px;
+  background: var(--bg-body);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 10; /* Above link */
-  transition: all 0.1s;
-  font-size: 16px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.copy-btn:hover {
-  background: var(--bg-body);
-  transform: translateY(-1px);
-}
-
-.copy-btn:active {
-  transform: translate(1px, 1px);
-}
-
-.copy-btn.is-copied {
-  background: var(--success-bg);
-  border-color: var(--success);
-}
-
-/* Main Clickable Content */
-.card-content {
+.card-info {
   flex: 1;
-  flex: 1;
-  padding: 24px; /* Standardize spacing */
-  padding-right: 60px; /* Space for copy btn */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-decoration: none;
-  color: var(--ink);
-  min-height: 100px; /* Ensure visual weight */
-  background: transparent;
-  transition: background 0.2s;
-}
-
-.card-content:hover {
-  background: #fafafa;
+  min-width: 0;
 }
 
 .name {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  line-height: 1.3;
-  /* Limit to 2 lines */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 4px;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.02em;
 }
 
-.link-hint {
-  font-size: 14px;
-  color: var(--primary);
-  font-weight: 700;
+
+.order-btn-circle {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border);
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 4px;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  justify-content: center;
+  color: var(--ink-light);
+  transition: all 0.25s var(--ease-snappy);
+  box-shadow: var(--shadow-sm);
 }
 
-.card-content:hover .link-hint {
-  opacity: 1;
-  text-decoration: underline;
+.restaurant-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.12);
 }
 
-.arrow {
-  font-family: monospace;
-  transition: transform 0.2s;
+.restaurant-card:hover .order-btn-circle {
+  background: var(--primary);
+  color: white;
+  border-color: transparent;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
 }
 
-.card-content:hover .arrow {
-  transform: translate(2px, -2px);
+.restaurant-card:hover .card-icon {
+  background: white;
+  border-color: var(--primary);
+  transform: scale(1.05);
 }
 
-/* Mobile Adjustments */
 @media (max-width: 480px) {
-  .name { font-size: 20px; }
-  .card-content { padding: 16px; padding-right: 54px; min-height: auto; }
-  .value { font-size: 18px; }
+  .card-body { padding: 14px 16px; }
+  .card-icon { width: 48px; height: 48px; font-size: 22px; }
+  .name { font-size: 17px; }
+  .order-btn-circle { width: 38px; height: 38px; }
+  .order-btn-circle svg { width: 16px; height: 16px; }
 }
 </style>

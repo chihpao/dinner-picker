@@ -39,12 +39,18 @@
     </div>
 
     <template v-else>
-      <div v-if="!accounts.length" class="empty-state">
-        <p>尚未建立帳戶，先新增一個吧！</p>
-        <NuxtLink to="/total/add-account" class="btn btn-sm primary">
+      <AppEmptyState 
+        v-if="!accounts.length" 
+        title="還沒開戶？" 
+        message="設定帳戶可以讓你更清楚錢都花在哪個錢包或銀行。"
+      >
+        <template #icon>
+          <IconBank style="width: 64px; height: 64px; color: var(--border)" />
+        </template>
+        <NuxtLink to="/total/add-account" class="btn primary">
           前往新增帳戶
         </NuxtLink>
-      </div>
+      </AppEmptyState>
       
       <div v-else class="account-list">
         <article v-for="account in sortedAccounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
@@ -184,10 +190,12 @@
 <script setup lang="ts">
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
+import { useToast } from '~/composables/useToast'
 
 const { user } = useAuth()
 const { accounts, updateAccount, deleteAccount } = useAccounts()
 const { entries } = useTotalExpenses()
+const { success, danger } = useToast()
 const SORT_PREF_KEY = 'dinnerPicker.accounts.sort.v1'
 
 const editingId = ref<string | null>(null)
@@ -298,6 +306,9 @@ const confirmDelete = async () => {
     await deleteAccount(deleteModal.targetId)
     deleteModal.open = false
     deleteModal.targetId = null
+    success('帳戶已刪除')
+  } catch (err) {
+    danger(`刪除失敗：${(err as Error).message}`)
   } finally {
     deletingAccount.value = false
   }
@@ -322,11 +333,11 @@ const saveEdit = async (id: string) => {
     return
   }
   if (!editForm.name.trim()) {
-    alert('請輸入帳戶名稱')
+    danger('請輸入帳戶名稱')
     return
   }
   if (editForm.balance < 0) {
-    alert('請輸入正確的初始金額')
+    danger('請輸入正確的初始金額')
     return
   }
 
@@ -336,6 +347,7 @@ const saveEdit = async (id: string) => {
     kind: editForm.kind,
     balance: Math.round(editForm.balance),
   })
+  success('帳戶已更新')
   editingId.value = null
 }
 </script>

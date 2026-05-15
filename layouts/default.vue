@@ -1,5 +1,6 @@
 <template>
   <div class="app-layout">
+    <AppToast />
     <div class="sidebar-wrapper">
       <AppSidebar />
     </div>
@@ -18,12 +19,14 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useRestaurants } from '~/composables/useRestaurants'
 import { useTotalExpenses } from '~/composables/useExpenses'
+import { useBudget } from '~/composables/useBudget'
 import { useSwipeNavigation } from '~/composables/useSwipeNavigation'
 import PwaInstallPrompt from '~/components/PwaInstallPrompt.vue'
 
 const { initAuth, user } = useAuth()
 const { fetchRestaurants } = useRestaurants()
 const { loadEntries } = useTotalExpenses()
+const { loadBudgetRules } = useBudget()
 const { initSwipe, destroySwipe } = useSwipeNavigation()
 
 const mainContentRef = ref<HTMLElement | null>(null)
@@ -39,7 +42,10 @@ onUnmounted(() => {
 })
 
 watch(user, () => {
-  loadEntries()
+  if (user.value) {
+    loadEntries()
+    loadBudgetRules()
+  }
 }, { immediate: true })
 </script>
 <style scoped>

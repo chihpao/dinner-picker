@@ -6,6 +6,9 @@
         <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
       </div>
       <div class="panel-actions">
+        <button class="btn btn-sm primary settle-btn" @click="openSettleModal" type="button" title="孜保結算">
+          💰
+        </button>
         <button v-if="selectedCount" @click="openBulkDelete" class="icon-btn danger" type="button" title="刪除選取項目">
           <IconTrash />
         </button>
@@ -29,14 +32,49 @@
           {{ cat.label }}
         </option>
       </select>
+      <div class="filter-dates" v-if="hasActiveFilters || startDate || endDate">
+        <input v-model="startDate" type="date" class="filter-select date-input" placeholder="開始">
+        <span class="date-sep">~</span>
+        <input v-model="endDate" type="date" class="filter-select date-input" placeholder="結束">
+        <button v-if="hasActiveFilters" @click="resetFilters" class="btn btn-sm reset-btn" title="清除篩選">
+          <IconX class="w-3 h-3" />
+        </button>
+      </div>
       <span class="result-count">顯示 {{ sortedEntries.length }} / {{ entries.length }}</span>
     </div>
     
-    <div v-if="!user" class="auth-gate panel">
-      <p>請先登入再查看/管理紀錄</p>
-    </div>
+    <AppEmptyState 
+      v-if="!user" 
+      title="需要登入" 
+      message="請先登入再查看/管理您的記帳紀錄。"
+    >
+      <template #icon>
+        <IconTarget style="width: 64px; height: 64px; color: var(--border)" />
+      </template>
+    </AppEmptyState>
 
-    <div v-else-if="!entries.length" class="empty-state">目前沒有紀錄，先新增一筆吧！</div>
+    <AppEmptyState 
+      v-else-if="!accounts.length" 
+      title="還沒開戶？" 
+      message="設定帳戶可以讓你更清楚錢都花在哪個錢包或銀行。"
+    >
+      <template #icon>
+        <IconBank style="width: 64px; height: 64px; color: var(--border)" />
+      </template>
+      <NuxtLink to="/total/add-account" class="btn primary">
+        前往新增帳戶
+      </NuxtLink>
+    </AppEmptyState>
+
+    <AppEmptyState 
+      v-else-if="!entries.length" 
+      title="口袋空空" 
+      message="目前還沒有任何消費紀錄，趕快去記一筆吧！"
+    >
+      <NuxtLink to="/total/entry" class="btn primary">
+        開始記帳
+      </NuxtLink>
+    </AppEmptyState>
     
     <div v-else class="expense-list-container">
       <!-- Table Header -->
@@ -110,8 +148,13 @@
               <span v-if="entry.category" class="category-badge compact-category">
                 {{ categoryLabel(entry.category) }}
               </span>
-              <span v-if="showAccount" class="compact-account">{{ accountLabel(entry.account_id) }}</span>
-              <span class="compact-note">{{ entry.note || '—' }}</span>
+              <span 
+                class="compact-note" 
+                :class="{ 'is-expanded': isExpanded(entry.id) }"
+                @click.stop="toggleExpand(entry.id)"
+              >
+                {{ entry.note || '—' }}
+              </span>
             </div>
 
             <!-- 2. Date -->
@@ -169,6 +212,44 @@
         <div class="modal-actions">
           <button class="btn primary" @click="confirmBulkDelete" type="button">是，刪除</button>
           <button class="btn" @click="closeBulkDelete" type="button">否，取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settle Zibao Modal -->
+    <div v-if="zibaoSettleModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3>💰 孜保結算</h3>
+        <p style="font-size: 13px; color: var(--ink-light); margin-bottom: 16px;">
+          系統會自動將範圍內「未結算」的孜保支出除以2，並轉為一般支出。
+        </p>
+        
+        <div class="edit-group date-group" style="margin-bottom: 16px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="date" v-model="settleStartDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
+            <span style="color: var(--ink-light);">~</span>
+            <input type="date" v-model="settleEndDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px dashed var(--border);">
+          <template v-if="unsettledZibaoEntries.length > 0">
+            <p style="margin: 0 0 4px; font-size: 13px; font-weight: 600;">預覽結果：</p>
+            <p style="margin: 0; font-size: 13px; color: var(--ink-light); line-height: 1.6;">
+              找到 <strong>{{ unsettledZibaoEntries.length }}</strong> 筆未結算支出，原始總額 <strong style="color: var(--danger); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalOriginal) }}</strong>。<br>
+              結算後將轉為您個人的支出，總額 <strong style="color: var(--success); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalNew) }}</strong>。
+            </p>
+          </template>
+          <p v-else style="margin: 0; color: var(--ink-light); text-align: center; font-size: 13px;">
+            此期間沒有需要結算的孜保支出
+          </p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn primary" @click="confirmZibaoSettlement" type="button" :disabled="unsettledZibaoEntries.length === 0 || isSettling">
+            {{ isSettling ? '結算中...' : '確認結算' }}
+          </button>
+          <button class="btn" @click="closeSettleModal" type="button" :disabled="isSettling">取消</button>
         </div>
       </div>
     </div>
@@ -274,10 +355,16 @@ import type { ExpenseEntry } from '~/composables/useExpenses'
 import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
+import IconX from '~/components/icons/IconX.vue'
+import IconBank from '~/components/icons/IconBank.vue'
+import IconTarget from '~/components/icons/IconTarget.vue'
+import { useExpenseFilters } from '~/composables/useExpenseFilters'
+import { useToast } from '~/composables/useToast'
 
 const { user } = useAuth()
 const { accounts } = useAccounts()
 const expenses = useTotalExpenses()
+const { success, danger } = useToast()
 const { entries, deleteEntry, updateEntry } = expenses
 
 const showAccount = computed(() => true)
@@ -297,9 +384,16 @@ const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
 const sortKey = ref<'date' | 'amount' | 'account_id' | 'note' | 'sub_type' | 'category'>('date')
 const sortOrder = ref<'asc' | 'desc'>('desc')
-const searchQuery = ref('')
-const filterType = ref<'all' | 'expense' | 'income' | 'zibao' | 'transfer'>('all')
-const filterCategory = ref<string>('all')
+const {
+  searchQuery,
+  filterType,
+  filterCategory,
+  startDate,
+  endDate,
+  resetFilters,
+  hasActiveFilters
+} = useExpenseFilters()
+
 const isTransferEntry = (entry: ExpenseEntry) => {
   if (entry.sub_type === 'transfer') return true
   return Boolean(entry.note && entry.note.includes('[轉帳]'))
@@ -342,6 +436,13 @@ const filteredEntries = computed(() => {
 
   if (filterCategory.value !== 'all') {
     list = list.filter((entry) => (entry.category ?? '') === filterCategory.value)
+  }
+
+  if (startDate.value) {
+    list = list.filter((entry) => entry.date >= startDate.value)
+  }
+  if (endDate.value) {
+    list = list.filter((entry) => entry.date <= endDate.value)
   }
 
   const keyword = searchQuery.value.toLowerCase()
@@ -422,7 +523,7 @@ const saveEdit = async () => {
     return
   }
   if (!editForm.date) {
-    alert('請選擇日期')
+    danger('請選擇日期')
     return
   }
   const finalAmount = editForm.type === 'income' ? -Math.abs(editForm.amount) : Math.abs(editForm.amount)
@@ -507,6 +608,8 @@ const confirmBulkDelete = async () => {
   for (const id of targets) {
     await deleteEntry(id)
   }
+  vibrate([40, 30, 40])
+  success(`成功刪除 ${targets.length} 筆紀錄`)
   selectedIds.value = new Set()
   bulkModalOpen.value = false
 }
@@ -516,6 +619,92 @@ const accountLabel = (accountId?: string | null) => {
   const found = accounts.value.find(account => account.id === accountId)
   return found ? found.name : '未指定'
 }
+
+/* --- Zibao Settlement Logic --- */
+const zibaoSettleModalOpen = ref(false)
+const settleStartDate = ref('')
+const settleEndDate = ref('')
+const isSettling = ref(false)
+
+const openSettleModal = () => {
+  const today = new Date()
+  const weekStart = startOfWeek(today)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  
+  settleStartDate.value = toISODate(weekStart)
+  settleEndDate.value = toISODate(weekEnd)
+  zibaoSettleModalOpen.value = true
+}
+
+const closeSettleModal = () => {
+  if (isSettling.value) return
+  zibaoSettleModalOpen.value = false
+}
+
+const unsettledZibaoEntries = computed(() => {
+  if (!settleStartDate.value || !settleEndDate.value) return []
+  return entries.value.filter(e => {
+    return e.date >= settleStartDate.value && 
+           e.date <= settleEndDate.value && 
+           e.sub_type === 'zibao' && 
+           e.amount > 0 &&
+           !(e.note && e.note.includes('[已結算]')) &&
+           !isTransferEntry(e)
+  })
+})
+
+const settleTotalOriginal = computed(() => {
+  return unsettledZibaoEntries.value.reduce((sum, e) => sum + e.amount, 0)
+})
+
+const settleTotalNew = computed(() => {
+  return unsettledZibaoEntries.value.reduce((sum, e) => sum + Math.round(e.amount / 2), 0)
+})
+
+const confirmZibaoSettlement = async () => {
+  const targets = [...unsettledZibaoEntries.value]
+  if (targets.length === 0) return
+  
+  isSettling.value = true
+  try {
+    for (const entry of targets) {
+      const newAmount = Math.round(entry.amount / 2)
+      const settledTag = `[已結算，原價: $${entry.amount}]`
+      const newNote = entry.note ? `${entry.note} ${settledTag}` : settledTag
+      
+      await updateEntry({
+        ...entry,
+        amount: newAmount,
+        sub_type: 'general',
+        note: newNote
+      })
+    }
+    zibaoSettleModalOpen.value = false
+    vibrate([20, 10, 20])
+    success(`成功結算 ${targets.length} 筆孜保支出`)
+  } catch (err) {
+    danger(`結算發生錯誤：${(err as Error).message}`)
+  } finally {
+    isSettling.value = false
+  }
+}
+/* --- Note Expansion (Mobile) --- */
+const expandedEntries = ref(new Set<string>())
+const isExpanded = (id: string) => expandedEntries.value.has(id)
+const toggleExpand = (id: string) => {
+  if (expandedEntries.value.has(id)) {
+    expandedEntries.value.delete(id)
+  } else {
+    expandedEntries.value.add(id)
+    vibrate(10)
+  }
+}
+
+defineExpose({
+  openBulkDelete,
+  openSettleModal
+})
 </script>
 
 <style scoped>
@@ -584,9 +773,9 @@ const accountLabel = (accountId?: string | null) => {
 .custom-checkbox {
   display: block;
   position: relative;
-  padding-left: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
-  font-size: 22px;
   user-select: none;
 }
 .custom-checkbox input {
@@ -651,12 +840,25 @@ const accountLabel = (accountId?: string | null) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 16px;
 }
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 8px;
+}
+
+.settle-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 10px;
+  margin-right: 8px;
 }
 .panel-title-group {
   display: flex;
@@ -677,11 +879,19 @@ const accountLabel = (accountId?: string | null) => {
 }
 
 .list-toolbar {
-  display: grid;
-  grid-template-columns: 1fr 100px 100px;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   padding: 0 8px;
+}
+
+.search-box {
+  flex: 2 1 200px;
+}
+
+.filter-select {
+  flex: 1 1 100px;
 }
 
 .search-box {
@@ -713,6 +923,47 @@ const accountLabel = (accountId?: string | null) => {
   color: var(--ink-light);
   font-size: 12px;
   padding-left: 2px;
+}
+
+/* Date Filters */
+.filter-dates {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+}
+
+.date-input {
+  flex: 1;
+  height: 34px !important;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+}
+
+.date-sep {
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+}
+
+.reset-btn {
+  height: 34px;
+  width: 34px;
+  padding: 0;
+  border-radius: 8px;
+  flex: none;
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--ink-light);
+}
+
+.reset-btn:hover {
+  background: #fee2e2;
+  color: var(--danger);
+  border-color: #fecaca;
 }
 
 /* Auth Gate */
@@ -806,24 +1057,49 @@ const accountLabel = (accountId?: string | null) => {
 }
 
 .compact-note {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.compact-note.is-expanded {
+  white-space: normal;
+  overflow: visible;
+  word-break: break-all;
 }
 
 .compact-main .type-badge {
   letter-spacing: 0.04em;
 }
 
+.checkbox-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hide desktop-only cells on mobile/tablet by default */
 .date-cell,
 .type-cell,
+.category-cell,
 .account-cell,
 .note-cell {
   display: none;
+}
+
+.compact-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .amount-cell .entry-amount {
@@ -834,10 +1110,13 @@ const accountLabel = (accountId?: string | null) => {
 
 @media (max-width: 480px) {
   .list-toolbar {
-    grid-template-columns: 1fr 68px 90px;
-    gap: 6px;
-    padding: 0 2px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
   }
+  .search-box { flex: 1; min-width: 140px; }
+  .filter-select { flex: 1; min-width: 80px; }
 
   .search-box input,
   .filter-select {
@@ -851,9 +1130,14 @@ const accountLabel = (accountId?: string | null) => {
   }
 
   .entry-card {
-    grid-template-columns: 20px minmax(0, 1fr) minmax(min-content, auto) 38px;
-    padding: 12px 10px;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto 40px;
+    padding: 10px 12px;
+    gap: 8px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    overflow: hidden;
   }
 
   .icon-btn {

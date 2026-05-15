@@ -34,7 +34,8 @@ export default defineNuxtConfig({
       meta: [
         { name: 'theme-color', content: '#FFFFFF' } // Theme color for browsers/PWA
       ]
-    }
+    },
+    pageTransition: { name: 'page', mode: 'out-in' }
   },
   nitro: {
     preset: 'github-pages'

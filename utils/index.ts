@@ -9,7 +9,7 @@ export function toISODate(date: Date): string {
 
 export function parseISODate(str: string): Date {
     const [y, m, d] = str.split('-').map(Number);
-    return new Date(y, (m ?? 1) - 1, d ?? 1);
+    return new Date(y || 2000, (m || 1) - 1, d || 1);
 }
 
 export function formatCurrency(amount: number): string {
@@ -72,3 +72,9 @@ export function haversine(lat1: number, lon1: number, lat2: number, lon2: number
 }
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+export function vibrate(pattern: number | number[] = 10) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+}

@@ -177,6 +177,7 @@ const router = useRouter()
 const { user, signInWithGoogle } = useAuth()
 const { accounts } = useAccounts()
 const { addEntry, summaries } = useTotalExpenses()
+const { success, danger } = useToast()
 
 import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
 
@@ -252,7 +253,7 @@ const handleSubmit = async () => {
   if (!user.value || submitting.value) return
 
   if (!form.amount || form.amount <= 0) {
-    alert('請輸入正確金額')
+    danger('請輸入正確金額')
     return
   }
 
@@ -260,11 +261,11 @@ const handleSubmit = async () => {
   try {
     if (form.type === 'transfer') {
       if (!form.from_account_id || !form.to_account_id) {
-        alert('請選擇轉出與轉入帳戶')
+        danger('請選擇轉出與轉入帳戶')
         return
       }
       if (form.from_account_id === form.to_account_id) {
-        alert('轉出和轉入帳戶不能相同')
+        danger('轉出和轉入帳戶不能相同')
         return
       }
 
@@ -310,8 +311,12 @@ const handleSubmit = async () => {
       })
     }
 
+    vibrate(20)
+    success(`成功儲存${submitBtnText.value}`)
     resetForm()
     await router.push(redirectPath.value)
+  } catch (err) {
+    danger(`儲存失敗：${(err as Error).message}`)
   } finally {
     submitting.value = false
   }

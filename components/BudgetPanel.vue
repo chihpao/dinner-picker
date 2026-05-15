@@ -102,30 +102,49 @@
         </div>
         
         <div class="meter-footer">
-          <span class="meter-remaining" :class="getRuleProgress(rule).status">
-            {{ getRuleProgress(rule).remaining >= 0 ? `剩餘 ${formatCurrency(getRuleProgress(rule).remaining)}` : `超支 ${formatCurrency(Math.abs(getRuleProgress(rule).remaining))}` }}
-          </span>
-          <span v-if="getRuleProgress(rule).remaining > 0 && getRuleProgress(rule).dailyPace > 0" class="meter-pace">
-            每天可花 {{ formatCurrency(getRuleProgress(rule).dailyPace) }}
-          </span>
+          <div class="meter-footer-info">
+            <span class="meter-remaining" :class="getRuleProgress(rule).status">
+              {{ getRuleProgress(rule).remaining >= 0 ? `剩餘 ${formatCurrency(getRuleProgress(rule).remaining)}` : `超支 ${formatCurrency(Math.abs(getRuleProgress(rule).remaining))}` }}
+            </span>
+            <span v-if="getRuleProgress(rule).remaining > 0 && getRuleProgress(rule).dailyPace > 0" class="meter-pace">
+              每天可花 {{ formatCurrency(getRuleProgress(rule).dailyPace) }}
+            </span>
+          </div>
+          <button 
+            class="btn btn-sm details-btn" 
+            type="button" 
+            @click="setBudgetFilter(rule.category, rule.start_date, rule.end_date)"
+            title="查看此預算的消費明細"
+          >
+            <IconList class="w-4 h-4" />
+            <span>明細</span>
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Empty state when no budget set -->
-    <div v-else class="budget-empty">
-      <p>目前期間沒有預算規則</p>
-      <button class="btn btn-sm primary" type="button" @click="editing = true">
+    <AppEmptyState 
+      v-else 
+      title="還沒設定預算？" 
+      message="設定月預算或週預算，可以幫助你更有效地控制支出。"
+    >
+      <template #icon>
+        <IconTarget style="width: 64px; height: 64px; color: var(--border)" />
+      </template>
+      <button class="btn primary" type="button" @click="editing = true">
         立即設定
       </button>
-    </div>
+    </AppEmptyState>
   </section>
 </template>
 
 <script setup lang="ts">
 import IconTarget from '~/components/icons/IconTarget.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
+import IconList from '~/components/icons/IconList.vue'
 import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+import { useExpenseFilters } from '~/composables/useExpenseFilters'
 
 withDefaults(defineProps<{
   isOpen?: boolean
@@ -142,6 +161,7 @@ const {
   deleteBudgetRule,
   getRuleProgress,
 } = useBudget()
+const { setBudgetFilter } = useExpenseFilters()
 
 const editing = ref(false)
 
@@ -485,6 +505,33 @@ const formatShortDate = (dateStr: string) => {
   padding: 2px 8px;
   border-radius: 6px;
   border: 1px solid var(--border);
+}
+
+.meter-footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.details-btn {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  gap: 4px;
+  background: white;
+  border-color: var(--border);
+  color: var(--ink-light);
+  font-family: var(--font-pixel);
+}
+
+.details-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.details-btn span {
+  font-size: 11px;
 }
 
 /* ── Empty State ──────────────────── */

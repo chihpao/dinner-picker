@@ -17,8 +17,34 @@ export const useBudget = () => {
     const { user } = useAuth()
     const { entries } = useTotalExpenses()
 
+    const STORAGE_KEY = 'dinnerPicker.budgetRules.v1'
     const budgetRules = useState<BudgetRule[]>('budget-rules', () => [])
     const loading = useState('budget-loading', () => false)
+
+    const saveLocalBudget = (rules: BudgetRule[]) => {
+        if (!import.meta.client) return
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY)
+            const existing = raw ? JSON.parse(raw) : []
+            const others = Array.isArray(existing) ? existing.filter((r: any) => r.user_id !== user.value?.id) : []
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([...others, ...rules]))
+        } catch (err) {
+            console.error('Failed to save local budget', err)
+        }
+    }
+
+    const loadLocalBudget = (): BudgetRule[] => {
+        if (!import.meta.client) return []
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY)
+            const parsed = raw ? JSON.parse(raw) : []
+            if (!Array.isArray(parsed)) return []
+            return parsed.filter((r: any) => r.user_id === user.value?.id)
+        } catch (err) {
+            console.error('Failed to parse local budget', err)
+            return []
+        }
+    }
 
     // ── Load from Supabase ──────────────────────────────
     const loadBudgetRules = async () => {
@@ -45,8 +71,10 @@ export const useBudget = () => {
                 end_date: r.end_date,
                 created_at: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
             }))
+            saveLocalBudget(budgetRules.value)
         } catch (err) {
-            console.error('Failed to load budget rules', err)
+            console.error('Failed to load budget rules, using local', err)
+            budgetRules.value = loadLocalBudget()
         } finally {
             loading.value = false
         }
@@ -70,7 +98,7 @@ export const useBudget = () => {
                 .single()
             if (error) throw error
             if (data) {
-                budgetRules.value.unshift({
+                const newRuleObj = {
                     id: data.id,
                     user_id: data.user_id,
                     category: data.category,
@@ -78,7 +106,9 @@ export const useBudget = () => {
                     start_date: data.start_date,
                     end_date: data.end_date,
                     created_at: new Date(data.created_at).getTime(),
-                })
+                }
+                budgetRules.value.unshift(newRuleObj)
+                saveLocalBudget(budgetRules.value)
             }
         } catch (err) {
             console.error('Failed to add budget rule', err)
@@ -100,6 +130,7 @@ export const useBudget = () => {
                 .eq('id', id)
                 .eq('user_id', user.value.id)
             if (error) throw error
+            saveLocalBudget(budgetRules.value)
         } catch (err) {
             budgetRules.value = prev
             console.error('Failed to update budget rule', err)
@@ -117,6 +148,7 @@ export const useBudget = () => {
                 .eq('user_id', user.value.id)
             if (error) throw error
             budgetRules.value = budgetRules.value.filter(r => r.id !== id)
+            saveLocalBudget(budgetRules.value)
         } catch (err) {
             console.error('Failed to delete budget rule', err)
             alert(`刪除預算失敗：${(err as Error).message}`)

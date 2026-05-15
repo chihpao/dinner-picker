@@ -4,9 +4,19 @@
       <template #actions>
         <button 
           class="btn btn-sm header-icon-btn" 
+          @click="expenseListRef?.openSettleModal()" 
+          type="button"
+          title="孜保結算"
+        >
+          <span class="icon-btn-content">
+            <IconSettle class="w-4 h-4" />
+          </span>
+        </button>
+        <button 
+          class="btn btn-sm header-icon-btn" 
           @click="togglePanel('summary')" 
           type="button"
-          :class="{ primary: activePanel === 'summary' }"
+          :class="{ active: activePanel === 'summary' }"
           title="統計"
           :aria-pressed="activePanel === 'summary'"
         >
@@ -18,7 +28,7 @@
           class="btn btn-sm header-icon-btn" 
           @click="togglePanel('budget')" 
           type="button"
-          :class="{ primary: activePanel === 'budget' }"
+          :class="{ active: activePanel === 'budget' }"
           title="預算"
           :aria-pressed="activePanel === 'budget'"
         >
@@ -41,7 +51,7 @@
     </AppHeader>
 
     <main class="expense-main">
-      <ExpenseList />
+      <ExpenseList ref="expenseListRef" />
     </main>
   </div>
 </template>
@@ -50,10 +60,12 @@
 import IconChartLine from '~/components/icons/IconChartLine.vue'
 import IconTarget from '~/components/icons/IconTarget.vue'
 import IconPlus from '~/components/icons/IconPlus.vue'
+import IconSettle from '~/components/icons/IconSettle.vue'
 
 const { user } = useAuth()
 const { loadEntries } = useTotalExpenses()
 const { loadAccounts } = useAccounts()
+const expenseListRef = ref<any>(null)
 const activePanel = ref<'summary' | 'budget' | null>(null)
 const PANEL_PREF_KEY = 'dinnerPicker.total.activePanel.v2'
 
@@ -103,10 +115,11 @@ watch(user, () => {
 .w-4 { width: 16px; }
 .h-4 { height: 16px; }
 
-.header-icon-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
+
+.header-icon-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 /* ── Dashboard Panel ────────────── */

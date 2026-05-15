@@ -1,9 +1,9 @@
 <template>
   <div class="accounts-page">
-    <AppHeader title="帳戶管理" :is-expenses="true">
+    <AppHeader title="帳戶管理" :subtitle="`共 ${accounts.length} 個帳戶`" :is-expenses="true">
       <template #actions>
-        <NuxtLink to="/total/add-account" class="btn btn-sm primary add-account-btn" title="新增帳戶" aria-label="新增帳戶">
-          <IconPlus />
+        <NuxtLink to="/total/add-account" class="btn btn-sm header-icon-btn" title="新增帳戶" aria-label="新增帳戶">
+          <IconCirclePlus class="w-4 h-4" />
         </NuxtLink>
       </template>
     </AppHeader>
@@ -15,11 +15,11 @@
 </template>
 
 <script setup lang="ts">
-import IconPlus from '~/components/icons/IconPlus.vue'
+import IconCirclePlus from '~/components/icons/IconCirclePlus.vue'
 
 const { user } = useAuth()
 const { loadEntries } = useTotalExpenses()
-const { loadAccounts } = useAccounts()
+const { accounts, loadAccounts } = useAccounts()
 
 watch(user, () => {
   loadEntries()
@@ -40,26 +40,9 @@ useHead({
   gap: 14px;
 }
 
-.add-account-btn {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-}
-
-.add-account-btn :deep(svg) {
-  width: 18px;
-  height: 18px;
-}
-
 @media (max-width: 720px) {
   .accounts-page {
     gap: 12px;
   }
-
-  .add-account-btn {
-    width: 40px;
-    height: 40px;
-  }
-
 }
 </style>

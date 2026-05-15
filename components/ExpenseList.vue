@@ -1,23 +1,9 @@
 <template>
   <section class="panel">
-    <div class="panel-header">
-      <div class="panel-title-group">
-        <h2>{{ listTitle }}</h2>
-        <span v-if="selectedCount" class="pill">已選 {{ selectedCount }} 筆</span>
-      </div>
-      <div class="panel-actions">
-        <button class="btn btn-sm primary settle-btn" @click="openSettleModal" type="button" title="孜保結算">
-          💰
-        </button>
-        <button v-if="selectedCount" @click="openBulkDelete" class="icon-btn danger" type="button" title="刪除選取項目">
-          <IconTrash />
-        </button>
-      </div>
-    </div>
 
     <div v-if="user && entries.length" class="list-toolbar">
       <label class="search-box">
-        <input v-model.trim="searchQuery" type="text" placeholder="搜尋備註、帳戶、日期">
+        <input v-model.trim="searchQuery" type="text" placeholder="搜尋...">
       </label>
       <select v-model="filterType" class="filter-select">
         <option value="all">全部</option>
@@ -27,7 +13,7 @@
         <option value="transfer">轉帳</option>
       </select>
       <select v-model="filterCategory" class="filter-select filter-category">
-        <option value="all">全部類別</option>
+        <option value="all">類別</option>
         <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
           {{ cat.label }}
         </option>
@@ -1111,12 +1097,13 @@ defineExpose({
 @media (max-width: 480px) {
   .list-toolbar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 4px;
     padding: 0;
+    margin-bottom: 8px;
   }
-  .search-box { flex: 1; min-width: 140px; }
-  .filter-select { flex: 1; min-width: 80px; }
+  .search-box { flex: 1.5; min-width: 0; }
+  .filter-select { flex: 1; min-width: 0; font-size: 11px !important; }
 
   .search-box input,
   .filter-select {

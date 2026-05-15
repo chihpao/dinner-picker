@@ -1,38 +1,5 @@
 <template>
   <section class="panel">
-    <div class="panel-header" v-if="accounts.length">
-      <span class="pill">共 {{ accounts.length }} 個帳戶</span>
-      <div class="segment-group sort-group" role="group" aria-label="帳戶排序">
-        <div class="segment-slider" :class="sortMode"></div>
-        <button
-          class="segment-btn"
-          :class="{ active: sortMode === 'balanceDesc' }"
-          type="button"
-          :aria-pressed="sortMode === 'balanceDesc'"
-          @click="sortMode = 'balanceDesc'"
-        >
-          餘額高
-        </button>
-        <button
-          class="segment-btn"
-          :class="{ active: sortMode === 'balanceAsc' }"
-          type="button"
-          :aria-pressed="sortMode === 'balanceAsc'"
-          @click="sortMode = 'balanceAsc'"
-        >
-          餘額低
-        </button>
-        <button
-          class="segment-btn"
-          :class="{ active: sortMode === 'name' }"
-          type="button"
-          :aria-pressed="sortMode === 'name'"
-          @click="sortMode = 'name'"
-        >
-          名稱
-        </button>
-      </div>
-    </div>
 
     <div v-if="!user" class="auth-gate panel">
       <p>請先登入再管理帳戶</p>
@@ -53,7 +20,7 @@
       </AppEmptyState>
       
       <div v-else class="account-list">
-        <article v-for="account in sortedAccounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
+        <article v-for="account in accounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
           
           <!-- EDIT MODE -->
           <template v-if="editingId === account.id">
@@ -192,6 +159,7 @@ import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import { useToast } from '~/composables/useToast'
 
+
 const { user } = useAuth()
 const { accounts, updateAccount, deleteAccount } = useAccounts()
 const { entries } = useTotalExpenses()
@@ -199,7 +167,6 @@ const { success, danger } = useToast()
 const SORT_PREF_KEY = 'dinnerPicker.accounts.sort.v1'
 
 const editingId = ref<string | null>(null)
-const sortMode = ref<'balanceDesc' | 'balanceAsc' | 'name'>('balanceDesc')
 const deletingAccount = ref(false)
 const editForm = reactive({
   name: '',
@@ -228,29 +195,7 @@ const accountCurrentBalance = (accountId: string, balance: number) => {
   return (balance || 0) - net
 }
 
-const sortedAccounts = computed(() => {
-  const list = [...accounts.value]
-  if (sortMode.value === 'name') {
-    return list.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'))
-  }
-  if (sortMode.value === 'balanceAsc') {
-    return list.sort((a, b) => accountCurrentBalance(a.id, a.balance) - accountCurrentBalance(b.id, b.balance))
-  }
-  return list.sort((a, b) => accountCurrentBalance(b.id, b.balance) - accountCurrentBalance(a.id, a.balance))
-})
 
-onMounted(() => {
-  if (!import.meta.client) return
-  const saved = localStorage.getItem(SORT_PREF_KEY)
-  if (saved === 'balanceDesc' || saved === 'balanceAsc' || saved === 'name') {
-    sortMode.value = saved
-  }
-})
-
-watch(sortMode, (mode) => {
-  if (!import.meta.client) return
-  localStorage.setItem(SORT_PREF_KEY, mode)
-})
 
 const accountStats = computed(() => {
   const map = new Map<string, { income: number; expense: number; net: number }>()

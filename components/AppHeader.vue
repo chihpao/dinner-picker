@@ -13,7 +13,7 @@
         </NuxtLink>
         <div class="hero-heading">
           <h1>{{ title }}</h1>
-          <p class="hero-subtitle">{{ todayLabel }}</p>
+          <p class="hero-subtitle">{{ subtitle || todayLabel }}</p>
         </div>
       </div>
 
@@ -56,11 +56,12 @@
 <script setup lang="ts">
 import IconArrowLeft from '~/components/icons/IconArrowLeft.vue'
 
-const { backTo, hideAuth = false } = defineProps<{
+const { backTo, hideAuth = false, subtitle } = defineProps<{
   title: string
   isExpenses?: boolean
   backTo?: string
   hideAuth?: boolean
+  subtitle?: string
 }>()
 
 const { user, signInWithGoogle, signOut } = useAuth()

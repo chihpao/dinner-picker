@@ -84,6 +84,22 @@ body {
 }
 
 /* Component Styles */
+.header-icon-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .header-icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 .card {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--border);

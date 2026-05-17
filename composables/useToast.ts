@@ -9,8 +9,8 @@ export const useToast = () => {
 
   const showToast = (options: ToastOptions | string) => {
     const toast: ToastOptions = typeof options === 'string' 
-      ? { message: options, type: 'info', duration: 3000 }
-      : { type: 'info', duration: 3000, ...options }
+      ? { message: options, type: 'info', duration: 2000 }
+      : { type: 'info', duration: 2000, ...options }
 
     toasts.value.push(toast)
 

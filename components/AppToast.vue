@@ -7,12 +7,14 @@
         class="toast-item"
         :class="toast.type"
       >
-        <span class="toast-icon">
-          <template v-if="toast.type === 'success'">✔️</template>
-          <template v-else-if="toast.type === 'danger'">❌</template>
-          <template v-else>ℹ️</template>
-        </span>
-        <span class="toast-message">{{ toast.message }}</span>
+        <div class="toast-content">
+          <div class="toast-icon">
+            <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <svg v-else-if="toast.type === 'danger'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          </div>
+          <span class="toast-message">{{ toast.message }}</span>
+        </div>
       </div>
     </TransitionGroup>
   </div>
@@ -25,59 +27,93 @@ const { toasts } = useToast()
 <style scoped>
 .toast-container {
   position: fixed;
-  top: 24px;
+  top: 32px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 10000;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
   pointer-events: none;
-  width: 90%;
-  max-width: 400px;
+  width: auto;
+  min-width: 240px;
 }
 
 .toast-item {
+  pointer-events: auto;
   background: var(--bg-paper);
-  border: 2px solid var(--ink);
-  border-radius: 8px;
-  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 40px; /* Pill shape */
+  padding: 8px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-width: 90vw;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 4px 4px 0 var(--ink);
-  pointer-events: auto;
-  font-family: var(--font-pixel);
-  font-size: 14px;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .toast-item.success {
-  border-color: var(--success);
-  color: var(--success);
-  box-shadow: 4px 4px 0 var(--success);
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
 }
 
 .toast-item.danger {
-  border-color: var(--danger);
-  color: var(--danger);
-  box-shadow: 4px 4px 0 var(--danger);
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.toast-item.info {
+  background: #eff6ff;
+  border-color: #dbeafe;
+  color: #1d4ed8;
 }
 
 .toast-icon {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-message {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Transitions */
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s var(--ease-snappy);
+  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* Bouncy enter */
 }
+
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px) scale(0.9);
+  transform: translateY(-20px) scale(0.8);
 }
+
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-20px) scale(0.9);
+  transform: translateY(-10px) scale(0.9);
+}
+
+/* Handle mobile better */
+@media (max-width: 640px) {
+  .toast-container {
+    top: 20px;
+  }
+  
+  .toast-item {
+    padding: 10px 20px;
+  }
 }
 </style>

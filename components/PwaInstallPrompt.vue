@@ -45,10 +45,8 @@ const dismissIosPrompt = () => {
 }
 
 onMounted(() => {
-  const dismissedAtRaw = localStorage.getItem('pwa-prompt-dismissed-at')
-  const dismissedAt = dismissedAtRaw ? Number(dismissedAtRaw) : 0
-  const oneDay = 24 * 60 * 60 * 1000
-  dismissed.value = Boolean(dismissedAt && Date.now() - dismissedAt < oneDay)
+  const dismissedAt = Number(localStorage.getItem('pwa-prompt-dismissed-at') || 0)
+  dismissed.value = Date.now() - dismissedAt < 86400000
 
   if (!dismissed.value && isIos.value) {
     showIosPrompt.value = true

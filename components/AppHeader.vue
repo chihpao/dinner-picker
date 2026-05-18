@@ -67,13 +67,12 @@ const { backTo, hideAuth = false, subtitle } = defineProps<{
 const { user, signInWithGoogle, signOut } = useAuth()
 const menuOpen = ref(false)
 
-const userInitial = computed(() => {
-  return user.value?.email?.[0]?.toUpperCase() || 'U'
-})
+const userInitial = computed(() => user.value?.email?.[0]?.toUpperCase() || 'U')
 
 const todayLabel = computed(() => {
-  const now = new Date()
-  return `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`
+  const n = new Date()
+  const f = (v: number) => String(v).padStart(2, '0')
+  return `${n.getFullYear()}/${f(n.getMonth() + 1)}/${f(n.getDate())}`
 })
 
 const toggleMenu = () => {
@@ -86,19 +85,13 @@ const switchAccount = () => {
 }
 
 const handleDocumentClick = (e: MouseEvent) => {
-  const target = e.target as HTMLElement
-  if (!target.closest('.auth-pill')) {
+  if (!(e.target as HTMLElement).closest('.auth-pill')) {
     menuOpen.value = false
   }
 }
 
-onMounted(() => {
-  document.addEventListener('click', handleDocumentClick)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleDocumentClick)
-})
+onMounted(() => document.addEventListener('click', handleDocumentClick))
+onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
 </script>
 
 <style scoped>
@@ -183,7 +176,6 @@ onUnmounted(() => {
   height: 16px;
 }
 
-/* Mobile Layout */
 @media (max-width: 720px) {
   .hero {
     padding: 12px;
@@ -247,7 +239,6 @@ onUnmounted(() => {
   }
 }
 
-/* Auth-related styles from the original file */
 .btn-google {
   gap: 8px;
   background: white;

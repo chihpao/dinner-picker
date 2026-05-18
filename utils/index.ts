@@ -1,5 +1,3 @@
-// 共用的小工具：日期與格式化
-
 export function toISODate(date: Date): string {
     const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const m = `${d.getMonth() + 1}`.padStart(2, '0');
@@ -38,23 +36,19 @@ export function isSameMonth(a: Date, b: Date): boolean {
 
 export function startOfWeek(date: Date): Date {
     const clone = parseISODate(toISODate(date));
-    const weekday = clone.getDay(); // 0(日) - 6(六)
-    const diff = (weekday + 6) % 7; // 以週一為第一天
+    const weekday = clone.getDay();
+    const diff = (weekday + 6) % 7;
     clone.setDate(clone.getDate() - diff);
     return clone;
 }
 
 export function generateUUID(): string {
-    // 優先使用 Web Crypto API
     try {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
             return crypto.randomUUID();
         }
-    } catch (e) {
-        // 忽略錯誤，降級處理
-    }
+    } catch (e) {}
 
-    // Fallback: RFC 4122 v4 compliant
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -77,4 +71,9 @@ export function vibrate(pattern: number | number[] = 10) {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(pattern);
     }
+}
+
+export function isTransferEntry(entry: { sub_type?: string, note?: string | null }) {
+    if (entry.sub_type === 'transfer') return true;
+    return Boolean(entry.note && entry.note.includes('[轉帳]'));
 }

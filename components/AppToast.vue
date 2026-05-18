@@ -2,10 +2,11 @@
   <div class="toast-container">
     <TransitionGroup name="toast">
       <div 
-        v-for="(toast, index) in toasts" 
-        :key="index" 
+        v-for="toast in toasts" 
+        :key="toast.id" 
         class="toast-item"
         :class="toast.type"
+        @click="removeToast(toast.id!)"
       >
         <div class="toast-content">
           <div class="toast-icon">
@@ -21,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-const { toasts } = useToast()
+const { toasts, removeToast } = useToast()
 </script>
 
 <style scoped>
@@ -44,7 +45,7 @@ const { toasts } = useToast()
   pointer-events: auto;
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 40px; /* Pill shape */
+  border-radius: 40px;
   padding: 8px 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
   max-width: 90vw;
@@ -90,10 +91,9 @@ const { toasts } = useToast()
   white-space: nowrap;
 }
 
-/* Transitions */
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* Bouncy enter */
+  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .toast-enter-from {
@@ -106,7 +106,6 @@ const { toasts } = useToast()
   transform: translateY(-10px) scale(0.9);
 }
 
-/* Handle mobile better */
 @media (max-width: 640px) {
   .toast-container {
     top: 20px;

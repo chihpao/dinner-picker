@@ -82,7 +82,6 @@ import IconBank from '~/components/icons/IconBank.vue'
   transition: opacity 0.2s;
 }
 
-/* This is the unified active style */
 .nav-item.active {
   color: var(--primary);
   font-weight: 700;
@@ -114,6 +113,4 @@ import IconBank from '~/components/icons/IconBank.vue'
     font-size: 10px;
   }
 }
-
-/* The desktop hiding is handled by `lg:hidden` in the parent layout */
 </style>

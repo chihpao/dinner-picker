@@ -1,6 +1,5 @@
 <template>
   <section class="panel">
-
     <div v-if="!user" class="auth-gate panel">
       <p>請先登入再管理帳戶</p>
     </div>
@@ -21,8 +20,6 @@
       
       <div v-else class="account-list">
         <article v-for="account in accounts" :key="account.id" class="account-card" :class="{ 'editing': editingId === account.id }">
-          
-          <!-- EDIT MODE -->
           <template v-if="editingId === account.id">
             <div class="edit-mode-layout">
               <div class="edit-header">
@@ -63,7 +60,6 @@
             </div>
           </template>
 
-          <!-- VIEW MODE -->
           <template v-else>
             <div class="card-top">
               <div class="account-info">
@@ -104,7 +100,6 @@
           </template>
         </article>
 
-        <!-- Unassigned ghost card -->
         <article v-if="unassignedStats.count > 0" class="account-card ghost">
           <div class="card-top">
             <div class="account-info">
@@ -130,7 +125,6 @@
       </div>
     </template>
 
-    <!-- Delete Confirmation Modal -->
     <Teleport to="body">
        <div v-if="deleteModal.open" class="modal-overlay" @click.self="cancelDelete">
          <div class="modal-card">
@@ -159,12 +153,10 @@ import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import { useToast } from '~/composables/useToast'
 
-
 const { user } = useAuth()
 const { accounts, updateAccount, deleteAccount } = useAccounts()
 const { entries } = useTotalExpenses()
 const { success, danger } = useToast()
-const SORT_PREF_KEY = 'dinnerPicker.accounts.sort.v1'
 
 const editingId = ref<string | null>(null)
 const deletingAccount = ref(false)
@@ -174,7 +166,6 @@ const editForm = reactive({
   balance: 0
 })
 
-// Delete Modal State
 const deleteModal = reactive({
   open: false,
   targetId: null as string | null
@@ -195,14 +186,11 @@ const accountCurrentBalance = (accountId: string, balance: number) => {
   return (balance || 0) - net
 }
 
-
-
 const accountStats = computed(() => {
   const map = new Map<string, { income: number; expense: number; net: number }>()
   entries.value.forEach((entry) => {
     if (!entry.account_id) return
     const current = map.get(entry.account_id) || { income: 0, expense: 0, net: 0 }
-    
     if (entry.amount < 0) {
       current.income += Math.abs(entry.amount)
     } else {
@@ -229,9 +217,8 @@ const unassignedStats = computed(() => {
 })
 
 const accountKindLabel = (kind: string) => {
-  if (kind === 'cash') return '現金'
-  if (kind === 'card') return '信用卡'
-  return '銀行'
+  const labels: Record<string, string> = { cash: '現金', card: '信用卡' }
+  return labels[kind] || '銀行'
 }
 
 const requestDelete = (id: string) => {
@@ -285,7 +272,6 @@ const saveEdit = async (id: string) => {
     danger('請輸入正確的初始金額')
     return
   }
-
   await updateAccount({
     ...target,
     name: editForm.name.trim(),
@@ -302,7 +288,7 @@ const saveEdit = async (id: string) => {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 800px; /* Limit width for better read on desktop */
+  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -325,7 +311,6 @@ const saveEdit = async (id: string) => {
   font-family: var(--font-pixel);
 }
 
-/* ── Segment Controls ──────────────── */
 .segment-group {
   position: relative;
   display: grid;
@@ -399,20 +384,18 @@ const saveEdit = async (id: string) => {
   gap: 12px;
 }
 
-/* Tablet+ Grid */
 @media (min-width: 640px) {
   .account-list {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 }
 
-/* Card Styling */
 .account-card {
   background: white;
   border: 1px solid var(--border);
-  border-radius: 16px; /* Softer radius */
+  border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.04); /* Subtler, deeper shadow */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -432,7 +415,6 @@ const saveEdit = async (id: string) => {
   opacity: 0.8;
 }
 
-/* Card Header */
 .card-top {
   display: flex;
   justify-content: space-between;
@@ -460,8 +442,8 @@ const saveEdit = async (id: string) => {
   justify-content: center;
   font-size: 12px;
   padding: 3px 10px;
-  border-radius: 99px; /* Pill shape */
-  font-family: var(--font-sans); /* Switch to sans for cleaner look */
+  border-radius: 99px;
+  font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -494,13 +476,12 @@ const saveEdit = async (id: string) => {
 .icon-btn.danger:hover { background: #FEF2F2; color: var(--danger); }
 .icon-btn :deep(svg) { width: 18px; height: 18px; }
 
-/* Stats */
 .card-stats {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 14px 0;
-  border-top: 1px solid var(--border); /* Clean separator */
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
 
@@ -522,7 +503,6 @@ const saveEdit = async (id: string) => {
 .stat-value.income { color: var(--success); }
 .stat-value.expense { color: var(--danger); opacity: 0.9; }
 
-/* Balance */
 .card-balance {
   display: flex;
   flex-direction: column;
@@ -530,7 +510,7 @@ const saveEdit = async (id: string) => {
   gap: 4px;
 }
 .balance-label {
-  font-size: 13px; /* Slightly larger */
+  font-size: 13px;
   color: var(--ink-light);
   font-weight: 500;
 }
@@ -544,7 +524,6 @@ const saveEdit = async (id: string) => {
 }
 .balance-amount.negative { color: var(--danger); }
 
-/* Edit Mode Layout */
 .edit-mode-layout {
   display: flex;
   flex-direction: column;
@@ -635,7 +614,6 @@ const saveEdit = async (id: string) => {
   margin-top: 8px;
 }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;

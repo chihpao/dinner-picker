@@ -83,8 +83,15 @@ Use CSS vars from `assets/css/main.css`:
 - Desktop: fixed 7-column list:
   `[Checkbox] [Date] [Amount] [Type] [Account] [Note] [Actions]`
 - Mobile: single-line compact row per entry:
-  checkbox + compact text + amount + edit
+  checkbox + compact text + amount + edit.
+- **Deletion Logic**:
+  - Individual deletion is available via the **Delete button inside the Edit Modal**.
+  - Bulk deletion is triggered by selecting entries; a **floating Selection Bar** appears at the bottom with a Delete button (immediate action).
 - Keep checkbox and edit action tappable.
+
+### `AppToast.vue`
+- Success toasts (e.g., "成功儲存支出") should display for **1 second** (1000ms) to ensure a fast user experience.
+- Toast can be manually dismissed by clicking.
 
 ### `ExpenseSummary.vue`
 - Desktop grid cards; mobile single-column stack.

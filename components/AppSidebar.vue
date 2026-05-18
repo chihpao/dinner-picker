@@ -4,12 +4,10 @@
       <div class="brand-content" v-if="!isCollapsed">
         <div class="brand-text">Dinner Picker</div>
       </div>
-      
       <button class="toggle-btn" @click="toggleCollapse">
         <span class="arrow" :class="{ flipped: isCollapsed }">◀</span>
       </button>
     </div>
-    
     <nav class="sidebar-nav">
       <div class="nav-group">
         <NuxtLink to="/" class="nav-item" exact-active-class="active">
@@ -17,9 +15,6 @@
           <span class="text" v-if="!isCollapsed">首頁</span>
         </NuxtLink>
       </div>
-
-
-
       <div class="nav-group">
         <NuxtLink to="/total/entry" class="nav-item" exact-active-class="active">
           <span class="icon"><IconEdit /></span>
@@ -51,7 +46,7 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
 <style scoped>
 .sidebar {
   width: 200px;
-  background: var(--bg-paper); /* Keep sidebar white/paper */
+  background: var(--bg-paper);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -66,7 +61,7 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
 .sidebar.collapsed { width: 72px; }
 
 .sidebar-brand {
-  height: 56px; /* Match header height roughly */
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,16 +101,6 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.nav-section-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-light);
-  padding: 12px 12px 4px 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-family: var(--font-sans);
 }
 
 .nav-group {
@@ -175,7 +160,6 @@ const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
   transform: scale(1.1);
 }
 
-/* Linear-style icon color for active */
 .nav-item.active .icon {
   color: var(--primary);
 }

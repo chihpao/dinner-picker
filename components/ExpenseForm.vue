@@ -1,6 +1,5 @@
 <template>
   <section class="panel entry-panel" :class="{ 'entry-panel--compact': compact }">
-    <!-- Today's spending indicator -->
     <div v-if="user" class="today-bar">
       <span class="today-label">今日已花</span>
       <span class="today-amount">{{ formatCurrency(todayExpense) }}</span>
@@ -9,13 +8,12 @@
     <div v-if="!user" class="auth-gate panel">
       <p>請先登入再開始記帳</p>
       <button @click="signInWithGoogle(signInRedirect)" class="btn btn-google" type="button">
-        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         登入
       </button>
     </div>
 
     <form v-else @submit.prevent="handleSubmit" class="expense-form">
-      <!-- Type Toggle -->
       <div class="type-toggle-wrapper">
         <div class="type-toggle">
           <div class="toggle-slider" :class="form.type"></div>
@@ -43,7 +41,6 @@
         </div>
       </div>
 
-      <!-- Amount: Big & prominent -->
       <div class="amount-section">
         <div class="amount-wrapper">
           <span class="prefix">NT$</span>
@@ -65,7 +62,6 @@
         </div>
       </div>
 
-      <!-- Zibao Toggle: only for expense mode -->
       <div v-if="form.type === 'expense'" class="zibao-toggle-row">
         <button
           type="button"
@@ -78,7 +74,6 @@
         </button>
       </div>
 
-      <!-- Date row: compact inline -->
       <div class="date-row">
         <input class="input date-input" type="date" v-model="form.date" required>
         <div class="quick-date">
@@ -95,7 +90,6 @@
         </div>
       </div>
 
-      <!-- Account + Category: inline on mobile -->
       <div v-if="form.type !== 'transfer'" class="inline-selects">
         <label class="form-field">
           <span class="label-text">帳戶</span>
@@ -118,36 +112,34 @@
         </label>
       </div>
 
-      <!-- Transfer accounts -->
       <template v-if="form.type === 'transfer'">
-        <div class="inline-selects">
-          <label class="form-field">
-            <span class="label-text">轉出帳戶</span>
+        <div class="transfer-flow">
+          <label class="form-field transfer-step">
+            <span class="step-label">從哪個帳戶</span>
             <select class="input select" v-model="form.from_account_id" required>
               <option value="" disabled>請選擇</option>
-              <option v-for="account in accounts" :key="account.id" :value="account.id">
-                {{ account.name }}
-              </option>
+              <option v-for="a in accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
             </select>
           </label>
-          <label class="form-field">
-            <span class="label-text">轉入帳戶</span>
+          <div class="transfer-arrow">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M7 13l5 5 5-5M7 6l5 5 5-5"/>
+            </svg>
+          </div>
+          <label class="form-field transfer-step">
+            <span class="step-label">存入哪個帳戶</span>
             <select class="input select" v-model="form.to_account_id" required>
               <option value="" disabled>請選擇</option>
-              <option v-for="account in accounts" :key="account.id" :value="account.id">
-                {{ account.name }}
-              </option>
+              <option v-for="a in accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
             </select>
           </label>
         </div>
       </template>
 
-      <!-- Note: single-line input -->
       <div class="note-row">
         <input class="input note-input" type="text" v-model="form.note" :placeholder="notePlaceholder">
       </div>
 
-      <!-- Submit -->
       <div class="form-actions">
         <button
           :class="['btn-submit', submitBtnClass]"
@@ -162,6 +154,8 @@
 </template>
 
 <script setup lang="ts">
+import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+
 const props = withDefaults(defineProps<{
   defaultRedirect?: string
   signInRedirectTo?: string
@@ -179,17 +173,13 @@ const { accounts } = useAccounts()
 const { addEntry, summaries } = useTotalExpenses()
 const { success, danger } = useToast()
 
-import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
-
 const submitting = ref(false)
 const signInRedirect = computed(() => props.signInRedirectTo)
 const redirectPath = computed(() => {
   const from = typeof route.query.from === 'string' ? route.query.from : ''
-  if (from && from.startsWith('/')) return from
-  return props.defaultRedirect
+  return from?.startsWith('/') ? from : props.defaultRedirect
 })
 const notePlaceholder = computed(() => form.type === 'transfer' ? '轉帳備註...' : '午餐、晚餐、交通...')
-
 const todayExpense = computed(() => summaries.value.todayExpense)
 
 const quickAmounts = [50, 100, 150, 200, 300, 500]
@@ -201,18 +191,24 @@ const dateChips = [
 
 const form = reactive({
   date: toISODate(new Date()),
-  amount: '' as unknown as number,
+  amount: undefined as number | undefined,
   note: '',
-  account_id: '' as string,
-  from_account_id: '' as string,
-  to_account_id: '' as string,
+  account_id: '',
+  from_account_id: '',
+  to_account_id: '',
   type: 'expense' as 'expense' | 'income' | 'transfer',
   sub_type: 'general',
-  category: '' as string,
+  category: '',
 })
 
-const submitBtnText = computed(() => form.type === 'income' ? '收入' : form.type === 'transfer' ? '轉帳' : '支出')
-const submitBtnClass = computed(() => form.type === 'income' ? 'success' : form.type === 'transfer' ? 'primary' : 'danger')
+const typeConfig = {
+  expense: { text: '支出', class: 'danger' },
+  income: { text: '收入', class: 'success' },
+  transfer: { text: '轉帳', class: 'primary' },
+}
+
+const submitBtnText = computed(() => typeConfig[form.type].text)
+const submitBtnClass = computed(() => typeConfig[form.type].class)
 
 watch(accounts, (list) => {
   if (!list.length) return
@@ -237,11 +233,8 @@ const setAmount = (amt: number) => {
   form.amount = amt
 }
 
-const setToday = () => setDaysAgo(0)
-const setYesterday = () => setDaysAgo(1)
-
 const resetForm = () => {
-  form.amount = '' as unknown as number
+  form.amount = undefined
   form.note = ''
   form.sub_type = 'general'
   form.type = 'expense'
@@ -259,6 +252,9 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
+    const timestamp = Date.now()
+    const userId = user.value.id
+
     if (form.type === 'transfer') {
       if (!form.from_account_id || !form.to_account_id) {
         danger('請選擇轉出與轉入帳戶')
@@ -269,10 +265,8 @@ const handleSubmit = async () => {
         return
       }
 
-      const fromAccount = accounts.value.find(a => a.id === form.from_account_id)
-      const toAccount = accounts.value.find(a => a.id === form.to_account_id)
-      const fromName = fromAccount?.name || '未知帳戶'
-      const toName = toAccount?.name || '未知帳戶'
+      const fromName = accounts.value.find(a => a.id === form.from_account_id)?.name || '未知帳戶'
+      const toName = accounts.value.find(a => a.id === form.to_account_id)?.name || '未知帳戶'
       const amount = Math.round(Math.abs(form.amount))
 
       await addEntry({
@@ -280,8 +274,8 @@ const handleSubmit = async () => {
         date: form.date,
         amount,
         note: `[轉帳] 轉至 ${toName}${form.note ? ` (${form.note})` : ''}`,
-        createdAt: Date.now(),
-        user_id: user.value.id,
+        createdAt: timestamp,
+        user_id: userId,
         account_id: form.from_account_id,
         sub_type: 'transfer',
       })
@@ -291,20 +285,21 @@ const handleSubmit = async () => {
         date: form.date,
         amount: -amount,
         note: `[轉帳] 來自 ${fromName}${form.note ? ` (${form.note})` : ''}`,
-        createdAt: Date.now() + 1,
-        user_id: user.value.id,
+        createdAt: timestamp + 1,
+        user_id: userId,
         account_id: form.to_account_id,
         sub_type: 'transfer',
       })
     } else {
-      const finalAmount = form.type === 'income' ? -Math.abs(form.amount) : Math.abs(form.amount)
+      const isIncome = form.type === 'income'
+      const finalAmount = isIncome ? -Math.abs(form.amount) : Math.abs(form.amount)
       await addEntry({
         id: generateUUID(),
         date: form.date,
         amount: Math.round(finalAmount),
         note: form.note,
-        createdAt: Date.now(),
-        user_id: user.value.id,
+        createdAt: timestamp,
+        user_id: userId,
         account_id: form.account_id || null,
         sub_type: form.sub_type,
         category: form.type === 'expense' ? (form.category || null) : null,
@@ -324,7 +319,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* ── Today Bar ─────────────────────── */
 .today-bar {
   display: flex;
   align-items: center;
@@ -350,7 +344,6 @@ const handleSubmit = async () => {
   color: var(--ink);
 }
 
-/* ── Panel ─────────────────────────── */
 .entry-panel {
   position: relative;
   width: 100%;
@@ -381,14 +374,12 @@ const handleSubmit = async () => {
   max-width: 100%;
 }
 
-/* ── Form ──────────────────────────── */
 .expense-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ── Zibao Toggle Pill ────────────── */
 .zibao-toggle-row {
   display: flex;
   align-items: center;
@@ -438,7 +429,6 @@ const handleSubmit = async () => {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
-/* ── Type Toggle (Segmented Control) ── */
 .type-toggle-wrapper {
   margin-bottom: 8px;
 }
@@ -493,7 +483,6 @@ const handleSubmit = async () => {
 .type-toggle:has(.toggle-slider.income) .btn-toggle:nth-child(3).active { color: var(--success); }
 .type-toggle:has(.toggle-slider.transfer) .btn-toggle:nth-child(4).active { color: var(--primary); }
 
-/* ── Amount Section ────────────────── */
 .amount-section {
   display: flex;
   flex-direction: column;
@@ -588,7 +577,6 @@ const handleSubmit = async () => {
   box-shadow: none;
 }
 
-/* ── Date Row ──────────────────────── */
 .date-row {
   display: flex;
   align-items: center;
@@ -629,7 +617,6 @@ const handleSubmit = async () => {
   background: var(--primary-light);
 }
 
-/* ── Inline Selects ────────────────── */
 .inline-selects {
   display: flex;
   gap: 10px;
@@ -667,9 +654,6 @@ const handleSubmit = async () => {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
-/* Removed duplicated prefix and unused wrappers */
-
-/* ── Note Row ──────────────────────── */
 .note-row {
   display: flex;
 }
@@ -677,11 +661,6 @@ const handleSubmit = async () => {
 .note-input {
   height: 44px;
   font-size: 14px;
-}
-
-/* ── Submit ─────────────────────────── */
-.form-actions {
-  margin-top: 2px;
 }
 
 .btn-submit {
@@ -713,7 +692,6 @@ const handleSubmit = async () => {
   box-shadow: 0 8px 16px rgba(79, 70, 229, 0.24);
 }
 
-/* ── Auth Gate ──────────────────────── */
 .auth-gate {
   text-align: center;
   padding: 32px;
@@ -734,7 +712,37 @@ const handleSubmit = async () => {
   height: 18px;
 }
 
-/* ── Mobile Polish ─────────────────── */
+.transfer-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(79, 70, 229, 0.03);
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px dashed rgba(79, 70, 229, 0.2);
+}
+
+.transfer-step {
+  flex: 1;
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 4px;
+  font-family: var(--font-pixel);
+}
+
+.transfer-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--primary);
+  opacity: 0.5;
+  padding: 2px 0;
+}
+
 @media (max-width: 720px) {
   .entry-panel {
     border-radius: 20px;
@@ -757,7 +765,7 @@ const handleSubmit = async () => {
 
   .btn-submit {
     box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
-    transform: translateZ(0); /* force hardware accel for smooth sticky */
+    transform: translateZ(0);
   }
 
   .quick-amounts {
@@ -783,7 +791,6 @@ const handleSubmit = async () => {
   }
 }
 
-/* ── Desktop ───────────────────────── */
 @media (min-width: 721px) {
   .entry-panel {
     max-width: 540px;

@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2024-04-03',
@@ -27,12 +26,12 @@ export default defineNuxtConfig({
       title: '孜保吃晚餐',
       link: [
         { rel: 'icon', type: 'image/png', href: '/dinner-picker/favicon.png' },
-        { rel: 'manifest', href: '/dinner-picker/manifest.webmanifest' }, // Explicitly add manifest link
-        { rel: 'apple-touch-icon', href: '/dinner-picker/pwa-512x512.png' }, // For iOS PWA (Use high-res)
-        { rel: 'mask-icon', href: '/dinner-picker/safari-pinned-tab.svg', color: '#FFFFFF' } // For Safari pinned tabs
+        { rel: 'manifest', href: '/dinner-picker/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/dinner-picker/pwa-512x512.png' },
+        { rel: 'mask-icon', href: '/dinner-picker/safari-pinned-tab.svg', color: '#FFFFFF' }
       ],
       meta: [
-        { name: 'theme-color', content: '#FFFFFF' } // Theme color for browsers/PWA
+        { name: 'theme-color', content: '#FFFFFF' }
       ]
     },
     pageTransition: { name: 'page', mode: 'out-in' }
@@ -46,7 +45,7 @@ export default defineNuxtConfig({
   ],
 
   pwa: {
-    strategies: 'generateSW', // Or 'injectManifest'
+    strategies: 'generateSW',
     registerType: 'autoUpdate',
     manifest: {
       name: '孜保吃晚餐',
@@ -83,19 +82,16 @@ export default defineNuxtConfig({
     },
     workbox: {
       globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-      navigateFallback: '/dinner-picker/',
-      // Other workbox options
+      navigateFallback: '/dinner-picker/'
     },
     client: {
-      installPrompt: true, // Enable the install prompt
-      // Other client options
+      installPrompt: true
     },
     devOptions: {
-      enabled: true, // Enable PWA in development for testing
+      enabled: true,
       suppressWarnings: true,
       navigateFallbackAllowlist: [/^\/$/],
-      type: 'module',
-      // Other devOptions
+      type: 'module'
     }
   }
 })

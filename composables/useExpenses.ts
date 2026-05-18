@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { isTransferEntry } from '~/utils'
 
 export const EXPENSE_CATEGORIES = [
     { value: 'food', label: '飲食' },
@@ -20,12 +21,6 @@ export interface ExpenseEntry {
     account_id?: string | null
     sub_type?: string
     category?: string | null
-}
-
-const isTransferEntry = (entry: ExpenseEntry) => {
-    if (entry.sub_type === 'transfer') return true
-    // Backward compatibility for old records before transfer subtype was introduced.
-    return Boolean(entry.note && entry.note.includes('[轉帳]'))
 }
 
 type LedgerKind = 'total'
@@ -58,55 +53,23 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
     const entries = useState<ExpenseEntry[]>(`${config.statePrefix}-entries`, () => [])
     const loading = useState(`${config.statePrefix}-loading`, () => false)
 
-    // Loaders
-    const loadLocalEntries = (): ExpenseEntry[] => {
+    const getStore = (key: string): ExpenseEntry[] => {
         if (!import.meta.client) return []
         try {
-            const raw = localStorage.getItem(STORAGE_KEY)
+            const raw = localStorage.getItem(key)
             const parsed = raw ? JSON.parse(raw) : []
-            if (!Array.isArray(parsed)) return []
-            return parsed.filter((entry: ExpenseEntry) => entry.user_id === user.value?.id)
-        } catch (err) {
-            console.error('Failed to parse local entries', err)
-            return []
-        }
+            return Array.isArray(parsed) ? parsed.filter((e: ExpenseEntry) => e.user_id === user.value?.id) : []
+        } catch { return [] }
     }
 
-    const saveLocalEntries = (newEntries: ExpenseEntry[]) => {
+    const setStore = (key: string, newEntries: ExpenseEntry[]) => {
         if (!import.meta.client) return
         try {
-            const raw = localStorage.getItem(STORAGE_KEY)
+            const raw = localStorage.getItem(key)
             const existing = raw ? JSON.parse(raw) : []
             const others = Array.isArray(existing) ? existing.filter((e: ExpenseEntry) => e.user_id !== user.value?.id) : []
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([...others, ...newEntries]))
-        } catch (err) {
-            console.error('Failed to save local entries', err)
-        }
-    }
-
-    const loadPendingEntries = (): ExpenseEntry[] => {
-        if (!import.meta.client) return []
-        try {
-            const raw = localStorage.getItem(PENDING_KEY)
-            const parsed = raw ? JSON.parse(raw) : []
-            if (!Array.isArray(parsed)) return []
-            return parsed.filter((entry: ExpenseEntry) => entry.user_id === user.value?.id)
-        } catch (err) {
-            console.error('Failed to parse pending entries', err)
-            return []
-        }
-    }
-
-    const savePendingEntries = (newEntries: ExpenseEntry[]) => {
-        if (!import.meta.client) return
-        try {
-            const raw = localStorage.getItem(PENDING_KEY)
-            const existing = raw ? JSON.parse(raw) : []
-            const others = Array.isArray(existing) ? existing.filter((e: ExpenseEntry) => e.user_id !== user.value?.id) : []
-            localStorage.setItem(PENDING_KEY, JSON.stringify([...others, ...newEntries]))
-        } catch (err) {
-            console.error('Failed to save pending entries', err)
-        }
+            localStorage.setItem(key, JSON.stringify([...others, ...newEntries]))
+        } catch {}
     }
 
     const fetchEntriesFromSupabase = async () => {
@@ -135,30 +98,28 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
 
     const syncPending = async () => {
         if (!user.value) return
-        const pending = loadPendingEntries()
+        const pending = getStore(PENDING_KEY)
         if (!pending.length) return
-        const stillPending: ExpenseEntry[] = []
-        for (const entry of pending) {
-            try {
-                const payload = {
-                    id: entry.id,
-                    date: entry.date,
-                    amount: entry.amount,
-                    note: entry.note ?? '',
-                    created_at: new Date(entry.createdAt).toISOString(),
-                    user_id: user.value.id,
-                    sub_type: entry.sub_type ?? 'general',
-                    category: entry.category ?? null,
-                    ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
-                }
-                const { error } = await supa.from(TABLE).insert(payload)
-                if (error) throw error
-            } catch (err) {
-                console.error('Retry pending failed', err)
-                stillPending.push(entry)
-            }
+
+        const payloads = pending.map(entry => ({
+            id: entry.id,
+            date: entry.date,
+            amount: entry.amount,
+            note: entry.note ?? '',
+            created_at: new Date(entry.createdAt).toISOString(),
+            user_id: user.value!.id,
+            sub_type: entry.sub_type ?? 'general',
+            category: entry.category ?? null,
+            ...(config.includeAccount ? { account_id: entry.account_id ?? null } : {}),
+        }))
+
+        try {
+            const { error } = await supa.from(TABLE).insert(payloads)
+            if (error) throw error
+            setStore(PENDING_KEY, [])
+        } catch (err) {
+            console.error('Batch sync failed', err)
         }
-        savePendingEntries(stillPending)
     }
 
     const loadEntries = async () => {
@@ -166,24 +127,16 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             entries.value = []
             return
         }
-
-        try {
-            await syncPending()
-        } catch (err) {
-            console.error('sync pending failed', err)
-        }
-
+        try { await syncPending() } catch {}
         try {
             const remoteEntries = await fetchEntriesFromSupabase()
-            const pending = loadPendingEntries()
+            const pending = getStore(PENDING_KEY)
             const existingIds = new Set(remoteEntries.map((e: ExpenseEntry) => e.id))
-            // Merge pending (pending wins)
             entries.value = [...pending.filter(e => !existingIds.has(e.id)), ...remoteEntries]
-            saveLocalEntries(entries.value)
-        } catch (err) {
-            console.error('Supabase read failed, using local', err)
-            const local = loadLocalEntries()
-            const pending = loadPendingEntries()
+            setStore(STORAGE_KEY, entries.value)
+        } catch {
+            const local = getStore(STORAGE_KEY)
+            const pending = getStore(PENDING_KEY)
             const existingIds = new Set(local.map(e => e.id))
             entries.value = [...pending.filter(e => !existingIds.has(e.id)), ...local]
         }
@@ -191,15 +144,11 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
 
     const addEntry = async (entry: ExpenseEntry) => {
         if (!user.value) return
-
-        // Optimistic
-        const pending = loadPendingEntries()
+        const pending = getStore(PENDING_KEY)
         pending.unshift(entry)
-        savePendingEntries(pending)
-
-        // Update UI immediately
+        setStore(PENDING_KEY, pending)
         entries.value.unshift(entry)
-        saveLocalEntries(entries.value)
+        setStore(STORAGE_KEY, entries.value)
 
         try {
             const payload = {
@@ -215,32 +164,18 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             }
             const { error } = await supa.from(TABLE).insert(payload)
             if (error) throw error
-
-            // Success: remove from pending
-            const remainingPending = loadPendingEntries().filter(e => e.id !== entry.id)
-            savePendingEntries(remainingPending)
-        } catch (err) {
-            console.warn('Cloud sync failed, kept in pending', err)
-        }
+            setStore(PENDING_KEY, getStore(PENDING_KEY).filter(e => e.id !== entry.id))
+        } catch {}
     }
 
     const deleteEntry = async (id: string) => {
         if (!user.value) return
-
         try {
             const { error } = await supa.from(TABLE).delete().eq('id', id).eq('user_id', user.value.id)
             if (error) throw error
-
-            // Remove from UI and Local Storage
             entries.value = entries.value.filter(e => e.id !== id)
-            saveLocalEntries(entries.value)
-
-            // Remove from Pending Storage (Critical fix for reappearing entries)
-            const pending = loadPendingEntries()
-            const newPending = pending.filter(e => e.id !== id)
-            if (newPending.length !== pending.length) {
-                savePendingEntries(newPending)
-            }
+            setStore(STORAGE_KEY, entries.value)
+            setStore(PENDING_KEY, getStore(PENDING_KEY).filter(e => e.id !== id))
         } catch (err) {
             alert(`刪除失敗：${(err as Error).message}`)
         }
@@ -251,24 +186,16 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
         const original = entries.value.find(e => e.id === updated.id)
         if (!original) return
 
-        // Keep immutable data while applying edits
-        const merged: ExpenseEntry = {
-            ...original,
-            ...updated,
-            user_id: user.value.id,
-        }
+        const merged: ExpenseEntry = { ...original, ...updated, user_id: user.value.id }
         const previousEntries = [...entries.value]
-
-        // Update UI + local cache optimistically
         entries.value = entries.value.map(e => e.id === merged.id ? merged : e)
-        saveLocalEntries(entries.value)
+        setStore(STORAGE_KEY, entries.value)
 
-        // If the entry is still pending sync, only update local pending store
-        const pending = loadPendingEntries()
+        const pending = getStore(PENDING_KEY)
         const pendingIndex = pending.findIndex(e => e.id === merged.id)
         if (pendingIndex !== -1) {
             pending[pendingIndex] = merged
-            savePendingEntries(pending)
+            setStore(PENDING_KEY, pending)
             return
         }
 
@@ -287,20 +214,19 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
             if (error) throw error
         } catch (err) {
             entries.value = previousEntries
-            saveLocalEntries(previousEntries)
+            setStore(STORAGE_KEY, previousEntries)
             alert(`更新失敗：${(err as Error).message}`)
         }
     }
 
     const clearAll = async () => {
         if (!user.value) return
-
         try {
             const { error } = await supa.from(TABLE).delete().eq('user_id', user.value.id)
             if (error) throw error
             entries.value = []
-            saveLocalEntries([])
-            savePendingEntries([])
+            setStore(STORAGE_KEY, [])
+            setStore(PENDING_KEY, [])
         } catch (err) {
             alert(`清空失敗：${(err as Error).message}`)
         }
@@ -324,30 +250,17 @@ export const useExpenses = (ledger: LedgerKind = 'total') => {
         }
 
         return entries.value.reduce((acc, entry) => {
-            // Ignore transfer entries for summary statistics.
-            if (isTransferEntry(entry)) {
-                return acc
-            }
-
-            // Custom filter
-            if (filterFn && !filterFn(entry)) {
-                return acc
-            }
+            if (isTransferEntry(entry)) return acc
+            if (filterFn && !filterFn(entry)) return acc
 
             const entryDate = parseISODate(entry.date)
             const isIncome = entry.amount < 0
             const absAmount = Math.abs(entry.amount)
 
-            // Helper to update a specific period
             const updatePeriod = (period: 'today' | 'week' | 'month' | 'year') => {
-                // Net total (Sum of signed amounts)
                 acc[period] += entry.amount
-
-                if (isIncome) {
-                    acc[`${period}Income`] += absAmount
-                } else {
-                    acc[`${period}Expense`] += absAmount
-                }
+                if (isIncome) acc[`${period}Income`] += absAmount
+                else acc[`${period}Expense`] += absAmount
             }
 
             if (isSameDay(entryDate, today)) updatePeriod('today')

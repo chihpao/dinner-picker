@@ -24,31 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-const { 
-  hasBudget, 
-  activeBudgets,
-  loadBudgetRules,
-  getRuleProgress
-} = useBudget()
-
+const { hasBudget, activeBudgets, loadBudgetRules, getRuleProgress } = useBudget()
 const router = useRouter()
 
-onMounted(() => {
-  loadBudgetRules()
-})
+onMounted(loadBudgetRules)
 
-const firstRule = computed(() => {
-  if (activeBudgets.value.length === 0) return null
-  return activeBudgets.value[0]
-})
-
-const progress = computed(() => {
-  if (!firstRule.value) return null
-  return getRuleProgress(firstRule.value)
-})
+const firstRule = computed(() => activeBudgets.value[0] || null)
+const progress = computed(() => firstRule.value ? getRuleProgress(firstRule.value) : null)
 
 const goToBudget = () => {
   if (import.meta.client) {
@@ -64,7 +46,7 @@ const goToBudget = () => {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
-  margin: 0 16px 14px; /* Margin to fit nicely under header */
+  margin: 0 16px 14px;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all 0.2s var(--ease-snappy);
@@ -132,7 +114,7 @@ const goToBudget = () => {
 
 @media (min-width: 721px) {
   .mini-budget {
-    margin: 0 0 16px; /* Reset margins for desktop grid */
+    margin: 0 0 16px;
   }
 }
 </style>

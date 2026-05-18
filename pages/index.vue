@@ -3,13 +3,10 @@
     <AppHeader title="🍱 今晚吃哪家？" hideAuth />
 
     <main id="app-main">
-      <div v-if="isLoading" class="loader">
-        <div class="loader-lines"></div>
-        <p>探索美食中...</p>
+      <div v-if="isLoading" class="grid">
+        <RestaurantCard v-for="i in 6" :key="i" loading />
       </div>
-
       <div v-else class="home-content">
-        <!-- List Section -->
         <section class="list-section">
           <div class="section-header">
             <h3 class="section-title">餐廳清單</h3>

@@ -1,12 +1,10 @@
-
-
 export interface BudgetRule {
     id: string
     user_id: string
-    category: string          // 'test1' | 'test2' | ... | 'all'
-    amount: number            // 預算金額 (NT$)
-    start_date: string        // YYYY-MM-DD
-    end_date: string          // YYYY-MM-DD
+    category: string
+    amount: number
+    start_date: string
+    end_date: string
     created_at: number
 }
 
@@ -29,7 +27,7 @@ export const useBudget = () => {
             const others = Array.isArray(existing) ? existing.filter((r: any) => r.user_id !== user.value?.id) : []
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...others, ...rules]))
         } catch (err) {
-            console.error('Failed to save local budget', err)
+            console.error(err)
         }
     }
 
@@ -41,12 +39,11 @@ export const useBudget = () => {
             if (!Array.isArray(parsed)) return []
             return parsed.filter((r: any) => r.user_id === user.value?.id)
         } catch (err) {
-            console.error('Failed to parse local budget', err)
+            console.error(err)
             return []
         }
     }
 
-    // ── Load from Supabase ──────────────────────────────
     const loadBudgetRules = async () => {
         if (!user.value) {
             budgetRules.value = []
@@ -73,14 +70,13 @@ export const useBudget = () => {
             }))
             saveLocalBudget(budgetRules.value)
         } catch (err) {
-            console.error('Failed to load budget rules, using local', err)
+            console.error(err)
             budgetRules.value = loadLocalBudget()
         } finally {
             loading.value = false
         }
     }
 
-    // ── CRUD ────────────────────────────────────────────
     const addBudgetRule = async (rule: Omit<BudgetRule, 'id' | 'user_id' | 'created_at'>) => {
         if (!user.value) return
         const payload = {
@@ -111,7 +107,7 @@ export const useBudget = () => {
                 saveLocalBudget(budgetRules.value)
             }
         } catch (err) {
-            console.error('Failed to add budget rule', err)
+            console.error(err)
             alert(`新增預算失敗：${(err as Error).message}`)
         }
     }
@@ -119,10 +115,7 @@ export const useBudget = () => {
     const updateBudgetRule = async (id: string, updates: Partial<Pick<BudgetRule, 'category' | 'amount' | 'start_date' | 'end_date'>>) => {
         if (!user.value) return
         const prev = [...budgetRules.value]
-        // Optimistic update
-        budgetRules.value = budgetRules.value.map(r =>
-            r.id === id ? { ...r, ...updates } : r
-        )
+        budgetRules.value = budgetRules.value.map(r => r.id === id ? { ...r, ...updates } : r)
         try {
             const { error } = await supa
                 .from(TABLE)
@@ -133,7 +126,7 @@ export const useBudget = () => {
             saveLocalBudget(budgetRules.value)
         } catch (err) {
             budgetRules.value = prev
-            console.error('Failed to update budget rule', err)
+            console.error(err)
             alert(`更新預算失敗：${(err as Error).message}`)
         }
     }
@@ -150,60 +143,39 @@ export const useBudget = () => {
             budgetRules.value = budgetRules.value.filter(r => r.id !== id)
             saveLocalBudget(budgetRules.value)
         } catch (err) {
-            console.error('Failed to delete budget rule', err)
+            console.error(err)
             alert(`刪除預算失敗：${(err as Error).message}`)
         }
     }
 
-    // ── Query helpers ───────────────────────────────────
-    /** Rules where today falls within [start_date, end_date] */
     const activeBudgets = computed(() => {
         const todayStr = toISODate(new Date())
-        return budgetRules.value.filter(r =>
-            r.start_date <= todayStr && r.end_date >= todayStr
-        )
+        return budgetRules.value.filter(r => r.start_date <= todayStr && r.end_date >= todayStr)
     })
 
-    /** Calculate how much was spent for a given category within a date range */
     const getCategorySpent = (category: string, startDate: string, endDate: string): number => {
         return entries.value.reduce((sum, entry) => {
-            // Only count expenses (positive amounts), exclude transfers
             if (entry.amount <= 0) return sum
             if (entry.sub_type === 'transfer') return sum
             if (entry.note && entry.note.includes('[轉帳]')) return sum
-
-            // Date range check
             if (entry.date < startDate || entry.date > endDate) return sum
-
-            // Category check
-            if (category !== 'all') {
-                const entryCategory = entry.category ?? null
-                if (entryCategory !== category) return sum
-            }
-
+            if (category !== 'all' && (entry.category ?? null) !== category) return sum
             return sum + entry.amount
         }, 0)
     }
 
-    /** Get progress info for a single budget rule */
     const getRuleProgress = (rule: BudgetRule) => {
         const spent = getCategorySpent(rule.category, rule.start_date, rule.end_date)
         const remaining = rule.amount - spent
-        const percent = rule.amount > 0
-            ? Math.min(100, Math.round((spent / rule.amount) * 100))
-            : 0
-
-        // Daily pace calculation
+        const percent = rule.amount > 0 ? Math.min(100, Math.round((spent / rule.amount) * 100)) : 0
         const today = new Date()
         const endDate = parseISODate(rule.end_date)
         const diffMs = endDate.getTime() - today.getTime()
         const daysLeft = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1)
         const dailyPace = remaining > 0 ? Math.round(remaining / daysLeft) : 0
-
         let status: 'safe' | 'warning' | 'danger' = 'safe'
         if (percent >= 100) status = 'danger'
         else if (percent >= 75) status = 'warning'
-
         return { spent, remaining, percent, status, dailyPace, daysLeft }
     }
 

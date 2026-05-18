@@ -1,6 +1,5 @@
 <template>
   <section v-if="isOpen" class="budget-section">
-    <!-- Toolbar: toggle between viewing and editing -->
     <div class="budget-toolbar">
       <h3 class="budget-title">
         <IconTarget class="budget-icon" />
@@ -16,7 +15,6 @@
       </button>
     </div>
 
-    <!-- Edit Mode: List rules and add new -->
     <div v-if="editing" class="budget-edit">
       <div v-if="budgetRules.length > 0" class="rule-list">
         <div v-for="rule in budgetRules" :key="rule.id" class="rule-edit-card">
@@ -27,7 +25,7 @@
             </button>
           </div>
           <div class="rule-edit-body">
-            <span class="rule-date-range">{{ formatDate(rule.start_date) }} ~ {{ formatDate(rule.end_date) }}</span>
+            <span class="rule-date-range">{{ rule.start_date.replace(/-/g, '/') }} ~ {{ rule.end_date.replace(/-/g, '/') }}</span>
             <span class="rule-amount-text">{{ formatCurrency(rule.amount) }}</span>
           </div>
         </div>
@@ -35,7 +33,6 @@
       
       <div class="new-rule-form">
         <h4>新增預算規則</h4>
-        
         <label class="budget-field">
           <span class="budget-field-label">類別</span>
           <select class="input select" v-model="newRule.category">
@@ -45,7 +42,6 @@
             </option>
           </select>
         </label>
-
         <div class="date-fields">
           <label class="budget-field">
             <span class="budget-field-label">開始日期</span>
@@ -56,7 +52,6 @@
             <input class="input" type="date" v-model="newRule.end_date">
           </label>
         </div>
-
         <label class="budget-field">
           <span class="budget-field-label">預算金額</span>
           <div class="budget-input-wrap">
@@ -71,14 +66,12 @@
             >
           </div>
         </label>
-
         <button class="btn primary w-full mt-2" type="button" @click="submitNewRule" :disabled="!isNewRuleValid">
           新增規則
         </button>
       </div>
     </div>
 
-    <!-- Display Mode -->
     <div v-else-if="activeBudgets.length > 0" class="budget-meters">
       <div v-for="rule in activeBudgets" :key="rule.id" class="meter-card">
         <div class="meter-header">
@@ -92,7 +85,6 @@
             <span class="meter-total">{{ formatCurrency(rule.amount) }}</span>
           </span>
         </div>
-        
         <div class="meter-bar-track">
           <div
             class="meter-bar-fill"
@@ -100,7 +92,6 @@
             :style="{ width: `${getRuleProgress(rule).percent}%` }"
           />
         </div>
-        
         <div class="meter-footer">
           <div class="meter-footer-info">
             <span class="meter-remaining" :class="getRuleProgress(rule).status">
@@ -123,7 +114,6 @@
       </div>
     </div>
 
-    <!-- Empty state when no budget set -->
     <AppEmptyState 
       v-else 
       title="還沒設定預算？" 
@@ -146,39 +136,21 @@ import IconList from '~/components/icons/IconList.vue'
 import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
 import { useExpenseFilters } from '~/composables/useExpenseFilters'
 
-withDefaults(defineProps<{
-  isOpen?: boolean
-}>(), {
-  isOpen: true
-})
+withDefaults(defineProps<{ isOpen?: boolean }>(), { isOpen: true })
 
-const { user } = useAuth()
-const {
-  budgetRules,
-  activeBudgets,
-  loadBudgetRules,
-  addBudgetRule,
-  deleteBudgetRule,
-  getRuleProgress,
-} = useBudget()
+const { budgetRules, activeBudgets, loadBudgetRules, addBudgetRule, deleteBudgetRule, getRuleProgress } = useBudget()
 const { setBudgetFilter } = useExpenseFilters()
-
 const editing = ref(false)
-
 const newRule = reactive({
   category: 'all',
   amount: '' as unknown as number,
   start_date: toISODate(new Date()),
-  end_date: toISODate(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)), // End of month
+  end_date: toISODate(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0)),
 })
 
-onMounted(() => {
-  loadBudgetRules()
-})
+onMounted(loadBudgetRules)
 
-const isNewRuleValid = computed(() => {
-  return newRule.amount > 0 && newRule.start_date && newRule.end_date && newRule.start_date <= newRule.end_date
-})
+const isNewRuleValid = computed(() => newRule.amount > 0 && newRule.start_date && newRule.end_date && newRule.start_date <= newRule.end_date)
 
 const submitNewRule = async () => {
   if (!isNewRuleValid.value) return
@@ -188,26 +160,17 @@ const submitNewRule = async () => {
     start_date: newRule.start_date,
     end_date: newRule.end_date,
   })
-  // reset form
   newRule.amount = '' as unknown as number
 }
 
 const getCategoryLabel = (val: string) => {
   if (val === 'all') return '全部類別'
-  const found = EXPENSE_CATEGORIES.find(c => c.value === val)
-  return found ? found.label : val
-}
-
-const formatDate = (dateStr: string) => {
-  return dateStr.replace(/-/g, '/')
+  return EXPENSE_CATEGORIES.find(c => c.value === val)?.label || val
 }
 
 const formatShortDate = (dateStr: string) => {
   const parts = dateStr.split('-')
-  if (parts.length === 3) {
-    return `${parts[1]}/${parts[2]}`
-  }
-  return dateStr
+  return parts.length === 3 ? `${parts[1]}/${parts[2]}` : dateStr
 }
 </script>
 
@@ -243,7 +206,6 @@ const formatShortDate = (dateStr: string) => {
   color: var(--primary);
 }
 
-/* ── Edit Mode ────────────────────── */
 .budget-edit {
   display: flex;
   flex-direction: column;
@@ -387,7 +349,6 @@ const formatShortDate = (dateStr: string) => {
   outline: none;
 }
 
-/* ── Display Mode ─────────────────── */
 .budget-meters {
   display: grid;
   grid-template-columns: 1fr;
@@ -452,7 +413,6 @@ const formatShortDate = (dateStr: string) => {
   opacity: 0.7;
 }
 
-/* ── Progress Bar ─────────────────── */
 .meter-bar-track {
   width: 100%;
   height: 8px;
@@ -477,7 +437,6 @@ const formatShortDate = (dateStr: string) => {
   background: linear-gradient(90deg, #ef4444, #f87171);
 }
 
-/* ── Footer Stats ─────────────────── */
 .meter-footer {
   display: flex;
   align-items: center;
@@ -532,18 +491,6 @@ const formatShortDate = (dateStr: string) => {
 
 .details-btn span {
   font-size: 11px;
-}
-
-/* ── Empty State ──────────────────── */
-.budget-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 20px;
-  color: var(--ink-light);
-  font-size: 13px;
-  font-family: var(--font-pixel);
 }
 
 .icon-btn {

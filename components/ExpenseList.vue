@@ -1,6 +1,5 @@
 <template>
   <section class="panel">
-
     <div v-if="user && entries.length" class="list-toolbar">
       <label class="search-box">
         <input v-model.trim="searchQuery" type="text" placeholder="搜尋...">
@@ -63,11 +62,10 @@
     </AppEmptyState>
     
     <div v-else class="expense-list-container">
-      <!-- Table Header -->
       <div class="expense-list-header">
         <div class="header-cell checkbox-cell">
           <label class="custom-checkbox">
-            <input type="checkbox" :checked="allSelected" @change="toggleSelectAll" :disabled="!entries.length">
+            <input type="checkbox" :checked="allSelected" @change="toggleSelectAll" :disabled="!entries.length || loading">
             <span class="checkmark"></span>
           </label>
         </div>
@@ -111,13 +109,26 @@
       </div>
 
       <div class="expense-list">
-        <article 
-          v-for="entry in sortedEntries" 
-          :key="entry.id" 
-          class="entry-card"
-          :class="{ 'selected': isSelected(entry.id) }"
-        >
-            <!-- 1. Checkbox -->
+        <template v-if="loading">
+          <div v-for="i in 5" :key="i" class="entry-card skeleton-row">
+            <div class="cell checkbox-cell"><AppSkeleton width="18px" height="18px" /></div>
+            <div class="cell compact-main"><AppSkeleton width="80%" height="20px" /></div>
+            <div class="cell date-cell"><AppSkeleton width="100%" height="16px" /></div>
+            <div class="cell amount-cell"><AppSkeleton width="60px" height="16px" /></div>
+            <div class="cell type-cell"><AppSkeleton width="40px" height="16px" /></div>
+            <div class="cell category-cell"><AppSkeleton width="40px" height="16px" /></div>
+            <div class="cell account-cell"><AppSkeleton width="60px" height="16px" /></div>
+            <div class="cell note-cell"><AppSkeleton width="100%" height="16px" /></div>
+            <div class="cell actions-cell"><AppSkeleton width="36px" height="36px" /></div>
+          </div>
+        </template>
+        <template v-else>
+          <article 
+            v-for="entry in sortedEntries" 
+            :key="entry.id" 
+            class="entry-card"
+            :class="{ 'selected': isSelected(entry.id) }"
+          >
             <div class="cell checkbox-cell">
               <label class="custom-checkbox">
                 <input type="checkbox" :checked="isSelected(entry.id)" @change="toggleSelect(entry.id)">
@@ -125,7 +136,6 @@
               </label>
             </div>
 
-            <!-- Mobile Compact Row -->
             <div class="cell compact-main" :title="entry.note">
               <span class="compact-date">{{ formatDate(entry.date) }}</span>
               <span class="type-badge compact-type" :class="typeClass(entry)">
@@ -143,12 +153,10 @@
               </span>
             </div>
 
-            <!-- 2. Date -->
             <div class="cell date-cell">
               <span class="entry-date">{{ formatDate(entry.date) }}</span>
             </div>
 
-            <!-- 3. Amount -->
             <div class="cell amount-cell text-right">
               <span class="entry-amount" :class="entry.amount < 0 ? 'text-success' : ''">
                 {{ formatCurrency(Math.abs(entry.amount)) }}
@@ -156,41 +164,36 @@
               <span v-if="entry.amount < 0" class="badge-income">收</span>
             </div>
 
-            <!-- 4. Type -->
             <div class="cell type-cell">
               <span class="type-badge" :class="typeClass(entry)">
                 {{ typeLabel(entry) }}
               </span>
             </div>
 
-            <!-- 4.5 Category -->
             <div class="cell category-cell">
               <span v-if="entry.category" class="category-badge">
                 {{ categoryLabel(entry.category) }}
               </span>
             </div>
             
-            <!-- 5. Account -->
             <div class="cell account-cell">
-              {{ showAccount ? accountLabel(entry.account_id) : '' }}
+              {{ accountLabel(entry.account_id) }}
             </div>
             
-            <!-- 6. Note -->
             <div class="cell note-cell" :title="entry.note">
               {{ entry.note }}
             </div>
             
-            <!-- 7. Actions -->
             <div class="cell actions-cell text-center">
               <button class="icon-btn" @click="startEdit(entry)" type="button" title="編輯">
                 <IconEdit />
               </button>
             </div>
-        </article>
+          </article>
+        </template>
       </div>
     </div>
 
-    <!-- Modals kept same structure, just restyling -->
     <div v-if="bulkModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
       <div class="modal-card">
         <h3>刪除紀錄</h3>
@@ -202,7 +205,6 @@
       </div>
     </div>
 
-    <!-- Settle Zibao Modal -->
     <div v-if="zibaoSettleModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
       <div class="modal-card">
         <h3>💰 孜保結算</h3>
@@ -244,7 +246,6 @@
       <div class="modal-card edit-modal">
         <h3>編輯紀錄</h3>
         <div class="edit-form-layout">
-          <!-- Form layout kept similar but can be refined via global css -->
           <div class="edit-group type-group">
             <div class="type-toggle">
               <button 
@@ -288,7 +289,7 @@
           </div>
 
           <div class="edit-group detail-group">
-            <label v-if="showAccount" class="input-label">
+            <label class="input-label">
               <span>帳戶</span>
               <select v-model="editForm.account_id">
                 <option value="">未指定</option>
@@ -328,11 +329,30 @@
 
           <div class="edit-actions">
             <button :class="['btn', editForm.type === 'income' ? 'success' : 'primary']" @click="saveEdit" type="button">儲存</button>
+            <button class="btn danger" @click="deleteFromEdit" type="button">刪除</button>
             <button class="btn" @click="cancelEdit" type="button">取消</button>
           </div>
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <Transition name="selection-bar">
+        <div v-if="selectedCount > 0" class="selection-bar">
+          <div class="selection-info">
+            <span class="selection-count">{{ selectedCount }}</span>
+            <span class="selection-text">筆選取中</span>
+          </div>
+          <div class="selection-actions">
+            <button class="selection-btn cancel" @click="selectedIds = new Set()" type="button">取消</button>
+            <button class="selection-btn delete" @click="confirmBulkDelete" type="button">
+              <IconTrash />
+              <span>刪除</span>
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
 
@@ -346,6 +366,11 @@ import IconBank from '~/components/icons/IconBank.vue'
 import IconTarget from '~/components/icons/IconTarget.vue'
 import { useExpenseFilters } from '~/composables/useExpenseFilters'
 import { useToast } from '~/composables/useToast'
+import { isTransferEntry, formatCurrency, formatDate, toISODate, startOfWeek, vibrate } from '~/utils'
+
+const props = defineProps<{
+  loading?: boolean
+}>()
 
 const { user } = useAuth()
 const { accounts } = useAccounts()
@@ -353,18 +378,15 @@ const expenses = useTotalExpenses()
 const { success, danger } = useToast()
 const { entries, deleteEntry, updateEntry } = expenses
 
-const showAccount = computed(() => true)
-const listTitle = computed(() => '消費紀錄列表')
-
 const editingId = ref<string | null>(null)
 const editForm = reactive({
   date: '',
-  amount: 0 as number,
+  amount: 0,
   note: '',
-  account_id: '' as string,
+  account_id: '',
   type: 'expense' as 'expense' | 'income',
   sub_type: 'general',
-  category: '' as string,
+  category: '',
 })
 const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
@@ -380,11 +402,6 @@ const {
   hasActiveFilters
 } = useExpenseFilters()
 
-const isTransferEntry = (entry: ExpenseEntry) => {
-  if (entry.sub_type === 'transfer') return true
-  return Boolean(entry.note && entry.note.includes('[轉帳]'))
-}
-
 const typeClass = (entry: ExpenseEntry) => {
   if (isTransferEntry(entry)) return 'type-transfer'
   return entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'
@@ -397,8 +414,7 @@ const typeLabel = (entry: ExpenseEntry) => {
 
 const categoryLabel = (category?: string | null) => {
   if (!category) return ''
-  const found = EXPENSE_CATEGORIES.find(c => c.value === category)
-  return found ? found.label : category
+  return EXPENSE_CATEGORIES.find(c => c.value === category)?.label || category
 }
 
 const isEditingTransfer = computed(() => {
@@ -424,12 +440,8 @@ const filteredEntries = computed(() => {
     list = list.filter((entry) => (entry.category ?? '') === filterCategory.value)
   }
 
-  if (startDate.value) {
-    list = list.filter((entry) => entry.date >= startDate.value)
-  }
-  if (endDate.value) {
-    list = list.filter((entry) => entry.date <= endDate.value)
-  }
+  if (startDate.value) list = list.filter((entry) => entry.date >= startDate.value)
+  if (endDate.value) list = list.filter((entry) => entry.date <= endDate.value)
 
   const keyword = searchQuery.value.toLowerCase()
   if (!keyword) return list
@@ -446,35 +458,14 @@ const sortedEntries = computed(() => {
   const list = [...filteredEntries.value]
   return list.sort((a, b) => {
     const asc = sortOrder.value === 'asc'
-    if (sortKey.value === 'date') {
-      const aDate = new Date(a.date).getTime()
-      const bDate = new Date(b.date).getTime()
-      return asc ? aDate - bDate : bDate - aDate
-    }
-    if (sortKey.value === 'amount') {
-      return asc ? a.amount - b.amount : b.amount - a.amount
-    }
-    if (sortKey.value === 'account_id') {
-      const aName = accountLabel(a.account_id)
-      const bName = accountLabel(b.account_id)
-      return asc ? aName.localeCompare(bName) : bName.localeCompare(aName)
-    }
-    if (sortKey.value === 'note') {
-      const aNote = a.note || ''
-      const bNote = b.note || ''
-      return asc ? aNote.localeCompare(bNote) : bNote.localeCompare(aNote)
-    }
-    if (sortKey.value === 'sub_type') {
-      const aType = a.sub_type || ''
-      const bType = b.sub_type || ''
-      return asc ? aType.localeCompare(bType) : bType.localeCompare(aType)
-    }
-    if (sortKey.value === 'category') {
-      const aCat = a.category || ''
-      const bCat = b.category || ''
-      return asc ? aCat.localeCompare(bCat) : bCat.localeCompare(aCat)
-    }
-    return 0
+    let comparison = 0
+    if (sortKey.value === 'date') comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
+    else if (sortKey.value === 'amount') comparison = a.amount - b.amount
+    else if (sortKey.value === 'account_id') comparison = accountLabel(a.account_id).localeCompare(accountLabel(b.account_id))
+    else if (sortKey.value === 'note') comparison = (a.note || '').localeCompare(b.note || '')
+    else if (sortKey.value === 'sub_type') comparison = (a.sub_type || '').localeCompare(b.sub_type || '')
+    else if (sortKey.value === 'category') comparison = (a.category || '').localeCompare(b.category || '')
+    return asc ? comparison : -comparison
   })
 })
 
@@ -497,21 +488,14 @@ const startEdit = (entry: ExpenseEntry) => {
   editForm.category = entry.category ?? ''
 }
 
-const cancelEdit = () => {
-  editingId.value = null
-}
+const cancelEdit = () => editingId.value = null
 
 const saveEdit = async () => {
   if (!editingId.value) return
   const target = entries.value.find(e => e.id === editingId.value)
-  if (!target) {
-    editingId.value = null
-    return
-  }
-  if (!editForm.date) {
-    danger('請選擇日期')
-    return
-  }
+  if (!target) return editingId.value = null
+  if (!editForm.date) return danger('請選擇日期')
+  
   const finalAmount = editForm.type === 'income' ? -Math.abs(editForm.amount) : Math.abs(editForm.amount)
   const nextSubType = isTransferEntry(target) ? 'transfer' : editForm.sub_type
 
@@ -527,15 +511,25 @@ const saveEdit = async () => {
   editingId.value = null
 }
 
+const deleteFromEdit = async () => {
+  if (!editingId.value) return
+  const id = editingId.value
+  await deleteEntry(id)
+  vibrate(40)
+  success('成功刪除紀錄')
+  editingId.value = null
+  if (selectedIds.value.has(id)) {
+    const next = new Set(selectedIds.value)
+    next.delete(id)
+    selectedIds.value = next
+  }
+}
+
 const adjustAmount = (delta: number) => {
-  const next = (editForm.amount || 0) + delta
-  editForm.amount = Math.max(0, Math.round(next))
+  editForm.amount = Math.max(0, Math.round((editForm.amount || 0) + delta))
 }
 
-const setToday = () => {
-  editForm.date = toISODate(new Date())
-}
-
+const setToday = () => editForm.date = toISODate(new Date())
 const setYesterday = () => {
   const d = new Date()
   d.setDate(d.getDate() - 1)
@@ -544,56 +538,38 @@ const setYesterday = () => {
 
 const toggleSelect = (id: string) => {
   const next = new Set(selectedIds.value)
-  if (next.has(id)) {
-    next.delete(id)
-  } else {
-    next.add(id)
-  }
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
   selectedIds.value = next
 }
 
 const isSelected = (id: string) => selectedIds.value.has(id)
 
 const toggleSelectAll = () => {
-  if (allSelected.value) {
-    selectedIds.value = new Set()
-  } else {
-    selectedIds.value = new Set(entries.value.map(e => e.id))
-  }
+  selectedIds.value = allSelected.value ? new Set() : new Set(entries.value.map(e => e.id))
 }
 
 watch(entries, (list) => {
   const ids = new Set(list.map(e => e.id))
   const next = new Set<string>()
-  selectedIds.value.forEach((id) => {
-    if (ids.has(id)) next.add(id)
-  })
+  selectedIds.value.forEach(id => { if (ids.has(id)) next.add(id) })
   selectedIds.value = next
 })
 
 const toggleSort = (key: 'date' | 'amount' | 'account_id' | 'note' | 'sub_type' | 'category') => {
-  if (sortKey.value === key) {
-    sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
-  } else {
+  if (sortKey.value === key) sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc'
+  else {
     sortKey.value = key
     sortOrder.value = 'desc'
   }
 }
 
-const openBulkDelete = () => {
-  if (!selectedCount.value) return
-  bulkModalOpen.value = true
-}
-
-const closeBulkDelete = () => {
-  bulkModalOpen.value = false
-}
+const openBulkDelete = () => { if (selectedCount.value) bulkModalOpen.value = true }
+const closeBulkDelete = () => bulkModalOpen.value = false
 
 const confirmBulkDelete = async () => {
   const targets = Array.from(selectedIds.value)
-  for (const id of targets) {
-    await deleteEntry(id)
-  }
+  for (const id of targets) await deleteEntry(id)
   vibrate([40, 30, 40])
   success(`成功刪除 ${targets.length} 筆紀錄`)
   selectedIds.value = new Set()
@@ -602,11 +578,9 @@ const confirmBulkDelete = async () => {
 
 const accountLabel = (accountId?: string | null) => {
   if (!accountId) return '未指定'
-  const found = accounts.value.find(account => account.id === accountId)
-  return found ? found.name : '未指定'
+  return accounts.value.find(a => a.id === accountId)?.name || '未指定'
 }
 
-/* --- Zibao Settlement Logic --- */
 const zibaoSettleModalOpen = ref(false)
 const settleStartDate = ref('')
 const settleEndDate = ref('')
@@ -617,16 +591,12 @@ const openSettleModal = () => {
   const weekStart = startOfWeek(today)
   const weekEnd = new Date(weekStart)
   weekEnd.setDate(weekEnd.getDate() + 6)
-  
   settleStartDate.value = toISODate(weekStart)
   settleEndDate.value = toISODate(weekEnd)
   zibaoSettleModalOpen.value = true
 }
 
-const closeSettleModal = () => {
-  if (isSettling.value) return
-  zibaoSettleModalOpen.value = false
-}
+const closeSettleModal = () => { if (!isSettling.value) zibaoSettleModalOpen.value = false }
 
 const unsettledZibaoEntries = computed(() => {
   if (!settleStartDate.value || !settleEndDate.value) return []
@@ -635,35 +605,27 @@ const unsettledZibaoEntries = computed(() => {
            e.date <= settleEndDate.value && 
            e.sub_type === 'zibao' && 
            e.amount > 0 &&
-           !(e.note && e.note.includes('[已結算]')) &&
+           !(e.note?.includes('[已結算]')) &&
            !isTransferEntry(e)
   })
 })
 
-const settleTotalOriginal = computed(() => {
-  return unsettledZibaoEntries.value.reduce((sum, e) => sum + e.amount, 0)
-})
-
-const settleTotalNew = computed(() => {
-  return unsettledZibaoEntries.value.reduce((sum, e) => sum + Math.round(e.amount / 2), 0)
-})
+const settleTotalOriginal = computed(() => unsettledZibaoEntries.value.reduce((sum, e) => sum + e.amount, 0))
+const settleTotalNew = computed(() => unsettledZibaoEntries.value.reduce((sum, e) => sum + Math.round(e.amount / 2), 0))
 
 const confirmZibaoSettlement = async () => {
   const targets = [...unsettledZibaoEntries.value]
   if (targets.length === 0) return
-  
   isSettling.value = true
   try {
     for (const entry of targets) {
       const newAmount = Math.round(entry.amount / 2)
       const settledTag = `[已結算，原價: $${entry.amount}]`
-      const newNote = entry.note ? `${entry.note} ${settledTag}` : settledTag
-      
       await updateEntry({
         ...entry,
         amount: newAmount,
         sub_type: 'general',
-        note: newNote
+        note: entry.note ? `${entry.note} ${settledTag}` : settledTag
       })
     }
     zibaoSettleModalOpen.value = false
@@ -675,22 +637,18 @@ const confirmZibaoSettlement = async () => {
     isSettling.value = false
   }
 }
-/* --- Note Expansion (Mobile) --- */
+
 const expandedEntries = ref(new Set<string>())
 const isExpanded = (id: string) => expandedEntries.value.has(id)
 const toggleExpand = (id: string) => {
-  if (expandedEntries.value.has(id)) {
-    expandedEntries.value.delete(id)
-  } else {
+  if (expandedEntries.value.has(id)) expandedEntries.value.delete(id)
+  else {
     expandedEntries.value.add(id)
     vibrate(10)
   }
 }
 
-defineExpose({
-  openBulkDelete,
-  openSettleModal
-})
+defineExpose({ openBulkDelete, openSettleModal })
 </script>
 
 <style scoped>
@@ -713,7 +671,6 @@ defineExpose({
   font-family: var(--font-pixel);
 }
 
-/* Type Badge */
 .type-badge {
   font-family: var(--font-pixel);
   font-size: 11px;
@@ -738,7 +695,6 @@ defineExpose({
   border: 1px solid #bae6fd;
 }
 
-/* Category Badge */
 .category-badge {
   font-family: var(--font-pixel);
   font-size: 10px;
@@ -755,7 +711,6 @@ defineExpose({
   flex: none;
 }
 
-/* Custom Checkbox */
 .custom-checkbox {
   display: block;
   position: relative;
@@ -778,7 +733,7 @@ defineExpose({
   height: 18px;
   width: 18px;
   background-color: #eee;
-  border-radius: 4px; /* Squircle */
+  border-radius: 4px;
   border: 1px solid var(--border);
   transition: all 0.2s;
 }
@@ -821,7 +776,6 @@ defineExpose({
   }
 }
 
-/* Panel Layout */
 .panel {
   display: flex;
   flex-direction: column;
@@ -911,7 +865,6 @@ defineExpose({
   padding-left: 2px;
 }
 
-/* Date Filters */
 .filter-dates {
   grid-column: 1 / -1;
   display: flex;
@@ -952,7 +905,6 @@ defineExpose({
   border-color: #fecaca;
 }
 
-/* Auth Gate */
 .auth-gate {
   text-align: center;
   padding: 40px;
@@ -962,7 +914,6 @@ defineExpose({
   color: var(--ink-light);
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -972,11 +923,6 @@ defineExpose({
   opacity: 0.6;
 }
 
-/* =========================================
-   Layout: Desktop Grid (Refined)
-   ========================================= */
-
-/* Mobile First (Default) - Card Stack */
 .expense-list-container {
   display: flex;
   flex-direction: column;
@@ -984,7 +930,7 @@ defineExpose({
 }
 
 .expense-list-header {
-  display: none; /* Hide header on mobile */
+  display: none;
 }
 
 .entry-card {
@@ -1008,12 +954,17 @@ defineExpose({
 .cell { min-width: 0; }
 .checkbox-cell { align-self: center; }
 .amount-cell { justify-self: end; white-space: nowrap; }
-.actions-cell { justify-self: end; }
+.actions-cell { 
+  justify-self: end; 
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
 .compact-main {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -1070,7 +1021,6 @@ defineExpose({
   justify-content: center;
 }
 
-/* Hide desktop-only cells on mobile/tablet by default */
 .date-cell,
 .type-cell,
 .category-cell,
@@ -1118,7 +1068,7 @@ defineExpose({
 
   .entry-card {
     display: grid;
-    grid-template-columns: 24px minmax(0, 1fr) auto 40px;
+    grid-template-columns: 24px minmax(0, 1fr) auto 44px;
     padding: 10px 12px;
     gap: 8px;
     align-items: center;
@@ -1141,7 +1091,6 @@ defineExpose({
   }
 }
 
-/* Desktop Table View */
 @media (min-width: 768px) {
   .list-toolbar {
     grid-template-columns: minmax(220px, 360px) 100px 100px auto;
@@ -1167,7 +1116,6 @@ defineExpose({
   .expense-list-header, 
   .entry-card {
     display: grid;
-    /* Grid Definition: Checkbox | Date | Amount | Type | Category | Account | Note | Actions */
     grid-template-columns: 48px 110px 100px 90px 80px 120px 1fr 60px;
     align-items: center;
     padding: 0 16px;
@@ -1185,15 +1133,14 @@ defineExpose({
     display: block;
   }
 
-  /* Header Styles */
   .expense-list-header {
-    height: 48px; /* Slightly taller for breathing room */
+    height: 48px;
     background: #f9fafb;
     border-bottom: 1px solid var(--border);
     font-size: 11px;
     font-weight: 600;
     color: var(--ink-light);
-    font-family: var(--font-sans); /* Use sans for headers for clean look */
+    font-family: var(--font-sans);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -1215,9 +1162,8 @@ defineExpose({
   .sort-btn.right { margin-left: auto; }
   .sort-btn:hover { color: var(--ink); }
 
-  /* Row Styles */
   .entry-card {
-    height: 52px; /* Fixed height for dense linear look */
+    height: 52px;
     border: none;
     border-bottom: 1px solid var(--border);
     border-radius: 0;
@@ -1237,15 +1183,13 @@ defineExpose({
     background: #f9fafb;
   }
   
-  /* Selection State */
   .entry-card.selected {
     background: rgba(79, 70, 229, 0.04);
   }
 
-  /* Typography tweaks */
   .entry-amount {
     font-family: var(--font-pixel); 
-    font-weight: 600; /* Regular bold */
+    font-weight: 600;
     letter-spacing: 0.02em;
   }
   
@@ -1264,7 +1208,6 @@ defineExpose({
   }
 }
 
-/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1379,7 +1322,6 @@ defineExpose({
   color: var(--primary);
 }
 
-/* Icon Buttons */
 .icon-btn {
   background: transparent;
   border: none;
@@ -1409,6 +1351,124 @@ defineExpose({
   .icon-btn svg {
     width: 20px;
     height: 20px;
+  }
+}
+
+.selection-bar {
+  position: fixed;
+  bottom: calc(var(--mobile-nav-height) + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 1000;
+  width: auto;
+  min-width: 280px;
+  justify-content: space-between;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selection-count {
+  background: var(--primary);
+  color: white;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-pixel);
+}
+
+.selection-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-btn {
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.selection-btn.cancel {
+  opacity: 0.7;
+}
+
+.selection-btn.cancel:hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.1);
+}
+
+.selection-btn.delete {
+  background: var(--danger);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.selection-btn.delete:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.selection-btn :deep(svg) {
+  width: 16px;
+  height: 16px;
+}
+
+.selection-bar-enter-active,
+.selection-bar-leave-active {
+  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.selection-bar-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(40px) scale(0.9);
+}
+
+.selection-bar-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px) scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .selection-bar {
+    bottom: calc(var(--mobile-nav-height) + 16px);
+    min-width: calc(100% - 32px);
+    border-radius: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  .selection-bar {
+    bottom: 32px;
   }
 }
 </style>

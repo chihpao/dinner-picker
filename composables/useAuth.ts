@@ -14,7 +14,6 @@ export const useAuth = () => {
         const origin = window.location.origin
         const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(window.location.hostname)
         const baseURL = isLocalhost ? '/' : config.app.baseURL
-        // Remove leading slash from pathname if present to avoid double slash with baseURL
         const cleanPath = pathname.startsWith('/') ? pathname.substring(1) : pathname
         return `${origin}${baseURL}${cleanPath}`
     }
@@ -53,7 +52,6 @@ export const useAuth = () => {
     const initAuth = async () => {
         if (import.meta.server) return
 
-        // Handle OAuth callback
         const url = new URL(window.location.href)
         const code = url.searchParams.get('code')
 

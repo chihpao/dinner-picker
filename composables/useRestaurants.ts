@@ -31,7 +31,7 @@ export const useRestaurants = () => {
             restaurants.value = resData || []
             profile.value = profileData || null
         } catch (e) {
-            console.error('Failed to fetch data', e)
+            console.error(e)
         } finally {
             isLoading.value = false
         }
@@ -50,7 +50,6 @@ export const useRestaurants = () => {
         })
 
         return withDistance.sort((a, b) => {
-            // Sort by home distance primary, then work
             const da = a.distances?.home ?? a.distances?.work ?? Infinity
             const db = b.distances?.home ?? b.distances?.work ?? Infinity
             return da - db

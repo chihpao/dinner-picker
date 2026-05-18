@@ -1,5 +1,16 @@
 <template>
-  <NuxtLink :to="restaurant.orderUrl" target="_blank" rel="noopener" class="card restaurant-card">
+  <div v-if="loading" class="card restaurant-card skeleton-card">
+    <div class="card-body">
+      <AppSkeleton type="avatar" shape="rect" class="skeleton-icon" />
+      <div class="card-info">
+        <AppSkeleton width="60%" height="20px" />
+      </div>
+      <div class="card-action">
+        <AppSkeleton type="icon" shape="circle" class="skeleton-btn" />
+      </div>
+    </div>
+  </div>
+  <NuxtLink v-else-if="restaurant" :to="restaurant.orderUrl" target="_blank" rel="noopener" class="card restaurant-card">
     <div class="card-body">
       <div class="card-icon">{{ getIcon(restaurant.name) }}</div>
       <div class="card-info">
@@ -20,9 +31,11 @@
 
 <script setup lang="ts">
 import type { Restaurant } from '~/composables/useRestaurants'
+import AppSkeleton from './AppSkeleton.vue'
 
 defineProps<{
-  restaurant: Restaurant
+  restaurant?: Restaurant
+  loading?: boolean
 }>()
 
 const getIcon = (name: string) => {
@@ -75,7 +88,6 @@ const getIcon = (name: string) => {
   letter-spacing: -0.02em;
 }
 
-
 .order-btn-circle {
   width: 44px;
   height: 44px;
@@ -110,11 +122,14 @@ const getIcon = (name: string) => {
   transform: scale(1.05);
 }
 
+.skeleton-icon { width: 56px; height: 56px; border-radius: 16px; }
+.skeleton-btn { width: 44px; height: 44px; }
+
 @media (max-width: 480px) {
   .card-body { padding: 14px 16px; }
-  .card-icon { width: 48px; height: 48px; font-size: 22px; }
+  .card-icon, .skeleton-icon { width: 48px; height: 48px; font-size: 22px; }
   .name { font-size: 17px; }
-  .order-btn-circle { width: 38px; height: 38px; }
+  .order-btn-circle, .skeleton-btn { width: 38px; height: 38px; }
   .order-btn-circle svg { width: 16px; height: 16px; }
 }
 </style>

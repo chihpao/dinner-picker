@@ -92,25 +92,29 @@ export const useAccounts = () => {
         if (!user.value) return
         const pending = loadPendingAccounts()
         if (!pending.length) return
-        const stillPending: AccountEntry[] = []
-        for (const account of pending) {
-            try {
-                const payload = {
-                    id: account.id,
-                    name: account.name,
-                    kind: account.kind,
-                    balance: account.balance ?? 0,
-                    created_at: new Date(account.createdAt).toISOString(),
-                    user_id: user.value.id,
-                }
-                const { error } = await supa.from(TABLE).insert(payload)
-                if (error) throw error
-            } catch (err) {
-                console.error('Retry pending accounts failed', err)
-                stillPending.push(account)
-            }
+
+        const payloads = pending.map(account => ({
+            id: account.id,
+            name: account.name,
+            kind: account.kind,
+            balance: account.balance ?? 0,
+            created_at: new Date(account.createdAt).toISOString(),
+            user_id: user.value!.id,
+        }))
+
+        try {
+            const { error } = await supa.from(TABLE).insert(payloads)
+            if (error) throw error
+            savePendingAccounts([])
+        } catch (err) {
+            console.error('Batch sync accounts failed', err)
         }
-        savePendingAccounts(stillPending)
+    }
+
+    const mergeWithPending = (base: AccountEntry[]) => {
+        const pending = loadPendingAccounts()
+        const baseIds = new Set(base.map(a => a.id))
+        return [...pending.filter(a => !baseIds.has(a.id)), ...base]
     }
 
     const loadAccounts = async () => {
@@ -118,38 +122,28 @@ export const useAccounts = () => {
             accounts.value = []
             return
         }
-
         try {
             await syncPending()
         } catch (err) {
             console.error('sync pending accounts failed', err)
         }
-
         try {
             const remote = await fetchAccountsFromSupabase()
-            const pending = loadPendingAccounts()
-            const existingIds = new Set(remote.map((a: AccountEntry) => a.id))
-            accounts.value = [...pending.filter(a => !existingIds.has(a.id)), ...remote]
+            accounts.value = mergeWithPending(remote)
             saveLocalAccounts(accounts.value)
         } catch (err) {
             console.error('Supabase read failed for accounts, using local', err)
-            const local = loadLocalAccounts()
-            const pending = loadPendingAccounts()
-            const existingIds = new Set(local.map(a => a.id))
-            accounts.value = [...pending.filter(a => !existingIds.has(a.id)), ...local]
+            accounts.value = mergeWithPending(loadLocalAccounts())
         }
     }
 
     const addAccount = async (account: AccountEntry) => {
         if (!user.value) return
-
         const pending = loadPendingAccounts()
         pending.unshift(account)
         savePendingAccounts(pending)
-
         accounts.value.unshift(account)
         saveLocalAccounts(accounts.value)
-
         try {
             const payload = {
                 id: account.id,
@@ -161,9 +155,7 @@ export const useAccounts = () => {
             }
             const { error } = await supa.from(TABLE).insert(payload)
             if (error) throw error
-
-            const remainingPending = loadPendingAccounts().filter(a => a.id !== account.id)
-            savePendingAccounts(remainingPending)
+            savePendingAccounts(loadPendingAccounts().filter(a => a.id !== account.id))
         } catch (err) {
             console.warn('Cloud sync failed for accounts, kept in pending', err)
         }
@@ -174,7 +166,6 @@ export const useAccounts = () => {
         const previous = [...accounts.value]
         accounts.value = accounts.value.filter(a => a.id !== id)
         saveLocalAccounts(accounts.value)
-
         try {
             const { error } = await supa.from(TABLE).delete().eq('id', id).eq('user_id', user.value.id)
             if (error) throw error
@@ -189,17 +180,10 @@ export const useAccounts = () => {
         if (!user.value) return
         const original = accounts.value.find(a => a.id === updated.id)
         if (!original) return
-
-        const merged: AccountEntry = {
-            ...original,
-            ...updated,
-            user_id: user.value.id,
-        }
+        const merged: AccountEntry = { ...original, ...updated, user_id: user.value.id }
         const previous = [...accounts.value]
-
         accounts.value = accounts.value.map(a => a.id === merged.id ? merged : a)
         saveLocalAccounts(accounts.value)
-
         const pending = loadPendingAccounts()
         const pendingIndex = pending.findIndex(a => a.id === merged.id)
         if (pendingIndex !== -1) {
@@ -207,14 +191,9 @@ export const useAccounts = () => {
             savePendingAccounts(pending)
             return
         }
-
         try {
             const { error } = await supa.from(TABLE)
-                .update({
-                    name: merged.name,
-                    kind: merged.kind,
-                    balance: merged.balance ?? 0,
-                })
+                .update({ name: merged.name, kind: merged.kind, balance: merged.balance ?? 0 })
                 .eq('id', merged.id)
                 .eq('user_id', user.value.id)
             if (error) throw error
@@ -225,12 +204,5 @@ export const useAccounts = () => {
         }
     }
 
-    return {
-        accounts,
-        loading,
-        loadAccounts,
-        addAccount,
-        updateAccount,
-        deleteAccount
-    }
+    return { accounts, loading, loadAccounts, addAccount, updateAccount, deleteAccount }
 }

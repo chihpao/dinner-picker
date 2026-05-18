@@ -20,7 +20,7 @@ export const useExpenseFilters = () => {
         filterCategory.value = category
         startDate.value = start
         endDate.value = end
-        filterType.value = 'expense' // Budgets only track expenses
+        filterType.value = 'expense'
     }
 
     const hasActiveFilters = computed(() => {

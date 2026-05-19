@@ -130,15 +130,19 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import IconTarget from '~/components/icons/IconTarget.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import IconList from '~/components/icons/IconList.vue'
-import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+import { EXPENSE_CATEGORIES } from '~/stores/expenses'
 import { useExpenseFilters } from '~/composables/useExpenseFilters'
 
 withDefaults(defineProps<{ isOpen?: boolean }>(), { isOpen: true })
 
-const { budgetRules, activeBudgets, loadBudgetRules, addBudgetRule, deleteBudgetRule, getRuleProgress } = useBudget()
+const budgetStore = useBudgetStore()
+const { budgetRules, activeBudgets } = storeToRefs(budgetStore)
+const { loadBudgetRules, addBudgetRule, deleteBudgetRule, getRuleProgress } = budgetStore
+
 const { setBudgetFilter } = useExpenseFilters()
 const editing = ref(false)
 const newRule = reactive({

@@ -1,0 +1,80 @@
+import { defineStore } from 'pinia'
+import type { User } from '@supabase/supabase-js'
+
+export const useAuthStore = defineStore('auth', () => {
+  const supa = useSupabase()
+  const user = ref<User | null>(null)
+  const loading = ref(true)
+
+  const config = useRuntimeConfig()
+
+  const authRedirectUrl = (pathname = '/') => {
+    if (!import.meta.client) return ''
+
+    const origin = window.location.origin
+    const isLocalhost = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/i.test(window.location.hostname)
+    const baseURL = isLocalhost ? '/' : config.app.baseURL
+    const cleanPath = pathname.startsWith('/') ? pathname.substring(1) : pathname
+    return `${origin}${baseURL}${cleanPath}`
+  }
+
+  const getCurrentUser = async () => {
+    const { data } = await supa.auth.getSession()
+    return data?.session?.user ?? null
+  }
+
+  const signInWithGoogle = async (redirectTo = '/') => {
+    await supa.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: authRedirectUrl(redirectTo),
+      },
+    })
+  }
+
+  const signOut = async () => {
+    await supa.auth.signOut()
+    user.value = null
+    if (import.meta.client) {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (!key) continue
+        if (key.startsWith('sb-') || key.startsWith('dinnerPicker.')) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key))
+    }
+    window.location.reload()
+  }
+
+  const initAuth = async () => {
+    if (import.meta.server) return
+
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+
+    if (code) {
+      await supa.auth.exchangeCodeForSession(code)
+      url.searchParams.delete('code')
+      url.searchParams.delete('state')
+      window.history.replaceState({}, document.title, url.toString())
+    }
+
+    user.value = await getCurrentUser()
+    loading.value = false
+
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      user.value = session?.user ?? null
+    })
+  }
+
+  return {
+    user,
+    loading,
+    signInWithGoogle,
+    signOut,
+    initAuth
+  }
+})

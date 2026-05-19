@@ -4,7 +4,7 @@
 
 ## 1. Project Snapshot
 - Name: 孜保吃晚餐 (Dinner Picker + Expense Ledger)
-- Stack: Nuxt 4 (SPA `ssr: false`), Vue 3 Composition API, TailwindCSS, Supabase, `@vite-pwa/nuxt`
+- Stack: Nuxt 4 (SPA `ssr: false`), Vue 3 Composition API, TailwindCSS, Supabase, `@vite-pwa/nuxt`, Pinia
 - Dev server: `http://localhost:4211`
 - Deployment shape: GitHub Pages base path `/dinner-picker/`
 - Default rule: UI/UX tasks must not change business logic unless explicitly requested
@@ -22,15 +22,18 @@
   - Restaurant domain: `RestaurantCard.vue`
   - Budget: `BudgetPanel.vue`
   - Icons: `components/icons/*.vue`
+- `stores/`
+  - `auth.ts` - Google OAuth + session state (useAuthStore)
+  - `expenses.ts` - 核心記帳資料流 (useExpensesStore)
+  - `accounts.ts` - 帳戶 CRUD + pending sync (useAccountsStore)
+  - `budget.ts` - 預算設定與進度追蹤 (useBudgetStore)
+  - `restaurants.ts` - 餐廳與距離排序 (useRestaurantsStore)
 - `composables/`
-  - `useAuth.ts` - Google OAuth + session state
-  - `useExpenses.ts` - 核心記帳資料流（含 `useTotalExpenses()`）
-  - `useAccounts.ts` - 帳戶 CRUD + pending sync
-  - `useBudget.ts` - 預算設定與進度追蹤（localStorage）
-  - `useRestaurants.ts` - 餐廳與距離排序
   - `useSupabase.ts` - Supabase client
   - `useSwipeNavigation.ts` - 手勢切頁
   - `usePwaInstall.ts`, `usePwaMode.ts` - PWA 安裝與模式
+  - `useToast.ts` - 吐司訊息
+  - `useExpenseFilters.ts` - 記帳篩選邏輯
 - `assets/css/main.css` - design tokens source of truth
 - `plugins/pwa-init.client.ts` - 啟動 PWA install listener
 
@@ -46,12 +49,12 @@ Mobile bottom nav is fixed 4 items in this order:
 
 ## 4. Data & Logic Boundaries
 - Do not move business rules into components.
-- Use composables for all data operations.
+- Use Pinia stores for all shared data operations.
 - Expense/account sync uses:
   - local storage cache
   - pending queue retry
   - Supabase as remote source
-- `useTotalExpenses` is an alias exported from `useExpenses.ts`; keep compatibility.
+- Keep logic consolidated in stores to maintain cross-component consistency.
 - If editing auth/supabase logic, treat as high risk and change only when asked.
 
 ## 5. Design System: Neo-Pixel Refined
@@ -119,6 +122,7 @@ Use CSS vars from `assets/css/main.css`:
 3. Keep templates clean; move presentation rules to scoped style.
 4. Minimize side effects in pages/components.
 5. Keep existing route paths and nav order stable.
+6. **No comments allowed**: Do not write any comments (e.g., //, /* */, <!-- -->) inside the code files. The code should be self-documenting through clear naming and structure.
 
 ## 9. Fast QA Checklist
 - `/total` list remains compact and tappable on 360px width.
@@ -153,13 +157,13 @@ Use CSS vars from `assets/css/main.css`:
 ### 11.2 轉帳判斷函式 `isTransferEntry()`
 
 ```ts
-const isTransferEntry = (entry: ExpenseEntry) => {
+const isTransferEntry = (entry: { sub_type?: string, note?: string | null }) => {
   if (entry.sub_type === 'transfer') return true
   return Boolean(entry.note && entry.note.includes('[轉帳]'))  // 向下相容舊紀錄
 }
 ```
 
-- 此函式存在於 `useExpenses.ts` 和 `ExpenseList.vue` 兩處，**邏輯必須一致**。
+- 此函式存在於 `utils/index.ts`（推薦）、`stores/expenses.ts` 和 `ExpenseList.vue` 等處，**邏輯必須一致**。
 - `sub_type === 'zibao'` **不是**轉帳。
 
 ### 11.3 ExpenseForm.vue — 新增記帳
@@ -186,7 +190,7 @@ const isTransferEntry = (entry: ExpenseEntry) => {
 
 ### 11.5 ExpenseSummary.vue — 統計摘要
 
-**資料來源**（`useExpenses.ts`）：
+**資料來源**（`stores/expenses.ts`）：
 ```ts
 const zibaoSummaries = computed(() => calculateSummaries((e) => e.sub_type === 'zibao'))
 ```
@@ -216,4 +220,4 @@ const zibaoSummaries = computed(() => calculateSummaries((e) => e.sub_type === '
 5. 統計計算順序：排除轉帳 → 再篩選孜保，順序不可反。
 6. 類型下拉只在支出/收入（非轉帳）時顯示。
 7. 編輯轉帳紀錄時 sub_type 是唯讀的。
-8. `isTransferEntry()` 在兩個檔案中邏輯必須一致。
+8. `isTransferEntry()` 在所有檔案中邏輯必須一致。

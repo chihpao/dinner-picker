@@ -16,24 +16,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { useAuth } from '~/composables/useAuth'
-import { useRestaurants } from '~/composables/useRestaurants'
-import { useTotalExpenses } from '~/composables/useExpenses'
-import { useBudget } from '~/composables/useBudget'
-import { useSwipeNavigation } from '~/composables/useSwipeNavigation'
 import PwaInstallPrompt from '~/components/PwaInstallPrompt.vue'
 
-const { initAuth, user } = useAuth()
-const { fetchRestaurants } = useRestaurants()
-const { loadEntries } = useTotalExpenses()
-const { loadBudgetRules } = useBudget()
+const auth = useAuthStore()
+const restaurants = useRestaurantsStore()
+const expenses = useExpensesStore()
+const budget = useBudgetStore()
 const { initSwipe, destroySwipe } = useSwipeNavigation()
 
 const mainContentRef = ref<HTMLElement | null>(null)
 
 onMounted(() => {
-  initAuth()
-  fetchRestaurants()
+  auth.initAuth()
+  restaurants.fetchRestaurants()
   initSwipe(mainContentRef.value)
 })
 
@@ -41,10 +36,10 @@ onUnmounted(() => {
   destroySwipe(mainContentRef.value)
 })
 
-watch(user, () => {
-  if (user.value) {
-    loadEntries()
-    loadBudgetRules()
+watch(() => auth.user, () => {
+  if (auth.user) {
+    expenses.loadEntries()
+    budget.loadBudgetRules()
   }
 }, { immediate: true })
 </script>

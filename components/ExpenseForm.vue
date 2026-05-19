@@ -154,7 +154,8 @@
 </template>
 
 <script setup lang="ts">
-import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+import { storeToRefs } from 'pinia'
+import { EXPENSE_CATEGORIES } from '~/stores/expenses'
 
 const props = withDefaults(defineProps<{
   defaultRedirect?: string
@@ -168,9 +169,18 @@ const props = withDefaults(defineProps<{
 
 const route = useRoute()
 const router = useRouter()
-const { user, signInWithGoogle } = useAuth()
-const { accounts } = useAccounts()
-const { addEntry, summaries } = useTotalExpenses()
+
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+const { signInWithGoogle } = authStore
+
+const accountsStore = useAccountsStore()
+const { accounts } = storeToRefs(accountsStore)
+
+const expensesStore = useExpensesStore()
+const { summaries } = storeToRefs(expensesStore)
+const { addEntry } = expensesStore
+
 const { success, danger } = useToast()
 
 const submitting = ref(false)

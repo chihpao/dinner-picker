@@ -33,15 +33,18 @@
 import type { Restaurant } from '~/composables/useRestaurants'
 import AppSkeleton from './AppSkeleton.vue'
 
-defineProps<{
+const props = defineProps<{
   restaurant?: Restaurant
   loading?: boolean
+  isDrink?: boolean
 }>()
 
 const getIcon = (name: string) => {
-  const icons = ['🍱', '🥗', '🍲', '🍚', '🍗', '🥬', '🥢', '🥘']
-  const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  return icons[hash % icons.length]
+  const foodIcons = ['🍱', '🥗', '🍲', '🍚', '🍗', '🥬', '🥢', '🥘']
+  const drinkIcons = ['🥤', '🧋', '🍵', '☕', '🍹', '🥛']
+  const pool = props.isDrink ? drinkIcons : foodIcons
+  const hash = name.split('').reduce((acc, char, idx) => acc + char.charCodeAt(0) * (idx + 1), 0)
+  return pool[hash % pool.length]
 }
 </script>
 

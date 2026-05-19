@@ -24,7 +24,11 @@
 </template>
 
 <script setup lang="ts">
-const { hasBudget, activeBudgets, loadBudgetRules, getRuleProgress } = useBudget()
+import { storeToRefs } from 'pinia'
+
+const budgetStore = useBudgetStore()
+const { hasBudget, activeBudgets } = storeToRefs(budgetStore)
+const { loadBudgetRules, getRuleProgress } = budgetStore
 const router = useRouter()
 
 onMounted(loadBudgetRules)

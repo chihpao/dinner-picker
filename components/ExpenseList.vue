@@ -357,8 +357,9 @@
 </template>
 
 <script setup lang="ts">
-import type { ExpenseEntry } from '~/composables/useExpenses'
-import { EXPENSE_CATEGORIES } from '~/composables/useExpenses'
+import { storeToRefs } from 'pinia'
+import type { ExpenseEntry } from '~/stores/expenses'
+import { EXPENSE_CATEGORIES } from '~/stores/expenses'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import IconX from '~/components/icons/IconX.vue'
@@ -372,11 +373,17 @@ const props = defineProps<{
   loading?: boolean
 }>()
 
-const { user } = useAuth()
-const { accounts } = useAccounts()
-const expenses = useTotalExpenses()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const accountsStore = useAccountsStore()
+const { accounts } = storeToRefs(accountsStore)
+
+const expensesStore = useExpensesStore()
+const { entries } = storeToRefs(expensesStore)
+const { deleteEntry, updateEntry } = expensesStore
+
 const { success, danger } = useToast()
-const { entries, deleteEntry, updateEntry } = expenses
 
 const editingId = ref<string | null>(null)
 const editForm = reactive({

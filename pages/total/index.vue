@@ -62,9 +62,9 @@ import IconTarget from '~/components/icons/IconTarget.vue'
 import IconPlus from '~/components/icons/IconPlus.vue'
 import IconSettle from '~/components/icons/IconSettle.vue'
 
-const { user } = useAuth()
-const { loadEntries } = useTotalExpenses()
-const { loadAccounts } = useAccounts()
+const auth = useAuthStore()
+const expenses = useExpensesStore()
+const accounts = useAccountsStore()
 const expenseListRef = ref<any>(null)
 const activePanel = ref<'summary' | 'budget' | null>(null)
 const PANEL_PREF_KEY = 'dinnerPicker.total.activePanel.v2'
@@ -100,9 +100,11 @@ useHead({
   ]
 })
 
-watch(user, () => {
-  loadEntries()
-  loadAccounts()
+watch(() => auth.user, () => {
+  if (auth.user) {
+    expenses.loadEntries()
+    accounts.loadAccounts()
+  }
 }, { immediate: true })
 </script>
 

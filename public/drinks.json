@@ -1,0 +1,16 @@
+[
+    {
+        "id": "d01",
+        "name": "龍角",
+        "orderUrl": "https://dragonhorn-lm.nidin.shop/menu/27682?liff.referrer=https%3A%2F%2Fdragonhorn.com.tw%2F",
+        "lat": 25.0605,
+        "lng": 121.5385
+    },
+    {
+        "id": "d02",
+        "name": "青山",
+        "orderUrl": "https://order.nidin.shop/menu/28024?code=xSghLqkMxmJCQUR12QXC&state=%5B%22LINEij6oso%22,%22%2Fmenu%2F28024%22%5D",
+        "lat": 25.0615,
+        "lng": 121.5410
+    }
+]

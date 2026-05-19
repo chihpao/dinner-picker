@@ -15,11 +15,18 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import IconCirclePlus from '~/components/icons/IconCirclePlus.vue'
 
-const { user } = useAuth()
-const { loadEntries } = useTotalExpenses()
-const { accounts, loadAccounts } = useAccounts()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const expensesStore = useExpensesStore()
+const { loadEntries } = expensesStore
+
+const accountsStore = useAccountsStore()
+const { accounts } = storeToRefs(accountsStore)
+const { loadAccounts } = accountsStore
 
 watch(user, () => {
   loadEntries()

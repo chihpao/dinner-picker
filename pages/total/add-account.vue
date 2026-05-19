@@ -39,8 +39,14 @@
 </template>
 
 <script setup lang="ts">
-const { user } = useAuth()
-const { addAccount } = useAccounts()
+import { storeToRefs } from 'pinia'
+
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const accountsStore = useAccountsStore()
+const { addAccount } = accountsStore
+
 const router = useRouter()
 
 const form = reactive({

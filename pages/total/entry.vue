@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
-const { user } = useAuth()
-const { loadAccounts } = useAccounts()
+const auth = useAuthStore()
+const accounts = useAccountsStore()
 
-watch(user, () => {
-  loadAccounts()
+watch(() => auth.user, () => {
+  accounts.loadAccounts()
 }, { immediate: true })
 
 useHead({

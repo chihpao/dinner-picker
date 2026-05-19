@@ -149,13 +149,21 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import { useToast } from '~/composables/useToast'
 
-const { user } = useAuth()
-const { accounts, updateAccount, deleteAccount } = useAccounts()
-const { entries } = useTotalExpenses()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const accountsStore = useAccountsStore()
+const { accounts } = storeToRefs(accountsStore)
+const { updateAccount, deleteAccount } = accountsStore
+
+const expensesStore = useExpensesStore()
+const { entries } = storeToRefs(expensesStore)
+
 const { success, danger } = useToast()
 
 const editingId = ref<string | null>(null)

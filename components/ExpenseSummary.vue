@@ -63,14 +63,16 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
+
 const props = withDefaults(defineProps<{
   isOpen?: boolean
 }>(), {
   isOpen: true
 })
 
-const expenses = useTotalExpenses()
-const { summaries, zibaoSummaries } = expenses
+const expensesStore = useExpensesStore()
+const { summaries, zibaoSummaries } = storeToRefs(expensesStore)
 const viewMode = ref<'week' | 'month' | 'year'>('week')
 const filterMode = ref<'all' | 'zibao'>('all')
 

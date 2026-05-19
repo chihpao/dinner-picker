@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import IconArrowLeft from '~/components/icons/IconArrowLeft.vue'
 
 const { backTo, hideAuth = false, subtitle } = defineProps<{
@@ -64,7 +65,10 @@ const { backTo, hideAuth = false, subtitle } = defineProps<{
   subtitle?: string
 }>()
 
-const { user, signInWithGoogle, signOut } = useAuth()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+const { signInWithGoogle, signOut } = authStore
+
 const menuOpen = ref(false)
 
 const userInitial = computed(() => user.value?.email?.[0]?.toUpperCase() || 'U')

@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   experimental: {
     payloadExtraction: false,
+    appManifest: false,
   },
 
   devServer: {
@@ -41,7 +42,8 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    '@vite-pwa/nuxt'
+    '@vite-pwa/nuxt',
+    '@pinia/nuxt'
   ],
 
   pwa: {

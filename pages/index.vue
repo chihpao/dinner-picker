@@ -1,6 +1,25 @@
 <template>
   <div class="page-container">
-    <AppHeader title="🍱 今晚吃哪家？" hideAuth />
+    <AppHeader title="🍱 今晚吃哪家？" hideAuth>
+      <template #actions>
+        <div class="category-toggle">
+          <button
+            class="toggle-btn"
+            :class="{ active: activeTab === 'restaurants' }"
+            @click="activeTab = 'restaurants'"
+          >
+            餐廳
+          </button>
+          <button
+            class="toggle-btn"
+            :class="{ active: activeTab === 'drinks' }"
+            @click="activeTab = 'drinks'"
+          >
+            飲料
+          </button>
+        </div>
+      </template>
+    </AppHeader>
 
     <main id="app-main">
       <div v-if="isLoading" class="grid">
@@ -8,15 +27,12 @@
       </div>
       <div v-else class="home-content">
         <section class="list-section">
-          <div class="section-header">
-            <h3 class="section-title">餐廳清單</h3>
-            <span class="pill">共 {{ processedRestaurants.length }} 家</span>
-          </div>
           <div class="grid">
             <RestaurantCard
-              v-for="restaurant in processedRestaurants"
-              :key="restaurant.id"
-              :restaurant="restaurant"
+              v-for="item in processedItems"
+              :key="item.id"
+              :restaurant="item"
+              :is-drink="activeTab === 'drinks'"
             />
           </div>
         </section>
@@ -26,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import IconOverview from '~/components/icons/IconOverview.vue'
 import IconBank from '~/components/icons/IconBank.vue'
 
@@ -36,7 +53,8 @@ useHead({
   ]
 })
 
-const { processedRestaurants, isLoading } = useRestaurants()
+const store = useRestaurantsStore()
+const { processedItems, isLoading, activeTab } = storeToRefs(store)
 </script>
 
 <style scoped>
@@ -44,6 +62,34 @@ const { processedRestaurants, isLoading } = useRestaurants()
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.category-toggle {
+  display: flex;
+  background: var(--bg-body);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  gap: 4px;
+}
+
+.toggle-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-pixel);
+  color: var(--ink-light);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-snappy);
+}
+
+.toggle-btn.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .home-content {

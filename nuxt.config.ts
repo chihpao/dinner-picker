@@ -80,6 +80,22 @@ export default defineNuxtConfig({
           type: 'image/png',
           purpose: 'maskable'
         }
+      ],
+      shortcuts: [
+        {
+          name: '新增支出',
+          short_name: '記帳',
+          description: '立即新增一筆消費紀錄',
+          url: '/dinner-picker/total/entry',
+          icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+        },
+        {
+          name: '全消費總覽',
+          short_name: '總覽',
+          description: '查看所有消費統計與列表',
+          url: '/dinner-picker/total',
+          icons: [{ src: 'pwa-192x192.png', sizes: '192x192' }]
+        }
       ]
     },
     workbox: {

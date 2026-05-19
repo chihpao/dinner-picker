@@ -1117,15 +1117,29 @@ defineExpose({ openBulkDelete, openSettleModal })
     border-radius: var(--radius);
     background: white;
     box-shadow: var(--shadow-sm);
-    overflow: hidden;
+    overflow-x: auto;
+    width: 100%;
   }
 
   .expense-list-header, 
   .entry-card {
     display: grid;
-    grid-template-columns: 48px 110px 100px 90px 80px 120px 1fr 60px;
+    grid-template-columns: 44px 100px 90px 80px 80px 100px minmax(120px, 1fr) 52px;
     align-items: center;
     padding: 0 16px;
+    gap: 8px;
+    min-width: 760px;
+  }
+
+  .cell {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .note-cell {
+    padding-right: 12px;
+    color: var(--ink-light);
   }
 
   .compact-main {

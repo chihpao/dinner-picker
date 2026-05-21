@@ -428,10 +428,6 @@ const {
   hasActiveFilters
 } = useExpenseFilters()
 
-watch(editingId, (v) => { if (v) vibrate(10) })
-watch(bulkModalOpen, (v) => { if (v) vibrate(10) })
-watch(zibaoSettleModalOpen, (v) => { if (v) vibrate(10) })
-
 const typeClass = (entry: ExpenseEntry) => {
   if (isTransferEntry(entry)) return 'type-transfer'
   return entry.sub_type === 'zibao' ? 'type-zibao' : 'type-general'
@@ -677,6 +673,10 @@ const toggleExpand = (id: string) => {
     vibrate(10)
   }
 }
+
+watch(editingId, (v) => { if (v) vibrate(10) })
+watch(bulkModalOpen, (v) => { if (v) vibrate(10) })
+watch(zibaoSettleModalOpen, (v) => { if (v) vibrate(10) })
 
 defineExpose({ openBulkDelete, openSettleModal })
 </script>

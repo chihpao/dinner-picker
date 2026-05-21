@@ -32,10 +32,11 @@ export default defineNuxtConfig({
         { rel: 'mask-icon', href: '/dinner-picker/safari-pinned-tab.svg', color: '#FFFFFF' }
       ],
       meta: [
-        { name: 'theme-color', content: '#FFFFFF' }
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
+        { name: 'theme-color', content: '#4f46e5' }
       ]
     },
-    pageTransition: { name: 'page', mode: 'out-in' }
+    pageTransition: { name: 'fade', mode: 'out-in' }
   },
   nitro: {
     preset: 'github-pages'
@@ -53,8 +54,8 @@ export default defineNuxtConfig({
       name: '孜保吃晚餐',
       short_name: '晚餐',
       description: '一個幫助你決定晚餐的應用',
-      theme_color: '#FFFFFF',
-      background_color: '#FFFFFF',
+      theme_color: '#4f46e5',
+      background_color: '#f7f7f8',
       display: 'standalone',
       id: '/dinner-picker/',
       start_url: '/dinner-picker/',

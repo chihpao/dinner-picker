@@ -51,7 +51,7 @@ watch(() => auth.user, () => {
 }
 
 .sidebar-wrapper {
-  display: none; /* Mobile: sidebar hidden */
+  display: none;
 }
 
 .main-content {
@@ -71,7 +71,7 @@ watch(() => auth.user, () => {
 @media (min-width: 721px) {
   .sidebar-wrapper {
     display: block;
-    width: 200px;
+    width: 240px;
     flex-shrink: 0;
     transition: width 0.2s var(--ease-snappy);
   }

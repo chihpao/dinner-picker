@@ -159,7 +159,6 @@ const averageLabel = computed(() => {
   font-family: var(--font-sans);
 }
 
-/* ── Segment Controls ──────────────── */
 .segment-group {
   position: relative;
   display: grid;
@@ -190,13 +189,11 @@ const averageLabel = computed(() => {
   z-index: -1;
 }
 
-/* Mode Group Slider */
 .mode-group .segment-slider { width: calc(33.333% - 5.33px); }
 .mode-group .segment-slider.week { transform: translateX(0); }
 .mode-group .segment-slider.month { transform: translateX(calc(100% + 4px)); }
 .mode-group .segment-slider.year { transform: translateX(calc(200% + 8px)); }
 
-/* Filter Group Slider */
 .filter-group .segment-slider { width: calc(50% - 6px); }
 .filter-group .segment-slider.all { transform: translateX(2px); }
 .filter-group .segment-slider.zibao { transform: translateX(calc(100% + 6px)); }
@@ -237,7 +234,7 @@ const averageLabel = computed(() => {
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  padding: 14px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -246,6 +243,7 @@ const averageLabel = computed(() => {
 .summary-card.highlight {
   border-color: #c7c6f7;
   background: linear-gradient(180deg, #ffffff 0%, #f8f8ff 100%);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), var(--shadow-sm);
 }
 
 .summary-label {
@@ -273,7 +271,6 @@ const averageLabel = computed(() => {
   }
 }
 
-/* ── Desktop ───────────────────────── */
 @media (min-width: 721px) {
   .summary-toolbar {
     flex-direction: row;

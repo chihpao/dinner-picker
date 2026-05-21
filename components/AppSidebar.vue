@@ -44,7 +44,7 @@ const { isCollapsed, toggleCollapse } = useSidebar()
 
 <style scoped>
 .sidebar {
-  width: 200px;
+  width: 240px;
   background: var(--bg-paper);
   border-right: 1px solid var(--border);
   display: flex;

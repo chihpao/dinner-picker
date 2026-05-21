@@ -111,6 +111,10 @@ const getIcon = (name: string) => {
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.12);
 }
 
+.restaurant-card:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
 .restaurant-card:hover .order-btn-circle {
   background: var(--primary);
   color: white;

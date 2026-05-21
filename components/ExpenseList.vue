@@ -950,12 +950,13 @@ defineExpose({ openBulkDelete, openSettleModal })
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.25s var(--ease-snappy), box-shadow 0.25s var(--ease-snappy), transform 0.25s var(--ease-snappy);
 }
 
 .entry-card:active {
   border-color: rgba(79, 70, 229, 0.35);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.08);
+  transform: scale(0.98);
 }
 
 .cell { min-width: 0; }

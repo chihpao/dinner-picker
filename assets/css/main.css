@@ -10,40 +10,34 @@
 
 /* ========= Theme: Neo-Pixel Refined (Sam Small x Clément Faydi) ========= */
 :root {
-  /* Backgrounds */
-  --bg-body: #f7f7f8;       /* Very light cool gray, almost white */
-  --bg-paper: #ffffff;      
+  --bg-body: #f7f7f8;
+  --bg-paper: #ffffff;
   
-  /* Text & Borders */
-  --ink: #111827;           /* Deep dense black */
-  --ink-light: #6b7280;     /* Muted gray */
-  --border: #e2e4e7;        /* Much lighter, cleaner border (Linear style) */
-  --border-focus: #4f46e5;  /* Primary focus color */
+  --ink: #111827;
+  --ink-light: #6b7280;
+  --border: #f3f4f6;
+  --border-focus: #4f46e5;
   
-  /* Brand Colors */
-  --primary: #4f46e5;       /* Indigo */
+  --primary: #4f46e5;
   --primary-light: #e0e7ff;
   
-  --success: #10b981;       
+  --success: #10b981;
   --success-bg: #ecfdf5;
   
   --danger: #ef4444;
   
-  /* UI Tokens */
-  --border-width: 1px;      /* Thinner, precise borders */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 24px rgba(17, 24, 39, 0.08);
-  --shadow-solid: 4px;      /* Retain for retro feel, but maybe used less */
-  --radius: 12px;           /* Slightly friendlier roundness */
+  --border-width: 1px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(99,102,241,0.08);
+  --shadow-md: 0 8px 24px rgba(79,70,229,0.12);
+  --shadow-solid: 4px;
+  --radius: 12px;
   --radius-sm: 8px;
   --mobile-nav-height: 76px;
   
-  /* Animations */
-  --ease-snappy: cubic-bezier(0.2, 0, 0, 1); /* Fast, precise */
+  --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
   
-  /* Fonts */
   --font-pixel: 'DotGothic16', sans-serif;
-  --font-sans: 'Inter', 'Noto Sans TC', sans-serif; /* Prefer Inter for UI */
+  --font-sans: 'Inter', 'Noto Sans TC', sans-serif;
 }
 
 /* Global Reset */
@@ -105,6 +99,11 @@ body {
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  transition: all 0.25s var(--ease-snappy);
+}
+.card.active, .card.selected {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), var(--shadow-sm);
 }
 
 .btn {
@@ -176,15 +175,17 @@ body {
 .text-success { color: var(--success); }
 .text-muted { color: var(--ink-light); }
 
-/* Nuxt Page Transitions */
 .page-enter-active,
-.page-leave-active {
-  transition: all 0.3s var(--ease-snappy);
+.page-leave-active,
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 .page-enter-from,
-.page-leave-to {
+.page-leave-to,
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: translateY(10px);
 }
 
 /* Segment Control */

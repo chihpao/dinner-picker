@@ -104,11 +104,18 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   flex-direction: column;
   gap: 16px;
   padding: 14px 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 100%);
+  background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(8px);
+  transition: all 0.3s var(--ease-snappy);
+}
+
+.hero--expenses {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-color: var(--glass-border);
 }
 
 .hero-title-wrap {

@@ -32,8 +32,8 @@ import IconBank from '~/components/icons/IconBank.vue'
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.96);
-  border-top: 1px solid var(--border);
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
@@ -41,7 +41,8 @@ import IconBank from '~/components/icons/IconBank.vue'
   padding-bottom: calc(12px + max(0px, env(safe-area-inset-bottom)));
   z-index: 100;
   box-shadow: 0 -6px 18px rgba(0,0,0,0.04);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .nav-item {

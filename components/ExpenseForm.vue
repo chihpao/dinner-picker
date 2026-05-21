@@ -2,7 +2,7 @@
   <section class="panel entry-panel" :class="{ 'entry-panel--compact': compact }">
     <div v-if="user" class="today-bar">
       <span class="today-label">今日已花</span>
-      <span class="today-amount">{{ formatCurrency(todayExpense) }}</span>
+      <AppNumberTicker :value="todayExpense" custom-class="today-amount" />
     </div>
 
     <div v-if="!user" class="auth-gate panel">
@@ -156,6 +156,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { EXPENSE_CATEGORIES } from '~/stores/expenses'
+import { vibrate } from '~/utils'
 
 const props = withDefaults(defineProps<{
   defaultRedirect?: string
@@ -231,6 +232,7 @@ const setDaysAgo = (days: number) => {
   const target = new Date()
   target.setDate(target.getDate() - days)
   form.date = toISODate(target)
+  vibrate(5)
 }
 
 const isDateActive = (days: number) => {
@@ -241,6 +243,7 @@ const isDateActive = (days: number) => {
 
 const setAmount = (amt: number) => {
   form.amount = amt
+  vibrate(5)
 }
 
 const resetForm = () => {
@@ -251,6 +254,9 @@ const resetForm = () => {
   form.date = toISODate(new Date())
   form.category = ''
 }
+
+watch(() => form.type, () => vibrate(10))
+watch(() => form.sub_type, () => vibrate(10))
 
 const handleSubmit = async () => {
   if (!user.value || submitting.value) return
@@ -462,7 +468,7 @@ const handleSubmit = async () => {
   background: #ffffff;
   border-radius: 10px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.45s var(--ease-spring);
   z-index: -1;
 }
 

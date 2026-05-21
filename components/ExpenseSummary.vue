@@ -44,19 +44,20 @@
     <div class="expense-summary-grid" aria-live="polite">
       <article class="summary-card">
         <p class="summary-label">{{ viewLabel }}支出</p>
-        <p class="summary-amount danger-text">{{ formatCurrency(viewExpense) }}</p>
+        <AppNumberTicker :value="viewExpense" custom-class="summary-amount danger-text" />
       </article>
 
       <article class="summary-card">
         <p class="summary-label">{{ viewLabel }}收入</p>
-        <p class="summary-amount success-text">{{ formatCurrency(viewIncome) }}</p>
+        <AppNumberTicker :value="viewIncome" custom-class="summary-amount success-text" />
       </article>
 
       <article class="summary-card" :class="{ highlight: filterMode === 'zibao' }">
         <p class="summary-label">{{ averageLabel }}</p>
-        <p class="summary-amount" :class="{ 'primary-text': filterMode === 'zibao' }">
-          {{ formatCurrency(viewAverage) }}
-        </p>
+        <AppNumberTicker 
+          :value="viewAverage" 
+          :custom-class="['summary-amount', filterMode === 'zibao' ? 'primary-text' : '']" 
+        />
       </article>
     </div>
   </section>
@@ -64,6 +65,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
+import { vibrate } from '~/utils'
 
 const props = withDefaults(defineProps<{
   isOpen?: boolean
@@ -87,9 +89,14 @@ const isModeLocked = (mode: 'week' | 'month' | 'year') => {
 }
 
 watch(filterMode, (mode) => {
+  vibrate(10)
   if (mode === 'zibao') {
     viewMode.value = 'week'
   }
+})
+
+watch(viewMode, () => {
+  vibrate(10)
 })
 
 const viewLabel = computed(() => {
@@ -141,6 +148,13 @@ const averageLabel = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 16px;
+  margin-top: 12px;
 }
 
 .summary-toolbar {
@@ -185,7 +199,7 @@ const averageLabel = computed(() => {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.4s var(--ease-spring);
   z-index: -1;
 }
 
@@ -238,6 +252,7 @@ const averageLabel = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: all 0.3s var(--ease-snappy);
 }
 
 .summary-card.highlight {

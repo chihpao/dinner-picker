@@ -9,9 +9,10 @@
   >
     <div class="mini-budget-header">
       <span class="label">預算剩餘</span>
-      <span class="amount" :class="progress.status">
-        {{ progress.remaining >= 0 ? formatCurrency(progress.remaining) : `超支 ${formatCurrency(Math.abs(progress.remaining))}` }}
-      </span>
+      <AppNumberTicker 
+        :value="progress.remaining" 
+        :custom-class="['amount', progress.status === 'danger' ? 'danger' : '']"
+      />
     </div>
     <div class="mini-budget-track">
       <div 

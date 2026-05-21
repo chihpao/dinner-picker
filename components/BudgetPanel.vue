@@ -80,7 +80,7 @@
             <span class="meter-label">{{ formatShortDate(rule.start_date) }} ~ {{ formatShortDate(rule.end_date) }}</span>
           </div>
           <span class="meter-fraction">
-            <span class="meter-spent">{{ formatCurrency(getRuleProgress(rule).spent) }}</span>
+            <AppNumberTicker :value="getRuleProgress(rule).spent" custom-class="meter-spent" />
             <span class="meter-sep">/</span>
             <span class="meter-total">{{ formatCurrency(rule.amount) }}</span>
           </span>
@@ -95,10 +95,11 @@
         <div class="meter-footer">
           <div class="meter-footer-info">
             <span class="meter-remaining" :class="getRuleProgress(rule).status">
-              {{ getRuleProgress(rule).remaining >= 0 ? `剩餘 ${formatCurrency(getRuleProgress(rule).remaining)}` : `超支 ${formatCurrency(Math.abs(getRuleProgress(rule).remaining))}` }}
+              {{ getRuleProgress(rule).remaining >= 0 ? '剩餘 ' : '超支 ' }}
+              <AppNumberTicker :value="Math.abs(getRuleProgress(rule).remaining)" />
             </span>
             <span v-if="getRuleProgress(rule).remaining > 0 && getRuleProgress(rule).dailyPace > 0" class="meter-pace">
-              每天可花 {{ formatCurrency(getRuleProgress(rule).dailyPace) }}
+              每天可花 <AppNumberTicker :value="getRuleProgress(rule).dailyPace" />
             </span>
           </div>
           <button 

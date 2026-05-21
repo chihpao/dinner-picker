@@ -35,9 +35,14 @@
   --mobile-nav-height: 76px;
   
   --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   
   --font-pixel: 'DotGothic16', sans-serif;
   --font-sans: 'Inter', 'Noto Sans TC', sans-serif;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
 }
 
 /* Global Reset */
@@ -64,6 +69,85 @@ body {
   background-image: 
     radial-gradient(#e5e7eb 1px, transparent 1px);
   background-size: 20px 20px;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Background Blobs */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
+  animation: float-blob 20s infinite alternate;
+}
+
+body::before {
+  background: var(--primary);
+  top: -100px;
+  right: -100px;
+}
+
+body::after {
+  background: #818cf8;
+  bottom: -100px;
+  left: -100px;
+  animation-delay: -5s;
+}
+
+@keyframes float-blob {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-100px, 100px) scale(1.2); }
+}
+
+/* Glassmorphism */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--glass-border);
+}
+
+/* Bottom Sheet */
+.bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.bottom-sheet {
+  background: white;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 24px 24px 0 0;
+  padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+  transform-origin: bottom;
+  animation: slideUpSpring 0.5s var(--ease-spring);
+}
+
+.bottom-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+@keyframes slideUpSpring {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 /* Common Layout Components */

@@ -93,9 +93,10 @@
 
             <div class="card-balance">
               <span class="balance-label">目前餘額</span>
-              <span class="balance-amount" :class="{ 'negative': accountCurrentBalance(account.id, account.balance) < 0 }">
-                {{ formatCurrency(accountCurrentBalance(account.id, account.balance)) }}
-              </span>
+              <AppNumberTicker 
+                :value="accountCurrentBalance(account.id, account.balance)" 
+                :custom-class="['balance-amount', accountCurrentBalance(account.id, account.balance) < 0 ? 'negative' : '']"
+              />
             </div>
           </template>
         </article>
@@ -119,31 +120,34 @@
           </div>
           <div class="card-balance">
              <span class="balance-label">淨支出</span>
-             <span class="balance-amount">{{ formatCurrency(unassignedStats.net) }}</span>
+             <AppNumberTicker :value="unassignedStats.net" custom-class="balance-amount" />
           </div>
         </article>
       </div>
     </template>
 
     <Teleport to="body">
-       <div v-if="deleteModal.open" class="modal-overlay" @click.self="cancelDelete">
-         <div class="modal-card">
-           <div class="modal-header">
-             <h3>刪除帳戶</h3>
-           </div>
-           <div class="modal-content">
-             <p>確定要刪除「{{ targetAccountName }}」嗎？</p>
-             <p class="impact-text">此帳戶共有 {{ deleteImpactCount }} 筆記帳紀錄。</p>
-             <p class="warning-text">相關的記帳紀錄即使刪除帳戶後仍會保留，但會變成「未指定帳戶」。</p>
-           </div>
-           <div class="modal-actions">
-             <button class="btn" @click="cancelDelete">取消</button>
-             <button class="btn danger" @click="confirmDelete" :disabled="deletingAccount">
-               {{ deletingAccount ? '刪除中...' : '確認刪除' }}
-             </button>
+       <transition name="fade">
+         <div v-if="deleteModal.open" class="bottom-sheet-overlay" @click.self="cancelDelete">
+           <div class="bottom-sheet">
+             <div class="bottom-sheet-handle"></div>
+             <div class="modal-header">
+               <h3>刪除帳戶</h3>
+             </div>
+             <div class="modal-content">
+               <p>確定要刪除「{{ targetAccountName }}」嗎？</p>
+               <p class="impact-text">此帳戶共有 {{ deleteImpactCount }} 筆記帳紀錄。</p>
+               <p class="warning-text">相關的記帳紀錄即使刪除帳戶後仍會保留，但會變成「未指定帳戶」。</p>
+             </div>
+             <div class="modal-actions">
+               <button class="btn" @click="cancelDelete">取消</button>
+               <button class="btn danger" @click="confirmDelete" :disabled="deletingAccount">
+                 {{ deletingAccount ? '刪除中...' : '確認刪除' }}
+               </button>
+             </div>
            </div>
          </div>
-       </div>
+       </transition>
     </Teleport>
   </section>
 </template>
@@ -153,6 +157,7 @@ import { storeToRefs } from 'pinia'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import { useToast } from '~/composables/useToast'
+import { vibrate } from '~/utils'
 
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
@@ -177,6 +182,10 @@ const editForm = reactive({
 const deleteModal = reactive({
   open: false,
   targetId: null as string | null
+})
+
+watch(() => deleteModal.open, (open) => {
+  if (open) vibrate(15)
 })
 
 const targetAccountName = computed(() => {
@@ -622,32 +631,6 @@ const saveEdit = async (id: string) => {
   margin-top: 8px;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.2s ease;
-}
-
-.modal-card {
-  background: white;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  transform-origin: center;
-  animation: scaleIn 0.2s var(--ease-snappy);
-}
-
 .modal-header h3 {
   margin: 0;
   font-size: 18px;
@@ -687,14 +670,8 @@ const saveEdit = async (id: string) => {
   cursor: not-allowed;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @media (max-width: 720px) {
   .panel {

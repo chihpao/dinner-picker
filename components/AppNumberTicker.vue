@@ -1,15 +1,18 @@
 <template>
-  <span>{{ formattedValue }}</span>
+  <span :class="customClass">{{ formattedValue }}</span>
 </template>
 
 <script setup lang="ts">
+import { formatCurrency } from '~/utils'
+
 const props = defineProps<{
   value: number
   duration?: number
+  customClass?: string
 }>()
 
 const displayValue = ref(props.value)
-const formattedValue = computed(() => `NT$ ${Math.round(displayValue.value).toLocaleString('zh-TW')}`)
+const formattedValue = computed(() => formatCurrency(Math.round(displayValue.value)))
 
 let animationFrame: number
 

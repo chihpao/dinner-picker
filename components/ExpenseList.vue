@@ -194,158 +194,177 @@
       </div>
     </div>
 
-    <div v-if="bulkModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <h3>刪除紀錄</h3>
-        <p>確定要刪除選取的 {{ selectedCount }} 筆紀錄嗎？此操作無法復原。</p>
-        <div class="modal-actions">
-          <button class="btn primary" @click="confirmBulkDelete" type="button">是，刪除</button>
-          <button class="btn" @click="closeBulkDelete" type="button">否，取消</button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="zibaoSettleModalOpen" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal-card">
-        <h3>💰 孜保結算</h3>
-        <p style="font-size: 13px; color: var(--ink-light); margin-bottom: 16px;">
-          系統會自動將範圍內「未結算」的孜保支出除以2，並轉為一般支出。
-        </p>
-        
-        <div class="edit-group date-group" style="margin-bottom: 16px;">
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="date" v-model="settleStartDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
-            <span style="color: var(--ink-light);">~</span>
-            <input type="date" v-model="settleEndDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
-          </div>
-        </div>
-
-        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px dashed var(--border);">
-          <template v-if="unsettledZibaoEntries.length > 0">
-            <p style="margin: 0 0 4px; font-size: 13px; font-weight: 600;">預覽結果：</p>
-            <p style="margin: 0; font-size: 13px; color: var(--ink-light); line-height: 1.6;">
-              找到 <strong>{{ unsettledZibaoEntries.length }}</strong> 筆未結算支出，原始總額 <strong style="color: var(--danger); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalOriginal) }}</strong>。<br>
-              結算後將轉為您個人的支出，總額 <strong style="color: var(--success); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalNew) }}</strong>。
-            </p>
-          </template>
-          <p v-else style="margin: 0; color: var(--ink-light); text-align: center; font-size: 13px;">
-            此期間沒有需要結算的孜保支出
-          </p>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn primary" @click="confirmZibaoSettlement" type="button" :disabled="unsettledZibaoEntries.length === 0 || isSettling">
-            {{ isSettling ? '結算中...' : '確認結算' }}
-          </button>
-          <button class="btn" @click="closeSettleModal" type="button" :disabled="isSettling">取消</button>
-        </div>
-      </div>
-    </div>
-
-    <div v-if="editingId" class="modal-overlay" role="dialog" aria-modal="true">
-      <div class="modal-card edit-modal">
-        <h3>編輯紀錄</h3>
-        <div class="edit-form-layout">
-          <div class="edit-group type-group">
-            <div class="type-toggle">
-              <button 
-                type="button" 
-                :class="['btn btn-sm', editForm.type === 'expense' ? 'danger' : 'outline']"
-                @click="editForm.type = 'expense'"
-              >
-                支出
-              </button>
-              <button 
-                type="button" 
-                :class="['btn btn-sm', editForm.type === 'income' ? 'success' : 'outline']"
-                @click="editForm.type = 'income'"
-              >
-                收入
-              </button>
-            </div>
-          </div>
-
-          <div class="edit-group date-group">
-            <label class="input-label">
-              <span>日期</span>
-              <input type="date" v-model="editForm.date">
-            </label>
-            <div class="quick-tags">
-              <button class="tag-btn" type="button" @click="setToday">今天</button>
-              <button class="tag-btn" type="button" @click="setYesterday">昨天</button>
-            </div>
-          </div>
-
-          <div class="edit-group amount-group">
-            <label class="input-label">
-              <span>金額</span>
-              <input type="number" v-model.number="editForm.amount" min="0" step="1">
-            </label>
-            <div class="quick-tags scrollable">
-              <button class="tag-btn" type="button" @click="adjustAmount(10)">+10</button>
-              <button class="tag-btn" type="button" @click="adjustAmount(50)">+50</button>
-              <button class="tag-btn" type="button" @click="adjustAmount(100)">+100</button>
-            </div>
-          </div>
-
-          <div class="edit-group detail-group">
-            <label class="input-label">
-              <span>帳戶</span>
-              <select v-model="editForm.account_id">
-                <option value="">未指定</option>
-                <option v-for="account in accounts" :key="account.id" :value="account.id">
-                  {{ account.name }}
-                </option>
-              </select>
-            </label>
-            
-            <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
-              <span>類型</span>
-              <select v-model="editForm.sub_type">
-                <option value="general">一般</option>
-                <option value="zibao">孜保平分</option>
-              </select>
-            </label>
-            <label class="input-label" v-else-if="isEditingTransfer">
-              <span>類型</span>
-              <input type="text" value="轉帳" readonly>
-            </label>
-
-            <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
-              <span>類別</span>
-              <select v-model="editForm.category">
-                <option value="">未指定</option>
-                <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
-                  {{ cat.label }}
-                </option>
-              </select>
-            </label>
-
-            <label class="input-label flex-grow">
-              <span>備註</span>
-              <input type="text" v-model="editForm.note" placeholder="備註...">
-            </label>
-          </div>
-
-          <div class="edit-actions">
-            <button :class="['btn', editForm.type === 'income' ? 'success' : 'primary']" @click="saveEdit" type="button">儲存</button>
-            <button class="btn danger" @click="deleteFromEdit" type="button">刪除</button>
-            <button class="btn" @click="cancelEdit" type="button">取消</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <Teleport to="body">
+      <transition name="fade">
+        <div v-if="bulkModalOpen" class="bottom-sheet-overlay" @click.self="closeBulkDelete" role="dialog" aria-modal="true">
+          <div class="bottom-sheet">
+            <div class="bottom-sheet-handle"></div>
+            <div class="modal-header">
+              <h3 class="text-danger">批量刪除</h3>
+            </div>
+            <div class="modal-content">
+              <p>確定要刪除選取的 {{ selectedCount }} 筆紀錄嗎？此操作無法復原。</p>
+              <div class="modal-actions">
+                <button class="btn danger" @click="confirmBulkDelete" type="button">是，刪除</button>
+                <button class="btn" @click="closeBulkDelete" type="button">否，取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <transition name="fade">
+        <div v-if="zibaoSettleModalOpen" class="bottom-sheet-overlay" @click.self="closeSettleModal" role="dialog" aria-modal="true">
+          <div class="bottom-sheet">
+            <div class="bottom-sheet-handle"></div>
+            <div class="modal-header">
+              <h3>💰 孜保結算</h3>
+            </div>
+            <div class="modal-content">
+              <p style="font-size: 13px; color: var(--ink-light); margin-bottom: 16px;">
+                系統會自動將範圍內「未結算」的孜保支出除以2，並轉為一般支出。
+              </p>
+              
+              <div class="edit-group date-group" style="margin-bottom: 16px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="date" v-model="settleStartDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
+                  <span style="color: var(--ink-light);">~</span>
+                  <input type="date" v-model="settleEndDate" class="input" style="flex: 1; height: 36px; padding: 0 8px;">
+                </div>
+              </div>
+
+              <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px dashed var(--border);">
+                <template v-if="unsettledZibaoEntries.length > 0">
+                  <p style="margin: 0 0 4px; font-size: 13px; font-weight: 600;">預覽結果：</p>
+                  <p style="margin: 0; font-size: 13px; color: var(--ink-light); line-height: 1.6;">
+                    找到 <strong>{{ unsettledZibaoEntries.length }}</strong> 筆未結算支出，原始總額 <strong style="color: var(--danger); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalOriginal) }}</strong>。<br>
+                    結算後將轉為您個人的支出，總額 <strong style="color: var(--success); font-family: var(--font-pixel);">{{ formatCurrency(settleTotalNew) }}</strong>。
+                  </p>
+                </template>
+                <p v-else style="margin: 0; color: var(--ink-light); text-align: center; font-size: 13px;">
+                  此期間沒有需要結算的孜保支出
+                </p>
+              </div>
+
+              <div class="modal-actions">
+                <button class="btn primary" @click="confirmZibaoSettlement" type="button" :disabled="unsettledZibaoEntries.length === 0 || isSettling">
+                  {{ isSettling ? '結算中...' : '確認結算' }}
+                </button>
+                <button class="btn" @click="closeSettleModal" type="button" :disabled="isSettling">取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <transition name="fade">
+        <div v-if="editingId" class="bottom-sheet-overlay" @click.self="cancelEdit" role="dialog" aria-modal="true">
+          <div class="bottom-sheet">
+            <div class="bottom-sheet-handle"></div>
+            <div class="modal-header">
+              <h3>編輯紀錄</h3>
+            </div>
+            <div class="edit-form-layout">
+              <div class="edit-group type-group">
+                <div class="type-toggle">
+                  <button 
+                    type="button" 
+                    :class="['btn btn-sm', editForm.type === 'expense' ? 'danger' : 'outline']"
+                    @click="editForm.type = 'expense'"
+                  >
+                    支出
+                  </button>
+                  <button 
+                    type="button" 
+                    :class="['btn btn-sm', editForm.type === 'income' ? 'success' : 'outline']"
+                    @click="editForm.type = 'income'"
+                  >
+                    收入
+                  </button>
+                </div>
+              </div>
+
+              <div class="edit-group date-group">
+                <label class="input-label">
+                  <span>日期</span>
+                  <input type="date" v-model="editForm.date">
+                </label>
+                <div class="quick-tags">
+                  <button class="tag-btn" type="button" @click="setToday">今天</button>
+                  <button class="tag-btn" type="button" @click="setYesterday">昨天</button>
+                </div>
+              </div>
+
+              <div class="edit-group amount-group">
+                <label class="input-label">
+                  <span>金額</span>
+                  <input type="number" v-model.number="editForm.amount" min="0" step="1">
+                </label>
+                <div class="quick-tags scrollable">
+                  <button class="tag-btn" type="button" @click="adjustAmount(10)">+10</button>
+                  <button class="tag-btn" type="button" @click="adjustAmount(50)">+50</button>
+                  <button class="tag-btn" type="button" @click="adjustAmount(100)">+100</button>
+                </div>
+              </div>
+
+              <div class="edit-group detail-group">
+                <label class="input-label">
+                  <span>帳戶</span>
+                  <select v-model="editForm.account_id">
+                    <option value="">未指定</option>
+                    <option v-for="account in accounts" :key="account.id" :value="account.id">
+                      {{ account.name }}
+                    </option>
+                  </select>
+                </label>
+                
+                <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
+                  <span>類型</span>
+                  <select v-model="editForm.sub_type">
+                    <option value="general">一般</option>
+                    <option value="zibao">孜保平分</option>
+                  </select>
+                </label>
+                <label class="input-label" v-else-if="isEditingTransfer">
+                  <span>類型</span>
+                  <input type="text" value="轉帳" readonly>
+                </label>
+
+                <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
+                  <span>類別</span>
+                  <select v-model="editForm.category">
+                    <option value="">未指定</option>
+                    <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
+                      {{ cat.label }}
+                    </option>
+                  </select>
+                </label>
+
+                <label class="input-label flex-grow">
+                  <span>備註</span>
+                  <input type="text" v-model="editForm.note" placeholder="備註...">
+                </label>
+              </div>
+
+              <div class="edit-actions">
+                <button :class="['btn', editForm.type === 'income' ? 'success' : 'primary']" @click="saveEdit" type="button">儲存</button>
+                <button class="btn danger" @click="deleteFromEdit" type="button">刪除</button>
+                <button class="btn" @click="cancelEdit" type="button">取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
       <Transition name="selection-bar">
-        <div v-if="selectedCount > 0" class="selection-bar">
+        <div v-if="selectedCount > 0" class="selection-bar glass">
           <div class="selection-info">
             <span class="selection-count">{{ selectedCount }}</span>
             <span class="selection-text">筆選取中</span>
           </div>
           <div class="selection-actions">
             <button class="selection-btn cancel" @click="selectedIds = new Set()" type="button">取消</button>
-            <button class="selection-btn delete" @click="confirmBulkDelete" type="button">
+            <button class="selection-btn delete" @click="openBulkDelete" type="button">
               <IconTrash />
               <span>刪除</span>
             </button>
@@ -408,6 +427,10 @@ const {
   resetFilters,
   hasActiveFilters
 } = useExpenseFilters()
+
+watch(editingId, (v) => { if (v) vibrate(10) })
+watch(bulkModalOpen, (v) => { if (v) vibrate(10) })
+watch(zibaoSettleModalOpen, (v) => { if (v) vibrate(10) })
 
 const typeClass = (entry: ExpenseEntry) => {
   if (isTransferEntry(entry)) return 'type-transfer'
@@ -1231,38 +1254,24 @@ defineExpose({ openBulkDelete, openSettleModal })
 }
 
 .modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: none;
 }
-.modal-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.modal-card h3 {
+
+.modal-header h3 {
   font-size: 18px;
   text-align: center;
 }
+
+.modal-content {
+  margin-bottom: 20px;
+}
+
 .modal-actions {
   display: flex;
   gap: 12px;
 }
 .modal-actions button { flex: 1; }
 
-.edit-modal { max-width: 480px; }
 .edit-form-layout {
   display: flex;
   flex-direction: column;
@@ -1492,5 +1501,24 @@ defineExpose({ openBulkDelete, openSettleModal })
   .selection-bar {
     bottom: 32px;
   }
+}
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.selection-bar.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  color: var(--ink);
+}
+
+.selection-bar.glass .selection-text {
+  color: var(--ink);
+}
+
+.selection-bar.glass .selection-btn.cancel {
+  color: var(--ink-light);
 }
 </style>

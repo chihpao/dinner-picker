@@ -117,11 +117,11 @@
 
     <AppEmptyState 
       v-else 
-      title="還沒設定預算？" 
-      message="設定月預算或週預算，可以幫助你更有效地控制支出。"
+      title="設個預算" 
+      message="讓花錢也有節奏感，設定週/月預算來掌握支出。"
     >
       <template #icon>
-        <IconTarget style="width: 64px; height: 64px; color: var(--border)" />
+        <IconEmptyChart style="color: #c7c6f7" />
       </template>
       <button class="btn primary" type="button" @click="editing = true">
         立即設定
@@ -135,6 +135,7 @@ import { storeToRefs } from 'pinia'
 import IconTarget from '~/components/icons/IconTarget.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import IconList from '~/components/icons/IconList.vue'
+import IconEmptyChart from '~/components/icons/IconEmptyChart.vue'
 import { EXPENSE_CATEGORIES } from '~/stores/expenses'
 import { useExpenseFilters } from '~/composables/useExpenseFilters'
 
@@ -224,7 +225,7 @@ const formatShortDate = (dateStr: string) => {
 }
 
 .rule-edit-card {
-  background: white;
+  background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
@@ -250,7 +251,7 @@ const formatShortDate = (dateStr: string) => {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 4px;
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   letter-spacing: 0.04em;
 }
@@ -268,7 +269,7 @@ const formatShortDate = (dateStr: string) => {
 }
 
 .new-rule-form {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
   padding: 16px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -307,13 +308,13 @@ const formatShortDate = (dateStr: string) => {
   border-radius: 8px;
   padding: 0 10px;
   font-size: 14px;
-  background: white;
+  background: var(--bg-paper);
   min-width: 0;
 }
 
 .budget-input-wrap {
   position: relative;
-  background: #ffffff;
+  background: var(--bg-paper);
   border-radius: 8px;
   border: 1px solid var(--border);
   padding: 6px 12px;
@@ -421,7 +422,7 @@ const formatShortDate = (dateStr: string) => {
 .meter-bar-track {
   width: 100%;
   height: 8px;
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -465,7 +466,7 @@ const formatShortDate = (dateStr: string) => {
   font-size: 11px;
   color: var(--ink-light);
   font-family: var(--font-pixel);
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.05);
   padding: 2px 8px;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -482,7 +483,7 @@ const formatShortDate = (dateStr: string) => {
   padding: 0 10px;
   font-size: 12px;
   gap: 4px;
-  background: white;
+  background: rgba(255, 255, 255, 0.05);
   border-color: var(--border);
   color: var(--ink-light);
   font-family: var(--font-pixel);
@@ -518,7 +519,7 @@ const formatShortDate = (dateStr: string) => {
 
 .icon-btn.danger:hover {
   color: var(--danger);
-  background: #fef2f2;
+  background: rgba(220, 38, 38, 0.1);
 }
 
 .w-full {

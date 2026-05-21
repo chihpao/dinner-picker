@@ -53,11 +53,11 @@
 
     <AppEmptyState 
       v-else-if="!entries.length" 
-      title="口袋空空" 
-      message="目前還沒有任何消費紀錄，趕快去記一筆吧！"
+      title="領域展開：未觀測" 
+      message="尚未觀測到咒力流動，請記下第一筆紀錄。"
     >
       <NuxtLink to="/total/entry" class="btn primary">
-        開始記帳
+        注入咒力 (記帳)
       </NuxtLink>
     </AppEmptyState>
     
@@ -233,7 +233,7 @@
                 </div>
               </div>
 
-              <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px dashed var(--border);">
+              <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px dashed var(--border);">
                 <template v-if="unsettledZibaoEntries.length > 0">
                   <p style="margin: 0 0 4px; font-size: 13px; font-weight: 600;">預覽結果：</p>
                   <p style="margin: 0; font-size: 13px; color: var(--ink-light); line-height: 1.6;">
@@ -690,7 +690,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--success-bg);
+  background: rgba(103, 232, 249, 0.15);
   color: var(--success);
   font-size: 10px;
   font-weight: 700;
@@ -712,17 +712,17 @@ defineExpose({ openBulkDelete, openSettleModal })
 }
 .type-general {
   color: var(--ink-light);
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.05);
 }
 .type-zibao {
   color: var(--primary);
-  background: var(--primary-light);
+  background: rgba(124, 58, 237, 0.15);
   border: 1px solid rgba(79, 70, 229, 0.1);
 }
 .type-transfer {
-  color: #0369a1;
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
+  color: #67E8F9;
+  background: rgba(103, 232, 249, 0.15);
+  border: 1px solid rgba(103, 232, 249, 0.3);
 }
 
 .category-badge {
@@ -732,9 +732,9 @@ defineExpose({ openBulkDelete, openSettleModal })
   border-radius: 4px;
   letter-spacing: 0.04em;
   display: inline-block;
-  color: #b45309;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
+  color: var(--ink-light);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .compact-category {
@@ -762,13 +762,13 @@ defineExpose({ openBulkDelete, openSettleModal })
   left: 0;
   height: 18px;
   width: 18px;
-  background-color: #eee;
+  background-color: var(--bg-paper);
   border-radius: 4px;
   border: 1px solid var(--border);
   transition: all 0.2s;
 }
 .custom-checkbox:hover input ~ .checkmark {
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 .custom-checkbox input:checked ~ .checkmark {
   background-color: var(--primary);
@@ -874,7 +874,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   height: 40px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--bg-paper);
   padding: 0 12px;
   font-size: 13px;
   color: var(--ink);
@@ -900,7 +900,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
   padding: 8px;
   border-radius: 10px;
   border: 1px dashed var(--border);
@@ -924,15 +924,15 @@ defineExpose({ openBulkDelete, openSettleModal })
   padding: 0;
   border-radius: 8px;
   flex: none;
-  background: white;
+  background: var(--bg-paper);
   border: 1px solid var(--border);
   color: var(--ink-light);
 }
 
 .reset-btn:hover {
-  background: #fee2e2;
+  background: rgba(220, 38, 38, 0.1);
   color: var(--danger);
-  border-color: #fecaca;
+  border-color: rgba(220, 38, 38, 0.3);
 }
 
 .auth-gate {
@@ -969,17 +969,16 @@ defineExpose({ openBulkDelete, openSettleModal })
   align-items: center;
   gap: 8px;
   padding: 14px 12px;
-  background: white;
+  background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.25s var(--ease-snappy), box-shadow 0.25s var(--ease-snappy), transform 0.25s var(--ease-snappy);
+  transition: border-color 0.25s var(--ease-snappy), box-shadow 0.25s var(--ease-snappy);
 }
 
 .entry-card:active {
-  border-color: rgba(79, 70, 229, 0.35);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.08);
-  transform: scale(0.98);
+  border-color: rgba(192, 38, 211, 0.4);
+  box-shadow: 0 0 0 2px rgba(192, 38, 211, 0.15);
 }
 
 .cell { min-width: 0; }
@@ -1015,7 +1014,7 @@ defineExpose({ openBulkDelete, openSettleModal })
 .compact-account {
   font-size: 10px;
   color: var(--ink-light);
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   padding: 3px 6px;
   max-width: 80px;
@@ -1139,7 +1138,7 @@ defineExpose({ openBulkDelete, openSettleModal })
     gap: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: white;
+    background: var(--bg-paper);
     box-shadow: var(--shadow-sm);
     overflow-x: auto;
     width: 100%;
@@ -1180,7 +1179,7 @@ defineExpose({ openBulkDelete, openSettleModal })
 
   .expense-list-header {
     height: 48px;
-    background: #f9fafb;
+    background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid var(--border);
     font-size: 11px;
     font-weight: 600;
@@ -1214,7 +1213,7 @@ defineExpose({ openBulkDelete, openSettleModal })
     border-radius: 0;
     margin: 0;
     box-shadow: none;
-    background: white;
+    background: var(--bg-paper);
     transition: background 0.1s;
     font-size: 14px;
     color: var(--ink);
@@ -1225,11 +1224,11 @@ defineExpose({ openBulkDelete, openSettleModal })
   }
 
   .entry-card:hover {
-    background: #f9fafb;
+    background: rgba(255, 255, 255, 0.05);
   }
   
   .entry-card.selected {
-    background: rgba(79, 70, 229, 0.04);
+    background: rgba(124, 58, 237, 0.15);
   }
 
   .entry-amount {
@@ -1323,12 +1322,12 @@ defineExpose({ openBulkDelete, openSettleModal })
   color: var(--ink-light);
 }
 .btn-sm.danger {
-  background: white;
+  background: var(--bg-paper);
   color: var(--danger);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 .btn-sm.success {
-  background: white;
+  background: var(--bg-paper);
   color: var(--success);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -1341,7 +1340,7 @@ defineExpose({ openBulkDelete, openSettleModal })
 }
 .tag-btn {
   border: 1px solid var(--border);
-  background: white;
+  background: var(--bg-paper);
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 11px;

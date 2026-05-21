@@ -7,11 +7,11 @@
     <template v-else>
       <AppEmptyState 
         v-if="!accounts.length" 
-        title="還沒開戶？" 
-        message="設定帳戶可以讓你更清楚錢都花在哪個錢包或銀行。"
+        title="開一個來管管錢" 
+        message="設定帳戶，讓每一筆花費都有它的歸屬。"
       >
         <template #icon>
-          <IconBank style="width: 64px; height: 64px; color: var(--border)" />
+          <IconEmptyWallet style="color: #c7c6f7" />
         </template>
         <NuxtLink to="/total/add-account" class="btn primary">
           前往新增帳戶
@@ -156,6 +156,7 @@
 import { storeToRefs } from 'pinia'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
+import IconEmptyWallet from '~/components/icons/IconEmptyWallet.vue'
 import { useToast } from '~/composables/useToast'
 import { vibrate } from '~/utils'
 
@@ -408,7 +409,7 @@ const saveEdit = async (id: string) => {
 }
 
 .account-card {
-  background: white;
+  background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;
@@ -586,7 +587,7 @@ const saveEdit = async (id: string) => {
   font-size: 14px;
   color: var(--ink);
   transition: all 0.2s;
-  background: white;
+  background: var(--bg-paper);
 }
 .form-input:focus, .form-select:focus {
   outline: none;

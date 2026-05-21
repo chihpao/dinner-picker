@@ -91,19 +91,22 @@ const { toasts, removeToast } = useToast()
   white-space: nowrap;
 }
 
-.toast-enter-active,
+.toast-enter-active {
+  transition: all 0.45s var(--spring-smooth);
+}
+
 .toast-leave-active {
-  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  transition: all var(--duration-fast) ease-out;
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px) scale(0.8);
+  transform: translateY(-20px) scale(0.85);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-10px) scale(0.9);
+  transform: translateY(-12px) scale(0.92);
 }
 
 @media (max-width: 640px) {

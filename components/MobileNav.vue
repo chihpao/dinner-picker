@@ -1,5 +1,9 @@
 <template>
   <nav class="mobile-nav">
+    <div class="nav-indicator" :style="{ transform: `translateX(${activeIndex * 100}%)` }">
+      <div class="nav-line"></div>
+    </div>
+    
     <NuxtLink to="/" class="nav-item" exact-active-class="active" aria-label="首頁">
       <span class="icon-box"><IconHome /></span>
       <span class="nav-label">首頁</span>
@@ -20,10 +24,20 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import IconHome from '~/components/icons/IconHome.vue'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconOverview from '~/components/icons/IconOverview.vue'
 import IconBank from '~/components/icons/IconBank.vue'
+
+const route = useRoute()
+const activeIndex = computed(() => {
+  if (route.path === '/total/entry') return 1
+  if (route.path === '/total') return 2
+  if (route.path.startsWith('/total/account')) return 3
+  return 0
+})
 </script>
 
 <style scoped>
@@ -32,17 +46,40 @@ import IconBank from '~/components/icons/IconBank.vue'
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--glass-bg);
-  border-top: 1px solid var(--glass-border);
+  background: rgba(3, 3, 5, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(153, 27, 27, 0.3);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 8px 10px;
+  padding: 8px 0;
   padding-bottom: calc(12px + max(0px, env(safe-area-inset-bottom)));
   z-index: 100;
-  box-shadow: 0 -6px 18px rgba(0,0,0,0.04);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+}
+
+.nav-indicator {
+  position: absolute;
+  top: auto;
+  bottom: calc(max(0px, env(safe-area-inset-bottom)) + 2px);
+  left: 0;
+  width: 25%;
+  height: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  /* Instant snap, no smooth sliding */
+  transition: none;
+  z-index: 10;
+}
+
+.nav-line {
+  width: 10px;
+  height: 10px;
+  background: var(--primary-light);
+  transform: rotate(45deg) translateY(4px);
+  box-shadow: 0 0 12px var(--primary-light);
+  border: 1px solid #000;
 }
 
 .nav-item {
@@ -52,11 +89,10 @@ import IconBank from '~/components/icons/IconBank.vue'
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: #9ca3af;
+  color: var(--ink-light);
   gap: 2px;
-  padding: 6px 8px;
-  border-radius: 12px;
-  transition: all 0.2s var(--ease-snappy);
+  padding: 6px 0;
+  transition: all 0.2s;
   min-height: 58px;
 }
 
@@ -65,15 +101,12 @@ import IconBank from '~/components/icons/IconBank.vue'
   align-items: center;
   justify-content: center;
   color: currentColor;
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: transparent;
-  transition: all 0.2s var(--ease-snappy);
+  padding: 4px;
 }
 
 .icon-box :deep(svg) {
-  width: 21px;
-  height: 21px;
+  width: 22px;
+  height: 22px;
 }
 
 .nav-label {
@@ -81,36 +114,35 @@ import IconBank from '~/components/icons/IconBank.vue'
   line-height: 1;
   font-family: var(--font-pixel);
   letter-spacing: 0.03em;
-  transition: opacity 0.2s;
-}
-
-.nav-item.active {
-  color: var(--primary);
   font-weight: 700;
 }
 
+.nav-item.active {
+  color: var(--ink);
+}
+
 .nav-item.active .icon-box {
-  background: #eef2ff;
-  color: var(--primary);
-  transform: scale(1.05);
+  color: var(--primary-light);
+  animation: glitch 250ms cubic-bezier(0, 1, 0, 1);
 }
 
 .nav-item:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #991B1B); }
+  20% { transform: translate(-4px, 2px) skewX(20deg); filter: drop-shadow(4px 0 0 #581C87); color: #06B6D4; }
+  40% { transform: translate(4px, -2px) skewX(-20deg); filter: drop-shadow(-4px 0 0 #E11D48); color: #F1F5F9; }
+  60% { transform: translate(-2px, 0) skewX(10deg); filter: drop-shadow(2px 0 0 #581C87); color: #E11D48; }
+  80% { transform: translate(2px, -2px) skewX(-10deg); filter: drop-shadow(-2px 0 0 #E11D48); color: #581C87; }
+  100% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #991B1B); }
 }
 
 @media (max-width: 400px) {
-  .mobile-nav {
-    gap: 4px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
   .nav-item {
     min-height: 56px;
-    padding: 6px 6px;
   }
-
   .nav-label {
     font-size: 10px;
   }

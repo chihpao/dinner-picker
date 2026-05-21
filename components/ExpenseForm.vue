@@ -150,13 +150,22 @@
         </button>
       </div>
     </form>
+
+    <AppSuccessAnimation
+      ref="successAnimRef"
+      :amount="lastSubmittedAmount"
+      :label="lastSubmittedLabel"
+      @complete="onAnimationComplete"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { EXPENSE_CATEGORIES } from '~/stores/expenses'
-import { vibrate } from '~/utils'
+import { toISODate, vibrate } from '~/utils'
+import { useToast } from '~/composables/useToast'
+import AppSuccessAnimation from '~/components/AppSuccessAnimation.vue'
 
 const props = withDefaults(defineProps<{
   defaultRedirect?: string
@@ -185,6 +194,10 @@ const { addEntry } = expensesStore
 const { success, danger } = useToast()
 
 const submitting = ref(false)
+const lastSubmittedAmount = ref(0)
+const lastSubmittedLabel = ref('已記錄')
+const successAnimRef = ref<InstanceType<typeof AppSuccessAnimation> | null>(null)
+const pendingRedirect = ref('')
 const signInRedirect = computed(() => props.signInRedirectTo)
 const redirectPath = computed(() => {
   const from = typeof route.query.from === 'string' ? route.query.from : ''
@@ -322,14 +335,24 @@ const handleSubmit = async () => {
       })
     }
 
-    vibrate(20)
+    vibrate([10, 50, 20])
     success(`成功儲存${submitBtnText.value}`)
+    lastSubmittedAmount.value = Math.abs(form.amount)
+    lastSubmittedLabel.value = `${submitBtnText.value}已記錄`
     resetForm()
-    await router.push(redirectPath.value)
+    pendingRedirect.value = redirectPath.value
+    successAnimRef.value?.show()
   } catch (err) {
     danger(`儲存失敗：${(err as Error).message}`)
   } finally {
     submitting.value = false
+  }
+}
+
+const onAnimationComplete = () => {
+  if (pendingRedirect.value) {
+    router.push(pendingRedirect.value)
+    pendingRedirect.value = ''
   }
 }
 </script>
@@ -340,7 +363,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f1ff 100%);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(192, 38, 211, 0.05) 100%);
   border: 1px solid rgba(79, 70, 229, 0.1);
   border-radius: 10px;
   margin-bottom: 4px;
@@ -368,9 +391,7 @@ const handleSubmit = async () => {
   padding: 16px 14px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background:
-    radial-gradient(120% 70% at 0% 0%, #eef2ff 0%, rgba(238, 242, 255, 0) 50%),
-    rgba(255, 255, 255, 0.95);
+  background: var(--mappa-card-grad);
   box-shadow: var(--shadow-md);
 }
 
@@ -407,8 +428,8 @@ const handleSubmit = async () => {
   gap: 8px;
   padding: 6px 14px 6px 8px;
   border: 1px solid var(--border);
-  border-radius: 99px;
-  background: #f8fafc;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: var(--font-pixel);
@@ -420,29 +441,29 @@ const handleSubmit = async () => {
 
 .zibao-pill:hover {
   border-color: rgba(79, 70, 229, 0.3);
-  background: #f5f3ff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .zibao-pill.active {
-  border-color: rgba(79, 70, 229, 0.35);
-  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
-  color: var(--primary);
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
+  border-color: rgba(225, 29, 72, 0.5);
+  background: rgba(88, 28, 135, 0.2);
+  color: var(--danger);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.2);
 }
 
 .zibao-pill-indicator {
   display: block;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--border);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
 .zibao-pill.active .zibao-pill-indicator {
-  background: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2);
 }
 
 .type-toggle-wrapper {
@@ -453,9 +474,9 @@ const handleSubmit = async () => {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: rgba(230, 234, 242, 0.6);
+  background: rgba(0, 0, 0, 0.4);
   padding: 4px;
-  border-radius: 14px;
+  border-radius: var(--radius);
   gap: 4px;
   z-index: 1;
 }
@@ -465,8 +486,8 @@ const handleSubmit = async () => {
   top: 4px;
   bottom: 4px;
   width: calc(33.333% - 5.33px);
-  background: #ffffff;
-  border-radius: 10px;
+  background: var(--bg-paper);
+  border-radius: var(--radius-sm);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
   transition: transform 0.45s var(--ease-spring);
   z-index: -1;
@@ -479,7 +500,7 @@ const handleSubmit = async () => {
 .btn-toggle {
   border: none;
   background: transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
   font-family: var(--font-pixel);
@@ -508,18 +529,18 @@ const handleSubmit = async () => {
 
 .amount-wrapper {
   position: relative;
-  background: #f8fafc;
-  border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 8px 16px;
 }
 
 .amount-wrapper:focus-within {
-  background: #ffffff;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15), 0 8px 24px rgba(79, 70, 229, 0.08);
+  background: var(--bg-paper);
+  border-color: var(--border-focus);
+  box-shadow: -4px 4px 15px rgba(153, 27, 27, 0.25);
   transform: translateY(-2px);
 }
 
@@ -550,11 +571,18 @@ const handleSubmit = async () => {
   left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 400;
   color: var(--ink-light);
   font-family: var(--font-pixel);
   pointer-events: none;
+  opacity: 0.45;
+  transition: all 0.3s var(--ease-snappy);
+}
+
+.amount-wrapper:focus-within .prefix {
+  opacity: 0.7;
+  transform: translateY(-50%) translateX(-2px);
 }
 
 .quick-amounts {
@@ -564,17 +592,18 @@ const handleSubmit = async () => {
 }
 
 .amt-chip {
-  border: 1px solid rgba(0,0,0,0.06);
-  background: #ffffff;
-  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-paper);
+  border-radius: var(--radius);
   min-height: 40px;
-  padding: 6px 0;
-  font-size: 14px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-pixel);
-  color: var(--ink-light);
+  font-size: 13px;
+  color: var(--ink);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.2s var(--ease-snappy);
   box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
@@ -615,7 +644,7 @@ const handleSubmit = async () => {
 
 .chip {
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--bg-paper);
   border-radius: 8px;
   min-height: 36px;
   padding: 6px 10px;
@@ -661,7 +690,7 @@ const handleSubmit = async () => {
   padding: 0 12px;
   width: 100%;
   font-size: 14px;
-  background: linear-gradient(180deg, #fff 0%, #fcfcff 100%);
+  background: var(--bg-paper);
 }
 
 .input:focus {
@@ -772,7 +801,7 @@ const handleSubmit = async () => {
     bottom: calc(var(--mobile-nav-height) + 12px);
     margin: 16px -12px -20px;
     padding: 12px 12px;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(10, 10, 15, 0.85);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     border-top: 1px solid rgba(0,0,0,0.05);

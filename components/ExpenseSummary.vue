@@ -42,22 +42,31 @@
     </div>
 
     <div class="expense-summary-grid" aria-live="polite">
-      <article class="summary-card">
-        <p class="summary-label">{{ viewLabel }}支出</p>
-        <AppNumberTicker :value="viewExpense" custom-class="summary-amount danger-text" />
+      <article class="summary-card" style="--accent: var(--danger); animation-delay: 0ms;">
+        <div class="card-accent"></div>
+        <div class="card-inner">
+          <p class="summary-label">{{ viewLabel }}支出</p>
+          <AppNumberTicker :value="viewExpense" custom-class="summary-amount danger-text" />
+        </div>
       </article>
 
-      <article class="summary-card">
-        <p class="summary-label">{{ viewLabel }}收入</p>
-        <AppNumberTicker :value="viewIncome" custom-class="summary-amount success-text" />
+      <article class="summary-card" style="--accent: var(--success); animation-delay: 60ms;">
+        <div class="card-accent"></div>
+        <div class="card-inner">
+          <p class="summary-label">{{ viewLabel }}收入</p>
+          <AppNumberTicker :value="viewIncome" custom-class="summary-amount success-text" />
+        </div>
       </article>
 
-      <article class="summary-card" :class="{ highlight: filterMode === 'zibao' }">
-        <p class="summary-label">{{ averageLabel }}</p>
-        <AppNumberTicker 
-          :value="viewAverage" 
-          :custom-class="['summary-amount', filterMode === 'zibao' ? 'primary-text' : '']" 
-        />
+      <article class="summary-card" :class="{ highlight: filterMode === 'zibao' }" :style="{ '--accent': filterMode === 'zibao' ? 'var(--primary)' : 'var(--ink-light)', 'animation-delay': '120ms' }">
+        <div class="card-accent"></div>
+        <div class="card-inner">
+          <p class="summary-label">{{ averageLabel }}</p>
+          <AppNumberTicker 
+            :value="viewAverage" 
+            :custom-class="['summary-amount', filterMode === 'zibao' ? 'primary-text' : '']" 
+          />
+        </div>
       </article>
     </div>
   </section>
@@ -248,11 +257,33 @@ const averageLabel = computed(() => {
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  transition: all 0.3s var(--ease-snappy);
+  animation: staggerSlideUp var(--duration-normal) var(--spring-smooth) both;
+  animation-delay: var(--stagger, 0ms);
+}
+
+.card-accent {
+  width: 3px;
+  flex-shrink: 0;
+  background: var(--accent, var(--ink-light));
+  border-radius: 3px 0 0 3px;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.summary-card:hover .card-accent {
+  opacity: 1;
+}
+
+.card-inner {
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: all 0.3s var(--ease-snappy);
+  flex: 1;
 }
 
 .summary-card.highlight {
@@ -271,8 +302,7 @@ const averageLabel = computed(() => {
 
 .summary-amount {
   margin: 0;
-  font-family: var(--font-pixel);
-  font-size: 19px;
+  font-size: 20px;
   line-height: 1.2;
 }
 

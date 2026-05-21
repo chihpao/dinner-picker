@@ -1,6 +1,6 @@
 <template>
   <div class="app-empty">
-    <div class="pixel-icon">
+    <div class="empty-illustration">
       <slot name="icon">
         <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -29,37 +29,56 @@ defineProps<{
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 56px 24px;
   text-align: center;
-  background: var(--bg-paper);
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
+  background: transparent;
   margin: 16px 0;
+  animation: fadeIn 0.5s ease both;
+  min-height: 240px;
 }
 
-.pixel-icon {
+.empty-illustration {
   margin-bottom: 20px;
-  color: var(--border);
-  filter: drop-shadow(4px 4px 0 rgba(0,0,0,0.05));
+  opacity: 0.6;
+  filter: drop-shadow(0 0 10px rgba(88, 28, 135, 0.3));
+}
+
+.empty-illustration :deep(svg) {
+  width: 80px;
+  height: 80px;
 }
 
 .empty-title {
-  font-family: var(--font-pixel);
-  font-size: 18px;
-  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--ink);
+  margin: 0 0 8px;
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(88, 28, 135, 0.4);
 }
 
 .empty-message {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ink-light);
   margin: 0 0 24px;
   max-width: 240px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .empty-actions {
   display: flex;
   gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .app-empty {
+    padding: 40px 20px;
+  }
+
+  .empty-illustration :deep(svg) {
+    width: 72px;
+    height: 72px;
+  }
 }
 </style>

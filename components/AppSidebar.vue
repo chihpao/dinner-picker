@@ -39,8 +39,7 @@ import IconEdit from '~/components/icons/IconEdit.vue'
 import IconOverview from '~/components/icons/IconOverview.vue'
 import IconBank from '~/components/icons/IconBank.vue'
 
-const isCollapsed = ref(false)
-const toggleCollapse = () => isCollapsed.value = !isCollapsed.value
+const { isCollapsed, toggleCollapse } = useSidebar()
 </script>
 
 <style scoped>

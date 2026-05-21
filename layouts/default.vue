@@ -1,7 +1,7 @@
 <template>
   <div class="app-layout">
     <AppToast />
-    <div class="sidebar-wrapper">
+    <div class="sidebar-wrapper" :class="{ collapsed: isCollapsed }">
       <AppSidebar />
     </div>
     <div ref="mainContentRef" class="main-content">
@@ -23,6 +23,7 @@ const restaurants = useRestaurantsStore()
 const expenses = useExpensesStore()
 const budget = useBudgetStore()
 const { initSwipe, destroySwipe } = useSwipeNavigation()
+const { isCollapsed } = useSidebar()
 
 const mainContentRef = ref<HTMLElement | null>(null)
 
@@ -70,8 +71,13 @@ watch(() => auth.user, () => {
 @media (min-width: 721px) {
   .sidebar-wrapper {
     display: block;
-    width: 256px;
+    width: 200px;
     flex-shrink: 0;
+    transition: width 0.2s var(--ease-snappy);
+  }
+
+  .sidebar-wrapper.collapsed {
+    width: 72px;
   }
   .mobile-nav {
     display: none;

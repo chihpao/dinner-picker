@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <AppHeader title="🍱 今晚吃哪家？" hideAuth>
+    <AppHeader title="🍱 今晚吃哪家？" hideAuth bg-image="/AppHeaderBack.jpg">
       <template #actions>
         <div class="category-toggle">
           <button

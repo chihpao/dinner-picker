@@ -30,7 +30,7 @@
         </NuxtLink>
       </div>
     </nav>
-    <div class="sidebar-character-slot" v-if="!isCollapsed"></div>
+    <div class="sidebar-character-slot" v-if="!isCollapsed" :style="currentCharacter ? { backgroundImage: `url(${currentCharacter})` } : {}"></div>
   </aside>
 </template>
 
@@ -39,8 +39,16 @@ import IconHome from '~/components/icons/IconHome.vue'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconOverview from '~/components/icons/IconOverview.vue'
 import IconBank from '~/components/icons/IconBank.vue'
+import { ref, onMounted } from 'vue'
 
 const { isCollapsed, toggleCollapse } = useSidebar()
+
+const characters = ['/01Yuta.webp', '/02Yuta.webp']
+const currentCharacter = ref('')
+
+onMounted(() => {
+  currentCharacter.value = characters[Math.floor(Math.random() * characters.length)]
+})
 </script>
 
 <style scoped>
@@ -167,12 +175,11 @@ const { isCollapsed, toggleCollapse } = useSidebar()
 .sidebar-character-slot {
   flex: 1;
   margin-top: auto;
-  background-image: var(--sidebar-character, none);
-  background-size: cover;
+  background-size: contain;
   background-position: bottom center;
   background-repeat: no-repeat;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
   opacity: 0.8;
   pointer-events: none;
 }

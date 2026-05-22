@@ -17,6 +17,8 @@ export default {
                     card: '#0F0F14',
                     primary: '#581C87',
                     primaryTo: '#991B1B',
+                    cursedCyan: '#00F0FF',
+                    bloodRed: '#FF003C',
                     textBase: '#F1F5F9',
                     textMuted: '#71717A',
                     danger: '#E11D48',

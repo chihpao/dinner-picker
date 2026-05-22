@@ -4,7 +4,8 @@
       <div v-if="visible" class="success-overlay" @click="dismiss">
         <div class="success-content">
           <div class="success-icon">
-            <svg viewBox="0 0 64 64" fill="none" class="shatter-fragments">
+            <img v-if="imageUrl" :src="imageUrl" class="success-custom-image" alt="" />
+            <svg v-else viewBox="0 0 64 64" fill="none" class="shatter-fragments">
               <polygon points="32,32 20,5 45,0" fill="#000" />
               <polygon points="32,32 55,15 64,35" fill="#E11D48" />
               <polygon points="32,32 45,55 25,64" fill="#000" />
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<{
   amount?: number
   label?: string
   duration?: number
+  imageUrl?: string
 }>(), {
   amount: 0,
   label: '已記錄',
@@ -123,6 +125,19 @@ defineExpose({ show })
   height: 100%;
   animation: shatter 300ms cubic-bezier(0, 1, 0, 1) forwards;
   filter: drop-shadow(0 0 10px rgba(225, 29, 72, 0.6));
+}
+
+.success-custom-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: successStamp 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  filter: drop-shadow(0 0 15px rgba(225, 29, 72, 0.8));
+}
+
+@keyframes successStamp {
+  0% { transform: scale(3) rotate(-20deg); opacity: 0; }
+  100% { transform: scale(1.5) rotate(10deg); opacity: 1; }
 }
 
 @keyframes shatter {

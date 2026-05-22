@@ -112,5 +112,15 @@ export default defineNuxtConfig({
       navigateFallbackAllowlist: [/^\/$/],
       type: 'module'
     }
+  },
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        'workbox-window',
+        '@supabase/supabase-js'
+      ]
+    }
   }
 })

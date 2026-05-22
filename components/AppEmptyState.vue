@@ -1,7 +1,8 @@
 <template>
   <div class="app-empty">
     <div class="empty-illustration">
-      <slot name="icon">
+      <img v-if="imageUrl" :src="imageUrl" class="empty-custom-image" alt="" />
+      <slot name="icon" v-else>
         <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M8 12h8m-4-4v8" opacity="0.3" />
@@ -20,6 +21,7 @@
 defineProps<{
   title: string
   message: string
+  imageUrl?: string
 }>()
 </script>
 
@@ -41,6 +43,13 @@ defineProps<{
   margin-bottom: 20px;
   opacity: 0.6;
   filter: drop-shadow(0 0 10px rgba(88, 28, 135, 0.3));
+}
+
+.empty-custom-image {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: grayscale(0.5) contrast(1.2);
 }
 
 .empty-illustration :deep(svg) {

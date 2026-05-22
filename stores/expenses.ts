@@ -34,21 +34,24 @@ export const useExpensesStore = defineStore('expenses', () => {
   const PENDING_KEY = 'dinnerPicker.total.expenses.pending'
   const TABLE = 'total_expenses'
 
-  const getStore = (key: string): ExpenseEntry[] => {
-    if (!import.meta.client) return []
+  const getLocalData = (key: string) => {
     try {
       const raw = localStorage.getItem(key)
-      const parsed = raw ? JSON.parse(raw) : []
-      return Array.isArray(parsed) ? parsed.filter((e: ExpenseEntry) => e.user_id === auth.user?.id) : []
+      return raw ? JSON.parse(raw) : []
     } catch { return [] }
+  }
+
+  const getStore = (key: string): ExpenseEntry[] => {
+    if (!import.meta.client) return []
+    const parsed = getLocalData(key)
+    return Array.isArray(parsed) ? parsed.filter((e: ExpenseEntry) => e.user_id === auth.user?.id) : []
   }
 
   const setStore = (key: string, newEntries: ExpenseEntry[]) => {
     if (!import.meta.client) return
     try {
-      const raw = localStorage.getItem(key)
-      const existing = raw ? JSON.parse(raw) : []
-      const others = Array.isArray(existing) ? existing.filter((e: ExpenseEntry) => e.user_id !== auth.user?.id) : []
+      const parsed = getLocalData(key)
+      const others = Array.isArray(parsed) ? parsed.filter((e: ExpenseEntry) => e.user_id !== auth.user?.id) : []
       localStorage.setItem(key, JSON.stringify([...others, ...newEntries]))
     } catch {}
   }

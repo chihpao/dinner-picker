@@ -30,6 +30,7 @@
         </NuxtLink>
       </div>
     </nav>
+    <div class="sidebar-character-slot" v-if="!isCollapsed"></div>
   </aside>
 </template>
 
@@ -161,5 +162,18 @@ const { isCollapsed, toggleCollapse } = useSidebar()
 
 .nav-item.active .icon {
   color: var(--primary);
+}
+
+.sidebar-character-slot {
+  flex: 1;
+  margin-top: auto;
+  background-image: var(--sidebar-character, none);
+  background-size: cover;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  opacity: 0.8;
+  pointer-events: none;
 }
 </style>

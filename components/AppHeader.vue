@@ -1,7 +1,8 @@
 <template>
   <header class="hero" :class="{ 'hero--expenses': isExpenses }">
     <div class="mappa-bg-layer">
-      <svg viewBox="0 0 400 150" class="energy-lines" preserveAspectRatio="none">
+      <img v-if="bgImage" :src="bgImage" class="header-bg-image bg-cursed-overlay" alt="" />
+      <svg v-else viewBox="0 0 400 150" class="energy-lines" preserveAspectRatio="none">
         <defs>
           <linearGradient id="mappaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#581C87" />
@@ -75,12 +76,13 @@
 import { storeToRefs } from 'pinia'
 import IconArrowLeft from '~/components/icons/IconArrowLeft.vue'
 
-const { backTo, hideAuth = false, subtitle } = defineProps<{
+const { backTo, hideAuth = false, subtitle, bgImage } = defineProps<{
   title: string
   isExpenses?: boolean
   backTo?: string
   hideAuth?: boolean
   subtitle?: string
+  bgImage?: string
 }>()
 
 const authStore = useAuthStore()
@@ -139,6 +141,12 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   height: 100%;
   pointer-events: none;
   z-index: 0;
+}
+
+.header-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .energy-lines {

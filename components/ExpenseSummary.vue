@@ -255,8 +255,8 @@ const averageLabel = computed(() => {
 .summary-card {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
   display: flex;
   align-items: stretch;
   overflow: hidden;
@@ -287,9 +287,9 @@ const averageLabel = computed(() => {
 }
 
 .summary-card.highlight {
-  border-color: #c7c6f7;
-  background: linear-gradient(180deg, #ffffff 0%, #f8f8ff 100%);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), var(--shadow-sm);
+  border-color: var(--primary);
+  background: linear-gradient(180deg, rgba(88, 28, 135, 0.1) 0%, rgba(3, 3, 5, 1) 100%);
+  filter: drop-shadow(0 0 10px rgba(88, 28, 135, 0.6));
 }
 
 .summary-label {

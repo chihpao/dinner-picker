@@ -258,102 +258,12 @@
       </transition>
 
       <transition name="fade">
-        <div v-if="editingId" class="bottom-sheet-overlay" @click.self="cancelEdit" role="dialog" aria-modal="true">
-          <div class="bottom-sheet">
-            <div class="bottom-sheet-handle"></div>
-            <div class="modal-header">
-              <h3>編輯紀錄</h3>
-            </div>
-            <div class="edit-form-layout">
-              <div class="edit-group type-group">
-                <div class="type-toggle">
-                  <button 
-                    type="button" 
-                    :class="['btn btn-sm', editForm.type === 'expense' ? 'danger' : 'outline']"
-                    @click="editForm.type = 'expense'"
-                  >
-                    支出
-                  </button>
-                  <button 
-                    type="button" 
-                    :class="['btn btn-sm', editForm.type === 'income' ? 'success' : 'outline']"
-                    @click="editForm.type = 'income'"
-                  >
-                    收入
-                  </button>
-                </div>
-              </div>
-
-              <div class="edit-group date-group">
-                <label class="input-label">
-                  <span>日期</span>
-                  <input type="date" v-model="editForm.date">
-                </label>
-                <div class="quick-tags">
-                  <button class="tag-btn" type="button" @click="setToday">今天</button>
-                  <button class="tag-btn" type="button" @click="setYesterday">昨天</button>
-                </div>
-              </div>
-
-              <div class="edit-group amount-group">
-                <label class="input-label">
-                  <span>金額</span>
-                  <input type="number" v-model.number="editForm.amount" min="0" step="1">
-                </label>
-                <div class="quick-tags scrollable">
-                  <button class="tag-btn" type="button" @click="adjustAmount(10)">+10</button>
-                  <button class="tag-btn" type="button" @click="adjustAmount(50)">+50</button>
-                  <button class="tag-btn" type="button" @click="adjustAmount(100)">+100</button>
-                </div>
-              </div>
-
-              <div class="edit-group detail-group">
-                <label class="input-label">
-                  <span>帳戶</span>
-                  <select v-model="editForm.account_id">
-                    <option value="">未指定</option>
-                    <option v-for="account in accounts" :key="account.id" :value="account.id">
-                      {{ account.name }}
-                    </option>
-                  </select>
-                </label>
-                
-                <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
-                  <span>類型</span>
-                  <select v-model="editForm.sub_type">
-                    <option value="general">一般</option>
-                    <option value="zibao">孜保平分</option>
-                  </select>
-                </label>
-                <label class="input-label" v-else-if="isEditingTransfer">
-                  <span>類型</span>
-                  <input type="text" value="轉帳" readonly>
-                </label>
-
-                <label class="input-label" v-if="editForm.type === 'expense' && !isEditingTransfer">
-                  <span>類別</span>
-                  <select v-model="editForm.category">
-                    <option value="">未指定</option>
-                    <option v-for="cat in EXPENSE_CATEGORIES" :key="cat.value" :value="cat.value">
-                      {{ cat.label }}
-                    </option>
-                  </select>
-                </label>
-
-                <label class="input-label flex-grow">
-                  <span>備註</span>
-                  <input type="text" v-model="editForm.note" placeholder="備註...">
-                </label>
-              </div>
-
-              <div class="edit-actions">
-                <button :class="['btn', editForm.type === 'income' ? 'success' : 'primary']" @click="saveEdit" type="button">儲存</button>
-                <button class="btn danger" @click="deleteFromEdit" type="button">刪除</button>
-                <button class="btn" @click="cancelEdit" type="button">取消</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ExpenseEditModal
+          v-if="editingId"
+          :entry="editingEntry"
+          @close="cancelEdit"
+          @deleted="onEntryDeleted"
+        />
       </transition>
 
       <Transition name="selection-bar">
@@ -379,6 +289,7 @@
 import { storeToRefs } from 'pinia'
 import type { ExpenseEntry } from '~/stores/expenses'
 import { EXPENSE_CATEGORIES } from '~/stores/expenses'
+import ExpenseEditModal from '~/components/ExpenseEditModal.vue'
 import IconEdit from '~/components/icons/IconEdit.vue'
 import IconTrash from '~/components/icons/IconTrash.vue'
 import IconX from '~/components/icons/IconX.vue'
@@ -405,15 +316,7 @@ const { deleteEntry, updateEntry } = expensesStore
 const { success, danger } = useToast()
 
 const editingId = ref<string | null>(null)
-const editForm = reactive({
-  date: '',
-  amount: 0,
-  note: '',
-  account_id: '',
-  type: 'expense' as 'expense' | 'income',
-  sub_type: 'general',
-  category: '',
-})
+const editingEntry = computed(() => entries.value.find(e => e.id === editingId.value) || null)
 const bulkModalOpen = ref(false)
 const selectedIds = ref<Set<string>>(new Set())
 const sortKey = ref<'date' | 'amount' | 'account_id' | 'note' | 'sub_type' | 'category'>('date')
@@ -442,12 +345,6 @@ const categoryLabel = (category?: string | null) => {
   if (!category) return ''
   return EXPENSE_CATEGORIES.find(c => c.value === category)?.label || category
 }
-
-const isEditingTransfer = computed(() => {
-  if (!editingId.value) return false
-  const target = entries.value.find(e => e.id === editingId.value)
-  return target ? isTransferEntry(target) : false
-})
 
 const filteredEntries = computed(() => {
   let list = [...entries.value]
@@ -485,7 +382,7 @@ const sortedEntries = computed(() => {
   return list.sort((a, b) => {
     const asc = sortOrder.value === 'asc'
     let comparison = 0
-    if (sortKey.value === 'date') comparison = new Date(a.date).getTime() - new Date(b.date).getTime()
+    if (sortKey.value === 'date') comparison = a.date.localeCompare(b.date)
     else if (sortKey.value === 'amount') comparison = a.amount - b.amount
     else if (sortKey.value === 'account_id') comparison = accountLabel(a.account_id).localeCompare(accountLabel(b.account_id))
     else if (sortKey.value === 'note') comparison = (a.note || '').localeCompare(b.note || '')
@@ -505,61 +402,16 @@ const allSelected = computed(() => entries.value.length > 0 && selectedIds.value
 
 const startEdit = (entry: ExpenseEntry) => {
   editingId.value = entry.id
-  editForm.date = entry.date
-  editForm.amount = Math.abs(entry.amount)
-  editForm.note = entry.note ?? ''
-  editForm.account_id = entry.account_id ?? ''
-  editForm.type = entry.amount < 0 ? 'income' : 'expense'
-  editForm.sub_type = isTransferEntry(entry) ? 'transfer' : (entry.sub_type ?? 'general')
-  editForm.category = entry.category ?? ''
 }
 
 const cancelEdit = () => editingId.value = null
 
-const saveEdit = async () => {
-  if (!editingId.value) return
-  const target = entries.value.find(e => e.id === editingId.value)
-  if (!target) return editingId.value = null
-  if (!editForm.date) return danger('請選擇日期')
-  
-  const finalAmount = editForm.type === 'income' ? -Math.abs(editForm.amount) : Math.abs(editForm.amount)
-  const nextSubType = isTransferEntry(target) ? 'transfer' : editForm.sub_type
-
-  await updateEntry({
-    ...target,
-    date: editForm.date,
-    amount: Math.round(finalAmount),
-    note: editForm.note ?? '',
-    account_id: editForm.account_id || null,
-    sub_type: nextSubType,
-    category: editForm.type === 'expense' ? (editForm.category || null) : null,
-  })
-  editingId.value = null
-}
-
-const deleteFromEdit = async () => {
-  if (!editingId.value) return
-  const id = editingId.value
-  await deleteEntry(id)
-  vibrate(40)
-  success('成功刪除紀錄')
-  editingId.value = null
+const onEntryDeleted = (id: string) => {
   if (selectedIds.value.has(id)) {
     const next = new Set(selectedIds.value)
     next.delete(id)
     selectedIds.value = next
   }
-}
-
-const adjustAmount = (delta: number) => {
-  editForm.amount = Math.max(0, Math.round((editForm.amount || 0) + delta))
-}
-
-const setToday = () => editForm.date = toISODate(new Date())
-const setYesterday = () => {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  editForm.date = toISODate(d)
 }
 
 const toggleSelect = (id: string) => {
@@ -971,14 +823,14 @@ defineExpose({ openBulkDelete, openSettleModal })
   padding: 14px 12px;
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.25s var(--ease-snappy), box-shadow 0.25s var(--ease-snappy);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+  transition: border-color 0.25s var(--ease-snappy), filter 0.25s var(--ease-snappy);
 }
 
 .entry-card:active {
-  border-color: rgba(192, 38, 211, 0.4);
-  box-shadow: 0 0 0 2px rgba(192, 38, 211, 0.15);
+  border-color: var(--cursed-cyan);
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.5));
 }
 
 .cell { min-width: 0; }
@@ -1211,8 +1063,8 @@ defineExpose({ openBulkDelete, openSettleModal })
     border: none;
     border-bottom: 1px solid var(--border);
     border-radius: 0;
+    clip-path: none;
     margin: 0;
-    box-shadow: none;
     background: var(--bg-paper);
     transition: background 0.1s;
     font-size: 14px;
@@ -1228,7 +1080,8 @@ defineExpose({ openBulkDelete, openSettleModal })
   }
   
   .entry-card.selected {
-    background: rgba(124, 58, 237, 0.15);
+    background: rgba(88, 28, 135, 0.2);
+    border-left: 3px solid var(--primary);
   }
 
   .entry-amount {
@@ -1271,86 +1124,7 @@ defineExpose({ openBulkDelete, openSettleModal })
 }
 .modal-actions button { flex: 1; }
 
-.edit-form-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 
-.edit-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.input-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-light);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.input-label input, .input-label select {
-  height: 38px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0 12px;
-  font-family: var(--font-sans);
-}
-.input-label input:focus, .input-label select:focus {
-  outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
-}
-
-.type-toggle {
-  display: flex;
-  gap: 8px;
-  background: #f1f5f9;
-  padding: 4px;
-  border-radius: 8px;
-}
-.btn-sm {
-  flex: 1;
-  font-size: 12px;
-  height: 32px;
-  border: none;
-}
-.btn-sm.outline {
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink-light);
-}
-.btn-sm.danger {
-  background: var(--bg-paper);
-  color: var(--danger);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-.btn-sm.success {
-  background: var(--bg-paper);
-  color: var(--success);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-}
-
-.quick-tags {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-.tag-btn {
-  border: 1px solid var(--border);
-  background: var(--bg-paper);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.1s;
-}
-.tag-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
 
 .icon-btn {
   background: transparent;

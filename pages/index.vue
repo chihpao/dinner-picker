@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <AppHeader title="🍱 今晚吃哪家？" hideAuth bg-image="/AppHeaderBack.jpg">
+    <AppHeader title="🍱 今晚吃哪家？" hideAuth :bg-image="bgImage">
       <template #actions>
         <div class="category-toggle">
           <button
@@ -55,6 +55,8 @@ useHead({
 
 const store = useRestaurantsStore()
 const { processedItems, isLoading, activeTab } = storeToRefs(store)
+const config = useRuntimeConfig()
+const bgImage = config.app.baseURL === '/' ? '/AppHeaderBack.jpg' : `${config.app.baseURL}AppHeaderBack.jpg`
 </script>
 
 <style scoped>

@@ -43,7 +43,10 @@ import { ref, onMounted } from 'vue'
 
 const { isCollapsed, toggleCollapse } = useSidebar()
 
-const characters = ['/01Yuta.webp', '/02Yuta.webp']
+const config = useRuntimeConfig()
+const base = config.app.baseURL === '/' ? '' : config.app.baseURL.replace(/\/$/, '')
+
+const characters = [`${base}/01Yuta.webp`, `${base}/02Yuta.webp`]
 const currentCharacter = ref('')
 
 onMounted(() => {

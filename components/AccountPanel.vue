@@ -332,9 +332,10 @@ const saveEdit = async (id: string) => {
 .segment-group {
   position: relative;
   display: grid;
-  background: rgba(230, 234, 242, 0.6);
+  background: rgba(255, 255, 255, 0.03);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
   gap: 4px;
   width: 100%;
   max-width: 320px;
@@ -350,9 +351,10 @@ const saveEdit = async (id: string) => {
   top: 4px;
   bottom: 4px;
   width: calc(33.333% - 5.33px);
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--primary-light);
+  border-radius: 2px;
+  box-shadow: var(--shadow-glow);
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: -1;
 }
@@ -364,7 +366,7 @@ const saveEdit = async (id: string) => {
 .segment-btn {
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-pixel);
@@ -377,7 +379,8 @@ const saveEdit = async (id: string) => {
 }
 
 .segment-btn.active {
-  color: var(--primary);
+  color: #fff;
+  text-shadow: var(--text-glow);
 }
 
 .empty-state {
@@ -411,24 +414,27 @@ const saveEdit = async (id: string) => {
 .account-card {
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
   padding: 18px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02), 0 8px 24px rgba(0,0,0,0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s, border-color 0.2s;
   position: relative;
   overflow: hidden;
 }
 
 .account-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-glow);
 }
 
 .account-card.ghost {
-  background: #fcfcfc;
+  background: transparent;
   border-style: dashed;
   opacity: 0.8;
 }
@@ -465,10 +471,10 @@ const saveEdit = async (id: string) => {
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-.kind-tag.bank { background: #E0F2FE; color: #0284C7; }
-.kind-tag.card { background: #FCE7F3; color: #DB2777; }
-.kind-tag.cash { background: #DCFCE7; color: #16A34A; }
-.kind-tag.other { background: #F3F4F6; color: #4B5563; }
+.kind-tag.bank { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
+.kind-tag.card { background: rgba(168, 85, 247, 0.15); color: #C084FC; border: 1px solid rgba(168, 85, 247, 0.3); }
+.kind-tag.cash { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.kind-tag.other { background: rgba(156, 163, 175, 0.15); color: #9CA3AF; border: 1px solid rgba(156, 163, 175, 0.3); }
 
 .card-actions {
   display: flex;
@@ -480,18 +486,18 @@ const saveEdit = async (id: string) => {
 .icon-btn {
   width: 40px;
   height: 40px;
-  border: none;
-  background: #f3f4f6;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--ink-light);
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
 }
-.icon-btn:hover { background: #e5e7eb; color: var(--ink); }
-.icon-btn.danger:hover { background: #FEF2F2; color: var(--danger); }
+.icon-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--ink); border-color: var(--border); }
+.icon-btn.danger:hover { background: rgba(229, 62, 62, 0.1); color: var(--danger); border-color: rgba(229, 62, 62, 0.4); box-shadow: 0 0 8px rgba(229, 62, 62, 0.3); }
 .icon-btn :deep(svg) { width: 18px; height: 18px; }
 
 .card-stats {
@@ -581,18 +587,18 @@ const saveEdit = async (id: string) => {
   width: 100%;
   height: 44px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0 12px;
   font-family: var(--font-sans);
   font-size: 14px;
   color: var(--ink);
   transition: all 0.2s;
-  background: var(--bg-paper);
+  background: rgba(0, 0, 0, 0.2);
 }
 .form-input:focus, .form-select:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-glow);
 }
 
 .type-select-wrapper { position: relative; }
@@ -654,10 +660,10 @@ const saveEdit = async (id: string) => {
   margin-top: 8px;
   font-size: 13px;
   color: var(--ink-light);
-  background: #FEF2F2;
+  background: rgba(229, 62, 62, 0.1);
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid #FECACA;
+  border: 1px solid rgba(229, 62, 62, 0.3);
 }
 
 .modal-actions {
@@ -681,7 +687,7 @@ const saveEdit = async (id: string) => {
 
   .account-card:hover {
     transform: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: none;
   }
 
   .segment-group {

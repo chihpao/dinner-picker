@@ -66,14 +66,14 @@ const getIcon = (name: string) => {
   font-size: 26px;
   width: 56px;
   height: 56px;
-  background: var(--bg-body);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border: 1px solid var(--border);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .card-info {
@@ -96,19 +96,19 @@ const getIcon = (name: string) => {
   height: 44px;
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ink-light);
   transition: all 0.25s var(--ease-snappy);
-  box-shadow: var(--shadow-sm);
 }
 
 .restaurant-card:hover {
   transform: translateY(-4px);
-  border-color: var(--primary);
-  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.12);
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-glow);
 }
 
 .restaurant-card:active {
@@ -120,12 +120,12 @@ const getIcon = (name: string) => {
   color: white;
   border-color: transparent;
   transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+  box-shadow: var(--shadow-glow);
 }
 
 .restaurant-card:hover .card-icon {
-  background: white;
-  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-light);
   transform: scale(1.05);
 }
 

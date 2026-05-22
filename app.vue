@@ -10,7 +10,7 @@ import { usePwaInstall } from '~/composables/usePwaInstall'
 useHead({
   meta: [
     { name: 'color-scheme', content: 'dark' },
-    { name: 'theme-color', content: '#030305' }
+    { name: 'theme-color', content: '#0A0A0F' }
   ],
   htmlAttrs: {
     class: 'dark mappa-theme'

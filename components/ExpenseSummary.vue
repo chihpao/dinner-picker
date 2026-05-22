@@ -148,20 +148,21 @@ const averageLabel = computed(() => {
 </script>
 
 <style scoped>
-.danger-text { color: #ef4444; }
-.success-text { color: #10b981; }
-.primary-text { color: var(--primary); }
+.danger-text { color: var(--danger); text-shadow: 0 0 8px rgba(229, 62, 62, 0.6); }
+.success-text { color: var(--success); text-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
+.primary-text { color: var(--primary-light); text-shadow: var(--text-glow); }
 
 .summary-section {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: var(--glass-bg);
+  background: var(--bg-paper);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
   padding: 16px;
   margin-top: 12px;
 }
@@ -185,9 +186,10 @@ const averageLabel = computed(() => {
 .segment-group {
   position: relative;
   display: grid;
-  background: rgba(230, 234, 242, 0.6);
+  background: rgba(255, 255, 255, 0.03);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
   gap: 4px;
   width: 100%;
   z-index: 1;
@@ -205,9 +207,10 @@ const averageLabel = computed(() => {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--primary-light);
+  border-radius: 2px;
+  box-shadow: var(--shadow-glow);
   transition: transform 0.4s var(--ease-spring);
   z-index: -1;
 }
@@ -224,7 +227,7 @@ const averageLabel = computed(() => {
 .segment-btn {
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-pixel);
@@ -237,7 +240,8 @@ const averageLabel = computed(() => {
 }
 
 .segment-btn.active {
-  color: var(--primary);
+  color: #fff;
+  text-shadow: var(--text-glow);
 }
 
 .segment-btn.disabled {
@@ -256,21 +260,43 @@ const averageLabel = computed(() => {
   background: var(--bg-paper);
   border: var(--border-width) solid var(--border);
   border-radius: 0;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
   display: flex;
   align-items: stretch;
   overflow: hidden;
+  position: relative;
   transition: all 0.3s var(--ease-snappy);
   animation: staggerSlideUp var(--duration-normal) var(--spring-smooth) both;
   animation-delay: var(--stagger, 0ms);
 }
 
+.summary-card::before {
+  content: '呪';
+  position: absolute;
+  right: -5px;
+  bottom: -25px;
+  font-size: 90px;
+  font-family: "Noto Serif JP", var(--font-sans);
+  font-weight: 800;
+  opacity: 0.15;
+  color: var(--primary-light);
+  pointer-events: none;
+  z-index: 0;
+}
+.summary-card:nth-child(2)::before {
+  content: '祓';
+}
+.summary-card:nth-child(3)::before {
+  content: '式';
+}
+
 .card-accent {
-  width: 3px;
+  width: 4px;
   flex-shrink: 0;
-  background: var(--accent, var(--ink-light));
-  border-radius: 3px 0 0 3px;
-  opacity: 0.7;
+  background: var(--accent, var(--primary));
+  box-shadow: 0 0 10px var(--accent, var(--primary));
+  border-radius: 0;
+  opacity: 0.9;
   transition: opacity 0.3s;
 }
 
@@ -284,12 +310,14 @@ const averageLabel = computed(() => {
   flex-direction: column;
   gap: 8px;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .summary-card.highlight {
-  border-color: var(--primary);
-  background: linear-gradient(180deg, rgba(88, 28, 135, 0.1) 0%, rgba(3, 3, 5, 1) 100%);
-  filter: drop-shadow(0 0 10px rgba(88, 28, 135, 0.6));
+  border-color: var(--primary-light);
+  background: rgba(168, 85, 247, 0.15);
+  box-shadow: var(--shadow-glow);
 }
 
 .summary-label {
@@ -302,7 +330,8 @@ const averageLabel = computed(() => {
 
 .summary-amount {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
   line-height: 1.2;
 }
 

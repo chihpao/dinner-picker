@@ -23,9 +23,9 @@ const style = computed(() => ({
 .skeleton {
   background: linear-gradient(
     90deg,
-    #f0f1f3 25%,
-    #e2e4e7 50%,
-    #f0f1f3 75%
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
   );
   background-size: 200% 100%;
   animation: loading 1.5s infinite;

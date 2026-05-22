@@ -322,7 +322,7 @@ const formatShortDate = (dateStr: string) => {
 
 .budget-input-wrap:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
 }
 
 .budget-prefix {
@@ -432,7 +432,8 @@ const formatShortDate = (dateStr: string) => {
   border-radius: 99px;
   transition: width 0.5s var(--ease-snappy);
   min-width: 2px;
-  background: linear-gradient(90deg, var(--primary), #818cf8);
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
 }
 
 .meter-bar-fill.warning {
@@ -459,7 +460,7 @@ const formatShortDate = (dateStr: string) => {
 }
 
 .meter-remaining.danger {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .meter-pace {
@@ -491,8 +492,8 @@ const formatShortDate = (dateStr: string) => {
 
 .details-btn:hover {
   border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
+  color: var(--primary-light);
+  background: rgba(168, 85, 247, 0.1);
 }
 
 .details-btn span {
@@ -513,7 +514,7 @@ const formatShortDate = (dateStr: string) => {
 }
 
 .icon-btn:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--ink);
 }
 

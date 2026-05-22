@@ -49,7 +49,7 @@ import IconBank from '~/components/icons/IconBank.vue'
 useHead({
   title: '今晚吃哪家？',
   meta: [
-    { name: 'theme-color', content: '#f7f7f8' }
+    { name: 'theme-color', content: '#05020A' }
   ]
 })
 
@@ -89,9 +89,9 @@ const bgImage = config.app.baseURL === '/' ? '/AppHeaderBack.jpg' : `${config.ap
 }
 
 .toggle-btn.active {
-  background: white;
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  background: rgba(168, 85, 247, 0.2);
+  color: var(--primary-light);
+  box-shadow: var(--shadow-glow);
 }
 
 .home-content {

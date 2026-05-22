@@ -13,16 +13,16 @@ export default {
         extend: {
             colors: {
                 mappa: {
-                    bgDeep: '#030305',
-                    card: '#0F0F14',
-                    primary: '#581C87',
-                    primaryTo: '#991B1B',
-                    cursedCyan: '#00F0FF',
-                    bloodRed: '#FF003C',
-                    textBase: '#F1F5F9',
-                    textMuted: '#71717A',
-                    danger: '#E11D48',
-                    income: '#06B6D4'
+                    bgDeep: '#05020A',
+                    card: 'rgba(124, 58, 237, 0.08)',
+                    primary: '#9333EA',
+                    primaryTo: '#C084FC',
+                    cursedCyan: '#22D3EE',
+                    bloodRed: '#EF4444',
+                    textBase: '#FFFFFF',
+                    textMuted: '#A19BB5',
+                    danger: '#E53E3E',
+                    income: '#3B82F6'
                 }
             }
         },

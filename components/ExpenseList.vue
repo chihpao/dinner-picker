@@ -122,7 +122,7 @@
             <div class="cell actions-cell"><AppSkeleton width="36px" height="36px" /></div>
           </div>
         </template>
-        <template v-else>
+        <TransitionGroup name="list-cursed" tag="div" class="expense-list-transition-wrapper">
           <article 
             v-for="entry in sortedEntries" 
             :key="entry.id" 
@@ -190,7 +190,7 @@
               </button>
             </div>
           </article>
-        </template>
+        </TransitionGroup>
       </div>
     </div>
 
@@ -567,14 +567,32 @@ defineExpose({ openBulkDelete, openSettleModal })
   background: rgba(255, 255, 255, 0.05);
 }
 .type-zibao {
-  color: var(--primary);
-  background: rgba(124, 58, 237, 0.15);
-  border: 1px solid rgba(79, 70, 229, 0.1);
+  color: var(--primary-light);
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
 }
 .type-transfer {
-  color: #67E8F9;
-  background: rgba(103, 232, 249, 0.15);
-  border: 1px solid rgba(103, 232, 249, 0.3);
+  color: var(--cursed-cyan);
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.list-cursed-enter-active,
+.list-cursed-leave-active {
+  transition: all 0.35s cubic-bezier(0.55, 0.085, 0.68, 0.53);
+}
+.list-cursed-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+.list-cursed-leave-to {
+  opacity: 0;
+  transform: scale(1.05);
+  filter: blur(4px) drop-shadow(0 0 10px var(--primary));
+}
+.expense-list-transition-wrapper {
+  display: contents;
 }
 
 .category-badge {
@@ -1141,11 +1159,11 @@ defineExpose({ openBulkDelete, openSettleModal })
   transition: all 0.2s;
 }
 .icon-btn:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--ink);
 }
 .icon-btn svg { width: 18px; height: 18px; }
-.icon-btn.danger:hover { color: var(--danger); background: #fef2f2; }
+.icon-btn.danger:hover { color: var(--danger); background: rgba(229, 62, 62, 0.15); }
 
 @media (max-width: 768px) {
   .icon-btn {

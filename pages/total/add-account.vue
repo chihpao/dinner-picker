@@ -85,7 +85,7 @@ const handleAdd = async () => {
 useHead({
   title: '新增帳戶｜今晚吃哪家？',
   meta: [
-    { name: 'theme-color', content: '#1b1b1b' }
+    { name: 'theme-color', content: '#05020A' }
   ]
 })
 </script>
@@ -102,7 +102,7 @@ useHead({
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.94));
+  background: var(--bg-paper);
   box-shadow: var(--shadow-sm);
 }
 
@@ -154,7 +154,8 @@ useHead({
   font-size: 15px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
   box-sizing: border-box;
   outline: none;
 }
@@ -162,7 +163,7 @@ useHead({
 .account-form input:focus,
 .account-form select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
 }
 
 .form-actions {

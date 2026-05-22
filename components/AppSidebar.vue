@@ -141,16 +141,17 @@ onMounted(() => {
 }
 
 .nav-item:hover {
-  background: rgba(243, 244, 246, 0.8);
+  background: rgba(168, 85, 247, 0.1);
   color: var(--ink);
 }
 
 .nav-item.active {
-  background: #ffffff;
-  color: var(--primary);
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--primary-light);
   font-weight: 600;
-  border-color: rgba(0, 0, 0, 0.04);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  border-color: rgba(168, 85, 247, 0.3);
+  border-left: 3px solid var(--primary);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
 }
 
 .nav-item:active {

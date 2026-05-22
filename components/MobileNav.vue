@@ -49,7 +49,7 @@ const activeIndex = computed(() => {
   background: rgba(3, 3, 5, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(153, 27, 27, 0.3);
+  border-top: 1px solid rgba(168, 85, 247, 0.3);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   padding: 8px 0;
@@ -79,7 +79,7 @@ const activeIndex = computed(() => {
   background: var(--primary-light);
   transform: rotate(45deg) translateY(4px);
   box-shadow: 0 0 12px var(--primary-light);
-  border: 1px solid #000;
+  border: 1px solid rgba(168, 85, 247, 0.5);
 }
 
 .nav-item {
@@ -131,12 +131,12 @@ const activeIndex = computed(() => {
 }
 
 @keyframes glitch {
-  0% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #991B1B); }
-  20% { transform: translate(-4px, 2px) skewX(20deg); filter: drop-shadow(4px 0 0 #581C87); color: #06B6D4; }
-  40% { transform: translate(4px, -2px) skewX(-20deg); filter: drop-shadow(-4px 0 0 #E11D48); color: #F1F5F9; }
-  60% { transform: translate(-2px, 0) skewX(10deg); filter: drop-shadow(2px 0 0 #581C87); color: #E11D48; }
-  80% { transform: translate(2px, -2px) skewX(-10deg); filter: drop-shadow(-2px 0 0 #E11D48); color: #581C87; }
-  100% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #991B1B); }
+  0% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #9333EA); }
+  20% { transform: translate(-4px, 2px) skewX(20deg); filter: drop-shadow(4px 0 0 #9333EA); color: #22D3EE; }
+  40% { transform: translate(4px, -2px) skewX(-20deg); filter: drop-shadow(-4px 0 0 #E53E3E); color: #FFFFFF; }
+  60% { transform: translate(-2px, 0) skewX(10deg); filter: drop-shadow(2px 0 0 #9333EA); color: #E53E3E; }
+  80% { transform: translate(2px, -2px) skewX(-10deg); filter: drop-shadow(-2px 0 0 #E53E3E); color: #9333EA; }
+  100% { transform: translate(0) skewX(0); filter: drop-shadow(0 0 10px #9333EA); }
 }
 
 @media (max-width: 400px) {

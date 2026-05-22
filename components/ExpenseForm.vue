@@ -403,7 +403,7 @@ const onAnimationComplete = () => {
   right: -1px;
   height: 5px;
   border-radius: var(--radius) var(--radius) 0 0;
-  background: linear-gradient(90deg, var(--primary), #22c55e);
+  background: var(--mappa-grad);
   opacity: 0.75;
 }
 
@@ -563,7 +563,7 @@ const onAnimationComplete = () => {
 }
 
 .amount-input::placeholder {
-  color: rgba(0,0,0,0.15);
+  color: rgba(255,255,255,0.2);
 }
 
 .prefix {
@@ -733,8 +733,8 @@ const onAnimationComplete = () => {
 .btn-submit.danger { background: var(--danger); }
 .btn-submit.success { background: var(--success); }
 .btn-submit.primary {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.24);
+  background: var(--mappa-grad);
+  box-shadow: var(--shadow-glow);
 }
 
 .auth-gate {
@@ -804,12 +804,12 @@ const onAnimationComplete = () => {
     background: rgba(10, 10, 15, 0.85);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border-top: 1px solid rgba(0,0,0,0.05);
+    border-top: 1px solid var(--border);
     z-index: 10;
   }
 
   .btn-submit {
-    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+    box-shadow: var(--shadow-glow);
     transform: translateZ(0);
   }
 

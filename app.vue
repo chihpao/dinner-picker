@@ -48,4 +48,10 @@ const bgStyle = computed(() => {
   mix-blend-mode: luminosity;
   transition: background-image 0.5s ease-in-out;
 }
+
+@media (min-width: 721px) {
+  .jjk-bg-layer {
+    display: none;
+  }
+}
 </style>

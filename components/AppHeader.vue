@@ -1,24 +1,5 @@
 <template>
   <header class="hero" :class="{ 'hero--expenses': isExpenses }">
-    <div class="mappa-bg-layer">
-      <img v-if="bgImage" :src="bgImage" class="header-bg-image bg-cursed-overlay" alt="" />
-      <svg v-else viewBox="0 0 400 150" class="energy-lines" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="mappaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#581C87" />
-            <stop offset="100%" stop-color="#E11D48" />
-          </linearGradient>
-          <filter id="cursedBlur" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="4" />
-          </filter>
-        </defs>
-        <g stroke="url(#mappaGrad)" stroke-width="2.5" fill="none" filter="url(#cursedBlur)">
-          <path class="cursed-path" d="M 0,20 Q 50,80 100,10 T 200,50 T 300,10 T 400,60" />
-          <path class="cursed-path delay-1" d="M -20,100 Q 80,40 150,110 T 300,30 T 420,90" />
-          <path class="cursed-path delay-2" d="M 50,-20 Q 150,120 250,-10 T 350,130" />
-        </g>
-      </svg>
-    </div>
     <div class="hero-header">
       <div class="hero-title-wrap">
         <NuxtLink
@@ -76,13 +57,12 @@
 import { storeToRefs } from 'pinia'
 import IconArrowLeft from '~/components/icons/IconArrowLeft.vue'
 
-const { backTo, hideAuth = false, subtitle, bgImage } = defineProps<{
+const { backTo, hideAuth = false, subtitle } = defineProps<{
   title: string
   isExpenses?: boolean
   backTo?: string
   hideAuth?: boolean
   subtitle?: string
-  bgImage?: string
 }>()
 
 const authStore = useAuthStore()
@@ -131,51 +111,6 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   box-shadow: var(--shadow-sm);
   transition: all 0.3s var(--ease-snappy);
   overflow: hidden;
-}
-
-.mappa-bg-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.header-bg-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.energy-lines {
-  width: 100%;
-  height: 100%;
-}
-
-.cursed-path {
-  stroke-dasharray: 800;
-  stroke-dashoffset: 800;
-  animation: energy-flow 1.5s cubic-bezier(0, 1, 0, 1) forwards,
-             cursed-pulse 4s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center;
-}
-
-.delay-1 { animation-delay: 0s, 0.5s; }
-.delay-2 { animation-delay: 0s, 1.2s; }
-
-@keyframes energy-flow {
-  to { stroke-dashoffset: 0; }
-}
-
-@keyframes cursed-pulse {
-  0% { opacity: 0.1; transform: scaleY(0.9) skewX(2deg); }
-  20% { opacity: 0.5; transform: scaleY(1.1) skewX(-3deg); }
-  40% { opacity: 0.2; transform: scaleY(0.95) skewX(4deg); }
-  60% { opacity: 0.4; transform: scaleY(1.05) skewX(-1deg); }
-  80% { opacity: 0.1; transform: scaleY(0.9) skewX(3deg); }
-  100% { opacity: 0.6; transform: scaleY(1.15) skewX(-4deg); }
 }
 
 .hero-header, .hero-actions, .hero-title-wrap {

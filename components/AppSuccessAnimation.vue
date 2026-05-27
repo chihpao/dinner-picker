@@ -6,14 +6,14 @@
           <div class="success-icon">
             <img v-if="imageUrl" :src="imageUrl" class="success-custom-image" alt="" />
             <svg v-else viewBox="0 0 64 64" fill="none" class="shatter-fragments">
-              <polygon points="32,32 20,5 45,0" fill="#000" />
-              <polygon points="32,32 55,15 64,35" fill="#E11D48" />
-              <polygon points="32,32 45,55 25,64" fill="#000" />
-              <polygon points="32,32 5,45 0,20" fill="#E11D48" />
-              <polygon points="32,32 15,10 35,-5" fill="#000" />
-              <polygon points="32,32 60,5 64,25" fill="#E11D48" />
-              <polygon points="32,32 50,60 30,64" fill="#000" />
-              <polygon points="32,32 5,25 -5,10" fill="#E11D48" />
+              <polygon points="32,32 20,5 45,0" fill="#05020A" />
+              <polygon points="32,32 55,15 64,35" fill="#9333EA" />
+              <polygon points="32,32 45,55 25,64" fill="#05020A" />
+              <polygon points="32,32 5,45 0,20" fill="#E53E3E" />
+              <polygon points="32,32 15,10 35,-5" fill="#05020A" />
+              <polygon points="32,32 60,5 64,25" fill="#9333EA" />
+              <polygon points="32,32 50,60 30,64" fill="#05020A" />
+              <polygon points="32,32 5,25 -5,10" fill="#E53E3E" />
             </svg>
           </div>
           <div class="success-amount">
@@ -124,7 +124,7 @@ defineExpose({ show })
   width: 100%;
   height: 100%;
   animation: shatter 300ms cubic-bezier(0, 1, 0, 1) forwards;
-  filter: drop-shadow(0 0 10px rgba(225, 29, 72, 0.6));
+  filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.8));
 }
 
 .success-custom-image {
@@ -167,17 +167,17 @@ defineExpose({ show })
   font-weight: 900;
   color: var(--ink);
   letter-spacing: -0.05em;
-  text-shadow: 0 0 20px rgba(225, 29, 72, 0.6), 2px 2px 0px #000;
+  text-shadow: 0 0 20px rgba(147, 51, 234, 0.6), 0 0 40px rgba(147, 51, 234, 0.3), 2px 2px 0px #05020A;
 }
 
 .success-label {
   font-family: var(--font-pixel);
   font-size: 14px;
-  color: var(--danger);
+  color: var(--primary-light);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(225, 29, 72, 0.5);
+  text-shadow: var(--text-glow);
   animation: amountImpact 200ms cubic-bezier(0, 1, 0, 1) 50ms both;
 }
 

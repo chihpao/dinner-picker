@@ -113,6 +113,54 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   overflow: hidden;
 }
 
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at top left, rgba(147, 51, 234, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(168, 85, 247, 0.02) 2px, rgba(168, 85, 247, 0.02) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at top left, rgba(147, 51, 234, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(168, 85, 247, 0.02) 2px, rgba(168, 85, 247, 0.02) 4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hero-header, .hero-actions, .hero-title-wrap {
   position: relative;
   z-index: 1;
@@ -157,6 +205,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   font-size: 22px;
   line-height: 1.2;
   color: var(--ink);
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
 }
 
 .hero-heading {
@@ -276,10 +325,10 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
 .auth-avatar {
   width: 38px;
   height: 38px;
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--primary);
   color: white;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid var(--border);
   font-family: var(--font-pixel);
   font-weight: 700;
   cursor: pointer;
@@ -287,7 +336,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   align-items: center;
   justify-content: center;
   transition: all 0.2s var(--ease-snappy);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-glow);
 }
 
 .auth-avatar:hover {
@@ -303,10 +352,13 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: var(--bg-paper);
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), var(--shadow-glow);
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -354,7 +406,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   font-family: var(--font-sans);
   font-size: 13px;
   color: var(--ink);
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   width: 100%;
   display: flex;

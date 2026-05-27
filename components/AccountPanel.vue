@@ -325,7 +325,7 @@ const saveEdit = async (id: string) => {
   color: var(--ink-light);
   font-size: 11px;
   padding: 4px 10px;
-  border-radius: 99px;
+  border-radius: 0;
   font-family: var(--font-pixel);
 }
 
@@ -466,7 +466,7 @@ const saveEdit = async (id: string) => {
   justify-content: center;
   font-size: 12px;
   padding: 3px 10px;
-  border-radius: 99px;
+  border-radius: 0;
   font-family: var(--font-sans);
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -662,7 +662,7 @@ const saveEdit = async (id: string) => {
   color: var(--ink-light);
   background: rgba(229, 62, 62, 0.1);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1px solid rgba(229, 62, 62, 0.3);
 }
 

@@ -84,17 +84,19 @@ onUnmounted(() => {
   will-change: transform;
 }
 
-/* Glow effects based on utility classes applied to parent */
-:global(.text-success) .amount-digits {
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+:global(.text-success) .amount-digits,
+:global(.success-text) .amount-digits {
+  text-shadow: 0 0 12px rgba(59, 130, 246, 0.6), 0 0 24px rgba(59, 130, 246, 0.3);
 }
 
-:global(.text-danger) .amount-digits {
-  text-shadow: 0 0 10px rgba(225, 29, 72, 0.5);
+:global(.text-danger) .amount-digits,
+:global(.danger-text) .amount-digits {
+  text-shadow: 0 0 12px rgba(229, 62, 62, 0.6), 0 0 24px rgba(229, 62, 62, 0.3);
 }
 
-:global(.text-primary) .amount-digits {
-  text-shadow: 0 0 10px rgba(88, 28, 135, 0.5);
+:global(.text-primary) .amount-digits,
+:global(.primary-text) .amount-digits {
+  text-shadow: 0 0 12px rgba(147, 51, 234, 0.6), 0 0 24px rgba(147, 51, 234, 0.3);
 }
 
 .spring-bump {

@@ -363,9 +363,9 @@ const onAnimationComplete = () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(192, 38, 211, 0.05) 100%);
-  border: 1px solid rgba(79, 70, 229, 0.1);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
+  border: 1px solid var(--border);
+  border-radius: 0;
   margin-bottom: 4px;
 }
 
@@ -440,7 +440,7 @@ const onAnimationComplete = () => {
 }
 
 .zibao-pill:hover {
-  border-color: rgba(79, 70, 229, 0.3);
+  border-color: rgba(147, 51, 234, 0.3);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -608,10 +608,10 @@ const onAnimationComplete = () => {
 }
 
 .amt-chip:hover {
-  border-color: rgba(79, 70, 229, 0.3);
+  border-color: rgba(147, 51, 234, 0.3);
   color: var(--primary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.08);
+  box-shadow: 0 4px 8px rgba(147, 51, 234, 0.08);
 }
 
 .amt-chip:active {
@@ -645,7 +645,7 @@ const onAnimationComplete = () => {
 .chip {
   border: 1px solid var(--border);
   background: var(--bg-paper);
-  border-radius: 8px;
+  border-radius: 0;
   min-height: 36px;
   padding: 6px 10px;
   font-size: 11px;
@@ -686,7 +686,7 @@ const onAnimationComplete = () => {
 .input {
   height: 44px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 0 12px;
   width: 100%;
   font-size: 14px;
@@ -696,7 +696,7 @@ const onAnimationComplete = () => {
 .input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
 }
 
 .note-row {
@@ -712,7 +712,8 @@ const onAnimationComplete = () => {
   width: 100%;
   height: 50px;
   border: none;
-  border-radius: 12px;
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
   color: #fff;
   font-size: 16px;
   font-family: var(--font-pixel);
@@ -761,10 +762,10 @@ const onAnimationComplete = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(79, 70, 229, 0.03);
+  background: rgba(147, 51, 234, 0.03);
   padding: 12px;
-  border-radius: 16px;
-  border: 1px dashed rgba(79, 70, 229, 0.2);
+  border-radius: 0;
+  border: 1px dashed rgba(147, 51, 234, 0.2);
 }
 
 .transfer-step {
@@ -790,7 +791,7 @@ const onAnimationComplete = () => {
 
 @media (max-width: 720px) {
   .entry-panel {
-    border-radius: 20px;
+    border-radius: 0;
     padding: 16px 12px 20px;
     border: none;
     box-shadow: 0 4px 20px rgba(0,0,0,0.04);
@@ -822,7 +823,7 @@ const onAnimationComplete = () => {
     padding: 6px 0;
     font-size: 12px;
     min-height: 38px;
-    border-radius: 10px;
+    border-radius: 0;
   }
 }
 

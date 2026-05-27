@@ -697,7 +697,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  border-radius: 10px;
+  border-radius: 0;
   margin-right: 8px;
 }
 .panel-title-group {
@@ -743,7 +743,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   width: 100%;
   height: 40px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--bg-paper);
   padding: 0 12px;
   font-size: 13px;
@@ -755,7 +755,7 @@ defineExpose({ openBulkDelete, openSettleModal })
 .filter-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
 }
 
 .result-count {
@@ -772,7 +772,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   gap: 8px;
   background: rgba(255, 255, 255, 0.02);
   padding: 8px;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px dashed var(--border);
 }
 
@@ -792,7 +792,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   height: 34px;
   width: 34px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: 0;
   flex: none;
   background: var(--bg-paper);
   border: 1px solid var(--border);
@@ -1151,7 +1151,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   width: 36px;
   height: 36px;
   padding: 0;
-  border-radius: 6px;
+  border-radius: 0;
   color: var(--ink-light);
   display: inline-flex;
   align-items: center;
@@ -1184,7 +1184,8 @@ defineExpose({ openBulkDelete, openSettleModal })
   background: var(--ink);
   color: white;
   padding: 12px 20px;
-  border-radius: 99px;
+  border-radius: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
   display: flex;
   align-items: center;
   gap: 24px;
@@ -1206,7 +1207,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   color: white;
   min-width: 24px;
   height: 24px;
-  border-radius: 12px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1237,7 +1238,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: 0;
   transition: all 0.2s;
 }
 
@@ -1284,7 +1285,7 @@ defineExpose({ openBulkDelete, openSettleModal })
   .selection-bar {
     bottom: calc(var(--mobile-nav-height) + 16px);
     min-width: calc(100% - 32px);
-    border-radius: 16px;
+    border-radius: 0;
   }
 }
 

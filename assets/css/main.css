@@ -100,6 +100,19 @@ body::before {
   pointer-events: none;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 17.32v17.32L30 52 0 34.64V17.32z' fill='none' stroke='%239333EA' stroke-width='0.5' opacity='0.08'/%3E%3C/svg%3E");
+  background-size: 60px 52px;
+  opacity: 0.4;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+}
+
 /* Glassmorphism */
 .glass {
   background: var(--glass-bg);
@@ -122,15 +135,18 @@ body::before {
 }
 
 .bottom-sheet {
-  background: var(--bg-paper);
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   width: 100%;
   max-width: 540px;
-  border-radius: 24px 24px 0 0;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
   padding: 16px 20px calc(24px + env(safe-area-inset-bottom));
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(147, 51, 234, 0.15);
   transform-origin: bottom;
-  animation: slideUpSpring 0.5s var(--ease-spring);
+  animation: slideUpSpring 0.3s var(--ease-snappy);
 }
 
 .bottom-sheet-handle {
@@ -184,6 +200,24 @@ body::before {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
   transition: all 0.2s var(--ease-snappy);
   position: relative;
+  overflow: hidden;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(147, 51, 234, 0.06) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+  transition: left 0.6s ease;
+}
+
+.card:hover::after {
+  left: 100%;
 }
 
 .card.active, .card.selected, .card:hover {
@@ -301,12 +335,11 @@ body::before {
   opacity: 0;
 }
 
-/* Segment Control */
 .segment-group {
   display: flex;
   background: rgba(0,0,0, 0.3);
   padding: 3px;
-  border-radius: 10px;
+  border-radius: 0;
   position: relative;
   border: 1px solid var(--border);
 }
@@ -335,9 +368,9 @@ body::before {
   top: 3px;
   bottom: 3px;
   background: var(--primary);
-  border-radius: 7px;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.4);
-  transition: transform 0.3s var(--ease-snappy), width 0.3s;
+  border-radius: 0;
+  box-shadow: 0 0 12px rgba(147, 51, 234, 0.5);
+  transition: transform 0.2s var(--ease-snappy), width 0.2s;
 }
 
 @keyframes slideUp {
@@ -357,13 +390,35 @@ body::before {
 
 @keyframes floatIdle {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-3px); }
 }
 
 @keyframes amountPulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.03); }
   100% { transform: scale(1); }
+}
+
+@keyframes cursedFlicker {
+  0%, 95%, 100% { opacity: 1; }
+  96% { opacity: 0.4; transform: skewX(-2deg); }
+  97% { opacity: 0.8; transform: skewX(1deg); }
+  98% { opacity: 0.3; transform: skewX(-1deg); }
+  99% { opacity: 0.9; transform: skewX(0); }
+}
+
+@keyframes cardSweep {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.cursed-text {
+  text-shadow: var(--text-glow);
+  animation: cursedFlicker 8s infinite;
+}
+
+.cursed-border {
+  animation: cursedPulse 3s infinite;
 }
 
 .amount-signature {

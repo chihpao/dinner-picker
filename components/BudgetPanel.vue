@@ -305,7 +305,7 @@ const formatShortDate = (dateStr: string) => {
 .input {
   height: 40px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 0 10px;
   font-size: 14px;
   background: var(--bg-paper);
@@ -315,7 +315,7 @@ const formatShortDate = (dateStr: string) => {
 .budget-input-wrap {
   position: relative;
   background: var(--bg-paper);
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid var(--border);
   padding: 6px 12px;
 }
@@ -423,17 +423,18 @@ const formatShortDate = (dateStr: string) => {
   width: 100%;
   height: 8px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 99px;
+  border-radius: 0;
   overflow: hidden;
 }
 
 .meter-bar-fill {
   height: 100%;
-  border-radius: 99px;
+  border-radius: 0;
   transition: width 0.5s var(--ease-snappy);
   min-width: 2px;
   background: linear-gradient(90deg, var(--primary), var(--primary-light));
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 8px var(--primary);
+  position: relative;
 }
 
 .meter-bar-fill.warning {
@@ -469,7 +470,7 @@ const formatShortDate = (dateStr: string) => {
   font-family: var(--font-pixel);
   background: rgba(255, 255, 255, 0.05);
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1px solid var(--border);
 }
 
@@ -505,7 +506,7 @@ const formatShortDate = (dateStr: string) => {
   border: none;
   cursor: pointer;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: 0;
   color: var(--ink-light);
   display: inline-flex;
   align-items: center;

@@ -127,7 +127,7 @@ onMounted(() => {
   padding: 10px 14px;
   color: var(--ink-light);
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: 0;
   transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 500;
   font-size: 14px;

@@ -270,6 +270,22 @@ const averageLabel = computed(() => {
   animation-delay: var(--stagger, 0ms);
 }
 
+.summary-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(147, 51, 234, 0.06) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.summary-card:hover::after {
+  animation: cardSweep 0.6s ease forwards;
+}
+
 .summary-card::before {
   content: '呪';
   position: absolute;
@@ -298,6 +314,12 @@ const averageLabel = computed(() => {
   border-radius: 0;
   opacity: 0.9;
   transition: opacity 0.3s;
+  animation: accentPulse 3s infinite;
+}
+
+@keyframes accentPulse {
+  0%, 100% { box-shadow: 0 0 6px var(--accent, var(--primary)); }
+  50% { box-shadow: 0 0 16px var(--accent, var(--primary)), 0 0 24px var(--accent, var(--primary)); }
 }
 
 .summary-card:hover .card-accent {

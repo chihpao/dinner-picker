@@ -69,18 +69,19 @@ onMounted(() => {
   margin: 0 auto;
   max-width: 520px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
+  border-radius: 0;
+  background: rgba(10, 10, 15, 0.95);
   box-shadow: var(--shadow-md);
   padding: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
 }
 
 .install-card.ios {
-  border-color: #c7d2fe;
+  border-color: var(--border);
 }
 
 .card-text {
@@ -93,6 +94,7 @@ onMounted(() => {
 .card-text strong {
   font-size: 13px;
   font-family: var(--font-pixel);
+  color: var(--ink);
 }
 
 .card-text span {

@@ -124,12 +124,34 @@ const getIcon = (name: string) => {
 }
 
 .restaurant-card:hover .card-icon {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(147, 51, 234, 0.12);
   border-color: var(--primary-light);
   transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(147, 51, 234, 0.4);
 }
 
-.skeleton-icon { width: 56px; height: 56px; border-radius: 16px; }
+.restaurant-card:hover .card-icon::after {
+  content: '⬡';
+  position: absolute;
+  font-size: 48px;
+  color: var(--primary);
+  opacity: 0.15;
+  animation: sigilSpin 4s linear infinite;
+}
+
+.card-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes sigilSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.skeleton-icon { width: 56px; height: 56px; border-radius: 0; }
 .skeleton-btn { width: 44px; height: 44px; }
 
 @media (max-width: 480px) {

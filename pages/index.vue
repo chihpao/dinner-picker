@@ -70,14 +70,14 @@ const bgImage = config.app.baseURL === '/' ? '/AppHeaderBack.jpg' : `${config.ap
   display: flex;
   background: var(--bg-body);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 0;
   border: 1px solid var(--border);
   gap: 4px;
 }
 
 .toggle-btn {
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-pixel);
@@ -121,7 +121,7 @@ const bgImage = config.app.baseURL === '/' ? '/AppHeaderBack.jpg' : `${config.ap
   padding: 4px 10px;
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 99px;
+  border-radius: 0;
   color: var(--ink-light);
 }
 

@@ -153,7 +153,7 @@ useHead({
   font-family: var(--font-sans);
   font-size: 15px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
   box-sizing: border-box;

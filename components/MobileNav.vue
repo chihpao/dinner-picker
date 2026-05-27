@@ -80,6 +80,12 @@ const activeIndex = computed(() => {
   transform: rotate(45deg) translateY(4px);
   box-shadow: 0 0 12px var(--primary-light);
   border: 1px solid rgba(168, 85, 247, 0.5);
+  animation: navPulse 2s infinite;
+}
+
+@keyframes navPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--primary-light); }
+  50% { box-shadow: 0 0 20px var(--primary-light), 0 0 30px rgba(147, 51, 234, 0.3); }
 }
 
 .nav-item {
@@ -123,6 +129,7 @@ const activeIndex = computed(() => {
 
 .nav-item.active .icon-box {
   color: var(--primary-light);
+  filter: drop-shadow(0 0 8px rgba(147, 51, 234, 0.7));
   animation: glitch 250ms cubic-bezier(0, 1, 0, 1);
 }
 

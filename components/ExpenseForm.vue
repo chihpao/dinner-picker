@@ -151,12 +151,7 @@
       </div>
     </form>
 
-    <AppSuccessAnimation
-      ref="successAnimRef"
-      :amount="lastSubmittedAmount"
-      :label="lastSubmittedLabel"
-      @complete="onAnimationComplete"
-    />
+
   </section>
 </template>
 
@@ -165,7 +160,6 @@ import { storeToRefs } from 'pinia'
 import { EXPENSE_CATEGORIES } from '~/stores/expenses'
 import { toISODate, vibrate } from '~/utils'
 import { useToast } from '~/composables/useToast'
-import AppSuccessAnimation from '~/components/AppSuccessAnimation.vue'
 
 const props = withDefaults(defineProps<{
   defaultRedirect?: string
@@ -194,10 +188,6 @@ const { addEntry } = expensesStore
 const { success, danger } = useToast()
 
 const submitting = ref(false)
-const lastSubmittedAmount = ref(0)
-const lastSubmittedLabel = ref('已記錄')
-const successAnimRef = ref<InstanceType<typeof AppSuccessAnimation> | null>(null)
-const pendingRedirect = ref('')
 const signInRedirect = computed(() => props.signInRedirectTo)
 const redirectPath = computed(() => {
   const from = typeof route.query.from === 'string' ? route.query.from : ''
@@ -337,11 +327,10 @@ const handleSubmit = async () => {
 
     vibrate([10, 50, 20])
     success(`成功儲存${submitBtnText.value}`)
-    lastSubmittedAmount.value = Math.abs(form.amount)
-    lastSubmittedLabel.value = `${submitBtnText.value}已記錄`
     resetForm()
-    pendingRedirect.value = redirectPath.value
-    successAnimRef.value?.show()
+    if (redirectPath.value) {
+      router.push(redirectPath.value)
+    }
   } catch (err) {
     danger(`儲存失敗：${(err as Error).message}`)
   } finally {
@@ -349,12 +338,6 @@ const handleSubmit = async () => {
   }
 }
 
-const onAnimationComplete = () => {
-  if (pendingRedirect.value) {
-    router.push(pendingRedirect.value)
-    pendingRedirect.value = ''
-  }
-}
 </script>
 
 <style scoped>

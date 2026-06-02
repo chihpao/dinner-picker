@@ -10,9 +10,15 @@
       >
         <div class="toast-content">
           <div class="toast-icon">
-            <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <svg v-else-if="toast.type === 'danger'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fill-opacity="0.2"/>
+            </svg>
+            <svg v-else-if="toast.type === 'danger'" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter">
+              <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+              <circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>
+            </svg>
           </div>
           <span class="toast-message">{{ toast.message }}</span>
         </div>
@@ -35,7 +41,7 @@ const { toasts, removeToast } = useToast()
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   pointer-events: none;
   width: auto;
   min-width: 240px;
@@ -43,46 +49,95 @@ const { toasts, removeToast } = useToast()
 
 .toast-item {
   pointer-events: auto;
-  background: var(--bg-paper);
-  border: 1px solid var(--border);
+  background: rgba(10, 10, 12, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid #27272a;
   border-radius: 0;
-  padding: 8px 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 12px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   max-width: 90vw;
   display: flex;
   align-items: center;
-  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  transform-origin: top center;
+  cursor: pointer;
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+}
+
+.toast-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255,255,255,0.01) 0px,
+    rgba(255,255,255,0.01) 2px,
+    transparent 2px,
+    transparent 8px
+  );
+  pointer-events: none;
+}
+
+.toast-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 4px;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.toast-item.success {
+  border-color: rgba(124, 58, 237, 0.3);
+  color: #c4b5fd;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(124, 58, 237, 0.15);
+}
+.toast-item.success::after {
+  background: #7c3aed;
+  box-shadow: 0 0 12px #7c3aed;
+}
+.toast-item.success .toast-icon {
+  color: #a78bfa;
+  filter: drop-shadow(0 0 5px rgba(124, 58, 237, 0.5));
+  animation: pulseCursedEnergy 1.5s infinite alternate;
+}
+
+.toast-item.danger {
+  border-color: rgba(225, 29, 72, 0.3);
+  color: #fecdd3;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(225, 29, 72, 0.15);
+}
+.toast-item.danger::after {
+  background: #e11d48;
+  box-shadow: 0 0 12px #e11d48;
+}
+.toast-item.danger .toast-icon {
+  color: #fb7185;
+  filter: drop-shadow(0 0 5px rgba(225, 29, 72, 0.5));
+}
+
+.toast-item.info {
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(59, 130, 246, 0.15);
+}
+.toast-item.info::after {
+  background: #3b82f6;
+  box-shadow: 0 0 12px #3b82f6;
+}
+.toast-item.info .toast-icon {
+  color: #93c5fd;
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
 }
 
 .toast-content {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.toast-item.success {
-  background: rgba(147, 51, 234, 0.15);
-  border-color: rgba(168, 85, 247, 0.4);
-  border-left: 3px solid var(--primary-light);
-  color: #C084FC;
-  box-shadow: 0 0 16px rgba(147, 51, 234, 0.3);
-}
-
-.toast-item.danger {
-  background: rgba(229, 62, 62, 0.15);
-  border-color: rgba(229, 62, 62, 0.4);
-  border-left: 3px solid var(--danger);
-  color: #EF4444;
-  box-shadow: 0 0 16px rgba(229, 62, 62, 0.3);
-}
-
-.toast-item.info {
-  background: rgba(34, 211, 238, 0.15);
-  border-color: rgba(34, 211, 238, 0.4);
-  border-left: 3px solid var(--cursed-cyan);
-  color: #22D3EE;
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
+  gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .toast-icon {
@@ -93,37 +148,39 @@ const { toasts, removeToast } = useToast()
 }
 
 .toast-message {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-family: var(--font-pixel);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+@keyframes pulseCursedEnergy {
+  0% { filter: drop-shadow(0 0 2px currentColor); transform: scale(0.95); }
+  100% { filter: drop-shadow(0 0 8px currentColor); transform: scale(1.05); }
 }
 
 .toast-enter-active {
-  transition: all 0.15s var(--ease-snappy);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 .toast-leave-active {
-  transition: all var(--duration-fast) ease-out;
+  transition: all 0.2s ease-in;
 }
-
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px) scale(0.85);
+  transform: translateY(-20px) scale(0.9) skewX(-10deg);
 }
-
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-12px) scale(0.92);
+  transform: translateY(-10px) scale(0.95) skewX(10deg);
 }
 
 @media (max-width: 640px) {
   .toast-container {
     top: 20px;
   }
-  
   .toast-item {
-    padding: 10px 20px;
+    padding: 12px 16px;
   }
 }
 </style>

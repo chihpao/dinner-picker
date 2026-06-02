@@ -471,7 +471,7 @@ const handleSubmit = async () => {
   width: calc(33.333% - 5.33px);
   background: var(--bg-paper);
   border-radius: var(--radius-sm);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0 12px rgba(147, 51, 234, 0.3), 0 1px 2px rgba(0, 0, 0, 0.1);
   transition: transform 0.45s var(--ease-spring);
   z-index: -1;
 }
@@ -523,7 +523,7 @@ const handleSubmit = async () => {
 .amount-wrapper:focus-within {
   background: var(--bg-paper);
   border-color: var(--border-focus);
-  box-shadow: -4px 4px 15px rgba(153, 27, 27, 0.25);
+  box-shadow: 0 0 20px rgba(147, 51, 234, 0.3), inset 0 1px 3px rgba(147, 51, 234, 0.1);
   transform: translateY(-2px);
 }
 
@@ -629,7 +629,7 @@ const handleSubmit = async () => {
   border: 1px solid var(--border);
   background: var(--bg-paper);
   border-radius: 0;
-  min-height: 36px;
+  min-height: 40px;
   padding: 6px 10px;
   font-size: 11px;
   font-family: var(--font-pixel);
@@ -641,8 +641,8 @@ const handleSubmit = async () => {
 
 .chip:hover, .chip.active {
   border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
+  color: var(--primary-light);
+  background: rgba(147, 51, 234, 0.15);
 }
 
 .inline-selects {
@@ -805,7 +805,7 @@ const handleSubmit = async () => {
   .amt-chip {
     padding: 6px 0;
     font-size: 12px;
-    min-height: 38px;
+    min-height: 40px;
     border-radius: 0;
   }
 }

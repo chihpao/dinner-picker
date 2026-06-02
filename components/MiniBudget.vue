@@ -49,7 +49,7 @@ const goToBudget = () => {
 .mini-budget {
   background: var(--bg-paper);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 12px 14px;
   margin: 0 16px 14px;
   box-shadow: var(--shadow-sm);
@@ -58,12 +58,15 @@ const goToBudget = () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  overflow: hidden;
+  position: relative;
 }
 
 .mini-budget:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border-color: #d1d5db;
+  box-shadow: var(--shadow-glow);
+  border-color: var(--primary-light);
 }
 
 .mini-budget:active {
@@ -96,14 +99,14 @@ const goToBudget = () => {
 .mini-budget-track {
   width: 100%;
   height: 6px;
-  background: #f3f4f6;
-  border-radius: 99px;
+  background: rgba(168, 85, 247, 0.15);
+  border-radius: 0px;
   overflow: hidden;
 }
 
 .mini-budget-fill {
   height: 100%;
-  border-radius: 99px;
+  border-radius: 0px;
   transition: width 0.5s var(--ease-snappy);
   min-width: 2px;
   background: linear-gradient(90deg, var(--primary), #818cf8);

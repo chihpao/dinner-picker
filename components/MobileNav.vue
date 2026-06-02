@@ -111,8 +111,8 @@ const activeIndex = computed(() => {
 }
 
 .icon-box :deep(svg) {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .nav-label {
@@ -125,6 +125,11 @@ const activeIndex = computed(() => {
 
 .nav-item.active {
   color: var(--ink);
+}
+
+.nav-item.active .nav-label {
+  color: var(--primary-light);
+  text-shadow: 0 0 6px rgba(147, 51, 234, 0.5);
 }
 
 .nav-item.active .icon-box {

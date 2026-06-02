@@ -33,10 +33,10 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', content: '#4f46e5' }
+        { name: 'theme-color', content: '#0A0A0F' }
       ]
     },
-    pageTransition: { name: 'fade', mode: 'out-in' }
+    pageTransition: { name: 'page', mode: 'out-in' }
   },
   nitro: {
     preset: 'github-pages'
@@ -54,8 +54,8 @@ export default defineNuxtConfig({
       name: '孜保吃晚餐',
       short_name: '晚餐',
       description: '一個幫助你決定晚餐的應用',
-      theme_color: '#030305',
-      background_color: '#030305',
+      theme_color: '#0A0A0F',
+      background_color: '#05020A',
       display: 'standalone',
       id: '/dinner-picker/',
       start_url: '/dinner-picker/',

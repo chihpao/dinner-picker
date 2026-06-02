@@ -286,25 +286,7 @@ const averageLabel = computed(() => {
   animation: cardSweep 0.6s ease forwards;
 }
 
-.summary-card::before {
-  content: '呪';
-  position: absolute;
-  right: -5px;
-  bottom: -25px;
-  font-size: 90px;
-  font-family: "Noto Serif JP", var(--font-sans);
-  font-weight: 800;
-  opacity: 0.15;
-  color: var(--primary-light);
-  pointer-events: none;
-  z-index: 0;
-}
-.summary-card:nth-child(2)::before {
-  content: '祓';
-}
-.summary-card:nth-child(3)::before {
-  content: '式';
-}
+
 
 .card-accent {
   width: 4px;

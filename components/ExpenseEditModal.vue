@@ -227,7 +227,7 @@ const setYesterday = () => {
 .input-label input, .input-label select {
   height: 38px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 0px;
   padding: 0 12px;
   font-family: var(--font-sans);
   background: var(--bg-paper);
@@ -236,21 +236,21 @@ const setYesterday = () => {
 .input-label input:focus, .input-label select:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.2);
 }
 .type-toggle {
   display: flex;
   gap: 8px;
   background: rgba(0, 0, 0, 0.2);
   padding: 4px;
-  border-radius: 8px;
+  border-radius: 0px;
 }
 .btn-sm {
   flex: 1;
   font-size: 12px;
   height: 32px;
   border: none;
-  border-radius: 6px;
+  border-radius: 0px;
   cursor: pointer;
   font-family: var(--font-pixel);
 }

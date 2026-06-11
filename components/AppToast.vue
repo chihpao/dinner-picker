@@ -66,17 +66,39 @@ const { toasts, removeToast } = useToast()
 }
 
 .toast-item::before {
-  content: '';
+  content: '任務';
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255,255,255,0.01) 0px,
-    rgba(255,255,255,0.01) 2px,
-    transparent 2px,
-    transparent 8px
-  );
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-15deg);
+  font-family: var(--font-pixel);
+  font-size: 28px;
+  border: 2px solid;
+  padding: 2px 8px;
+  border-radius: 4px;
   pointer-events: none;
+  z-index: 0;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
+.toast-item.success::before {
+  content: '祓除';
+  color: rgba(124, 58, 237, 0.2);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+.toast-item.danger::before {
+  content: '特級';
+  color: rgba(225, 29, 72, 0.2);
+  border-color: rgba(225, 29, 72, 0.2);
+}
+
+.toast-item.info::before {
+  content: '指派';
+  color: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .toast-item::after {

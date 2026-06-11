@@ -2,7 +2,7 @@
   <section class="panel">
     <div v-if="user && entries.length" class="list-toolbar">
       <label class="search-box">
-        <input v-model.trim="searchQuery" type="text" placeholder="搜尋...">
+        <input v-model.trim="searchQuery" type="text" placeholder="追蹤咒力殘穢 (搜尋)...">
       </label>
       <select v-model="filterType" class="filter-select">
         <option value="all">全部</option>
@@ -200,7 +200,7 @@
           <div class="bottom-sheet">
             <div class="bottom-sheet-handle"></div>
             <div class="modal-header">
-              <h3 class="text-danger">批量刪除</h3>
+              <h3 class="text-danger">執行祓除 (刪除)</h3>
             </div>
             <div class="modal-content">
               <p>確定要刪除選取的 {{ selectedCount }} 筆紀錄嗎？此操作無法復原。</p>
@@ -218,7 +218,7 @@
           <div class="bottom-sheet">
             <div class="bottom-sheet-handle"></div>
             <div class="modal-header">
-              <h3>💰 孜保結算</h3>
+              <h3>💰 祓除孜保咒靈 (結算)</h3>
             </div>
             <div class="modal-content">
               <p style="font-size: 13px; color: var(--ink-light); margin-bottom: 16px;">

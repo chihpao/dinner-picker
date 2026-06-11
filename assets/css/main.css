@@ -98,6 +98,12 @@ body::before {
   background-blend-mode: overlay, normal, normal;
   opacity: 1;
   pointer-events: none;
+  animation: floatParticles 20s linear infinite;
+}
+
+@keyframes floatParticles {
+  0% { background-position: 0 0, 0 0, 0 0; }
+  100% { background-position: 0 -150px, -20% 20%, 20% 20%; }
 }
 
 body::after {
@@ -203,6 +209,22 @@ body::after {
   overflow: hidden;
 }
 
+.card::before {
+  content: '封';
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: rgba(225, 29, 72, 0.35);
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(225, 29, 72, 0.35);
+  padding: 2px 4px;
+  pointer-events: none;
+  transform: rotate(15deg);
+  z-index: 0;
+}
+
 .card::after {
   content: '';
   position: absolute;
@@ -258,6 +280,35 @@ body::after {
   color: #fff;
   border: 1px solid var(--primary-light);
   box-shadow: var(--shadow-glow);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn.primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, var(--blood-red) 0%, #000 50%, transparent 100%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  mix-blend-mode: color-dodge;
+}
+
+.btn.primary:active::after {
+  animation: blackFlash 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes blackFlash {
+  0% { width: 0; height: 0; opacity: 1; filter: brightness(2) contrast(2); }
+  50% { opacity: 0.8; filter: brightness(1.5) contrast(1.5); }
+  100% { width: 300px; height: 300px; opacity: 0; filter: brightness(1) contrast(1); }
 }
 
 .btn.primary:hover {

@@ -101,6 +101,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
 <style scoped>
 .hero {
   position: relative;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -110,7 +111,6 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   transition: all 0.3s var(--ease-snappy);
-  overflow: hidden;
 }
 
 .hero::before {
@@ -123,6 +123,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   background: radial-gradient(ellipse at top left, rgba(147, 51, 234, 0.15) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
+  border-radius: inherit;
 }
 
 .hero::after {
@@ -135,30 +136,7 @@ onUnmounted(() => document.removeEventListener('click', handleDocumentClick))
   background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(168, 85, 247, 0.02) 2px, rgba(168, 85, 247, 0.02) 4px);
   pointer-events: none;
   z-index: 0;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at top left, rgba(147, 51, 234, 0.15) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(168, 85, 247, 0.02) 2px, rgba(168, 85, 247, 0.02) 4px);
-  pointer-events: none;
-  z-index: 0;
+  border-radius: inherit;
 }
 
 .hero-header, .hero-actions, .hero-title-wrap {
